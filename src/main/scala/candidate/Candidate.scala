@@ -6,6 +6,11 @@ import java.util.Locale
 import dictionary.{PaymentFieldType, PropertyType}
 import org.apache.commons.lang3.builder.{HashCodeBuilder, ReflectionToStringBuilder, ToStringStyle}
 
+/*
+* Note: Natural orderings in subclass implementations of Comparable are not consistent with equals.
+*
+* Also rearranges more likely candidates to the start of the collection.
+*/
 class Candidate(val value: Any,
                 val x: Integer,
                 val y: Integer,
@@ -16,7 +21,7 @@ class Candidate(val value: Any,
                 val paymentFieldType: PaymentFieldType,
                 val properties: util.HashMap[PropertyType, Any]) extends Comparable[Candidate] {
 
-  def compareTo(other: Candidate): Int = 0 // TODO
+  def compareTo(other: Candidate): Int = CandidateComparator.compare(this, other)
 
   override def equals(other: Any): Boolean = {
     if (other.isInstanceOf[Candidate]) {
