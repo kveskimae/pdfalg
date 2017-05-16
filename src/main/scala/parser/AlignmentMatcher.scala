@@ -12,9 +12,18 @@ class AlignmentMatcher(var lastYCoordinate: Float,
   }
 
   def isHorizontalPositionContinuesPrevious(text: TextPosition): Boolean = {
-    if (text.getXDirAdj.compareTo(maximumXForNextCharacter)<= 0) true
-    else if (isSpace(text)) return true
-    false
+    if (text.getXDirAdj.compareTo(maximumXForNextCharacter)<= 0)
+    {
+      true
+    }
+    else if (isSpace(text))
+    {
+      true
+    }
+    else
+    {
+      false
+    }
   }
 
   def isSpace(text: TextPosition): Boolean = {

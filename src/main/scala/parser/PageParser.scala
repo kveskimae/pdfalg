@@ -13,11 +13,19 @@ import java.util.regex.Pattern
 import scala.collection.LinearSeq
 import scala.collection.mutable.ListBuffer
 
+object PageParser {
+
+  private val PATTERN_BOLD = Pattern.compile("BOLD", Pattern.CASE_INSENSITIVE) // Text style
+
+  def isBoldFont(fontName: String): Boolean = {
+    if (fontName == null) return false
+    RegexUtils.patternExistsInText(fontName, PATTERN_BOLD)
+  }
+
+}
 
 // Default space tolerance: 0.5, average character tolerance: 0.3
 class PageParser() extends PDFTextStripper() {
-
-  private val PATTERN_BOLD = Pattern.compile("BOLD", Pattern.CASE_INSENSITIVE) // Text style
 
   private var nextCharacterStartsNewWord = true
   private val alignmentMatcher = new AlignmentMatcher(0f, 0f, 0f)
@@ -53,8 +61,11 @@ class PageParser() extends PDFTextStripper() {
     val isVerticallyAligned = alignmentMatcher.isVerticalPositionMatchesPrevious(text)
     val isHorizontallyContinued = alignmentMatcher.isHorizontalPositionContinuesPrevious(text)
     alignmentMatcher.setLastVerticalPosition(text)
-    if (!isVerticallyAligned || !isHorizontallyContinued) setNextCharacterToStartNewWord()
-    else if (isVerticallyAligned && alignmentMatcher.isSpace(text)) {
+    if (!isVerticallyAligned || !isHorizontallyContinued) {
+      println("starts new !isVerticallyAligned=" + !isVerticallyAligned + ", !isHorizontallyContinued=" + !isHorizontallyContinued)
+      setNextCharacterToStartNewWord()
+    } else if (isVerticallyAligned && alignmentMatcher.isSpace(text)) {
+      println("does not start new")
       nextCharacterStartsNewWord = false
       builder.append(' ')
       width = 2 * Rounder.roundToTens(text.getXDirAdj) + text.getWidth - x
@@ -91,20 +102,25 @@ class PageParser() extends PDFTextStripper() {
   }
 
   private def addToPhrases() = {
-    val phrase: Phrase =
-      new Phrase(
-        Math.round(x),
-        Math.round(y),
-        getCurrentPageNo,
-        Math.round(height),
-        Math.round(width),
-        builder.toString,
-        bold)
-    phrases += phrase
+    val builderResult: String = builder.toString
+    if (!builderResult.isEmpty)
+      {
+        val phrase: Phrase =
+          new Phrase(
+            Math.round(x),
+            Math.round(y),
+            getCurrentPageNo,
+            Math.round(height),
+            Math.round(width),
+            builderResult,
+            bold)
+
+        phrases += phrase
+      }
   }
 
   private def startNewWord(text: TextPosition, tChar: String) = {
-    bold = isBoldFont(text.getFont.getName)
+    bold = PageParser.isBoldFont(text.getFont.getName)
     builder.setLength(0)
     x = Rounder.roundToTens(text.getXDirAdj)
     y = Rounder.roundToTens(text.getYDirAdj)
@@ -115,9 +131,5 @@ class PageParser() extends PDFTextStripper() {
 
   def getPhrases: LinearSeq[Phrase] = phrases.toList
 
-  def isBoldFont(fontName: String): Boolean = {
-    if (fontName == null) return false
-    RegexUtils.patternExistsInText(fontName, PATTERN_BOLD)
-  }
 
 }

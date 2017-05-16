@@ -6,7 +6,7 @@ object Rounder {
 
   def roundToTens(original: Float): Float = {
     val formatter = new DecimalFormat("0.0'0'")
-    Float.unbox(formatter.format(original))
+    formatter.format(original).toFloat
   }
 
 }
