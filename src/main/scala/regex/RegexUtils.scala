@@ -1,21 +1,17 @@
 package regex
 
-import org.apache.commons.lang3.StringUtils
-import java.util
-import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-import CommonRegexPatterns.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS
-import parser.Phrase
+import regex.CommonRegexPatterns.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS
 
-import scala.collection.LinearSeq
 import scala.collection.mutable.ListBuffer
 
 
 object RegexUtils {
 
-  import org.apache.commons.lang3.StringUtils
   import java.util
+
+  import org.apache.commons.lang3.StringUtils
 
   def removeFirstOccurrence(text: String, pattern: Pattern): String = {
     val matcher = pattern.matcher(text)

@@ -1,7 +1,7 @@
 package parser
 
-import scala.collection.immutable.List
 import scala.collection.LinearSeq
+import scala.collection.immutable.List
 import scala.collection.mutable.ListBuffer
 
 class ParseResult(val text: String, val phrases: LinearSeq[Phrase]) {

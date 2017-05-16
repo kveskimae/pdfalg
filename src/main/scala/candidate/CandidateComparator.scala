@@ -1,7 +1,7 @@
 package candidate
 
+import candidate.Coefficients._
 import dictionary._
-import Coefficients._
 
 object CandidateComparator {
 

@@ -1,14 +1,12 @@
 package parser
 
-import parser.GridConstants._
-import regex.RegexUtils
+import java.io.IOException
+import java.util.regex.Pattern
 
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.graphics.state.PDTextState
-import org.apache.pdfbox.text.PDFTextStripper
-import org.apache.pdfbox.text.TextPosition
-import java.io.IOException
-import java.util.regex.Pattern
+import org.apache.pdfbox.text.{PDFTextStripper, TextPosition}
+import regex.RegexUtils
 
 import scala.collection.LinearSeq
 import scala.collection.mutable.ListBuffer
@@ -62,10 +60,8 @@ class PageParser() extends PDFTextStripper() {
     val isHorizontallyContinued = alignmentMatcher.isHorizontalPositionContinuesPrevious(text)
     alignmentMatcher.setLastVerticalPosition(text)
     if (!isVerticallyAligned || !isHorizontallyContinued) {
-      println("starts new !isVerticallyAligned=" + !isVerticallyAligned + ", !isHorizontallyContinued=" + !isHorizontallyContinued)
       setNextCharacterToStartNewWord()
     } else if (isVerticallyAligned && alignmentMatcher.isSpace(text)) {
-      println("does not start new")
       nextCharacterStartsNewWord = false
       builder.append(' ')
       width = 2 * Rounder.roundToTens(text.getXDirAdj) + text.getWidth - x
