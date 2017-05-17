@@ -19,7 +19,7 @@ class Candidate(val value: Any,
                 val pageNo: Integer,
                 val locale: Locale,
                 val paymentFieldType: PaymentFieldType,
-                val properties: util.HashMap[PropertyType, Any]) extends Comparable[Candidate] {
+                val properties: Map[PropertyType, Any]) extends Comparable[Candidate] {
 
   def compareTo(other: Candidate): Int = CandidateComparator.compare(this, other)
 

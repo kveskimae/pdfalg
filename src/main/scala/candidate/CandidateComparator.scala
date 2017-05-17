@@ -16,6 +16,7 @@ object CandidateComparator {
             // return PositionalComparator.getInstance.compare(first, other)
           case IBAN =>
             return first.value.asInstanceOf[String].compareTo(other.value.asInstanceOf[String])
+          case _ =>
         }
       case SupportedLocales.ITALIAN_LANG_CODE =>
         first.paymentFieldType match {
@@ -24,6 +25,7 @@ object CandidateComparator {
           case VATIN =>
             if (first.value == null) return 1
             return first.value.asInstanceOf[String].compareTo(other.value.asInstanceOf[String])
+          case _ =>
         }
     }
     var thisLikelyhood = 0.0
@@ -41,6 +43,7 @@ object CandidateComparator {
           case NAME =>
             thisLikelyhood += calculateEstonianNameComparisonSum(first)
             otherLikelyhood += calculateEstonianNameComparisonSum(other)
+          case _ =>
         }
       case SupportedLocales.ITALIAN_LANG_CODE =>
         first.paymentFieldType match {
@@ -51,6 +54,7 @@ object CandidateComparator {
           case NAME =>
             thisLikelyhood += calculateItalianNamePhraseTypeComparisonPart(first)
             otherLikelyhood += calculateItalianNamePhraseTypeComparisonPart(other)
+          case _ =>
         }
     }
     first.paymentFieldType match {
@@ -85,6 +89,7 @@ object CandidateComparator {
             if (isEstonianNameCandidate(first)) thisLikelyhood += 0.1
           }
         }
+      case _ =>
     }
     var ret = 0
     if (thisLikelyhood > otherLikelyhood) ret = -1

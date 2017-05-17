@@ -15,7 +15,7 @@ class PDFFileParserTest  extends FlatSpec with Matchers {
 
     assert(parsed.phrases.nonEmpty)
     val firstPhrase: Phrase = parsed.phrases.head
-    println(firstPhrase)
+
     assert(214 == firstPhrase.x)
     assert(85 == firstPhrase.y)
     assert(1 == firstPhrase.pageNumber)
