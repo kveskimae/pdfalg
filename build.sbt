@@ -10,6 +10,8 @@ lazy val root = (project in file(".")).
     name := "Hello",
     libraryDependencies += scalaTest % Test,
     libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.0",
+    libraryDependencies += "commons-io" % "commons-io" % "2.5",
     libraryDependencies += "org.apache.pdfbox" % "pdfbox" % "2.0.1",
-    libraryDependencies += "junit" % "junit" % "4.12"
+    libraryDependencies += "junit" % "junit" % "4.12",
+    libraryDependencies += "net.liftweb" %% "lift-json" % "3.0.1"
   )
