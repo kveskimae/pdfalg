@@ -1,6 +1,5 @@
 package candidate
 
-import java.util
 import java.util.Locale
 
 import dictionary.{PaymentFieldType, PropertyType}

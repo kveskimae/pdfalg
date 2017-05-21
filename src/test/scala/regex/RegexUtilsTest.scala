@@ -1,8 +1,9 @@
 package regex
 
+import org.junit.runner.RunWith
 import org.scalatest._
 import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
+
 import scala.collection.immutable.List
 
 @RunWith(classOf[JUnitRunner])

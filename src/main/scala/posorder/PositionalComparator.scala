@@ -1,10 +1,10 @@
 package posorder
 
 import java.awt.Point
+import java.io.IOException
 
 import candidate.Candidate
 import dictionary.{HORIZONTAL, PaymentFieldType}
-import java.io.IOException
 import parser.GridConstants
 
 import scala.collection._

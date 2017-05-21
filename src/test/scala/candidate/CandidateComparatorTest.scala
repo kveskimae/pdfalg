@@ -1,9 +1,9 @@
 package candidate
 
-import dictionary.{INVOICE_ID, REFERENCE_NUMBER, SupportedLocales}
+import dictionary.{INVOICE_ID, SupportedLocales}
+import org.junit.runner.RunWith
 import org.scalatest._
 import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
 
 import scala.collection.immutable.TreeSet
 

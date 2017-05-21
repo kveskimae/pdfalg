@@ -1,8 +1,8 @@
 package posorder
 
-import candidate.Candidate
 import java.awt._
 
+import candidate.Candidate
 import dictionary.{CutDirectionType, HORIZONTAL, VERTICAL}
 import parser.GridConstants
 
@@ -39,7 +39,7 @@ class Node(val cutDirection: CutDirectionType,
       case VERTICAL =>
         cutline = (minX + maxX) / 2
         smallerValues = new Node(HORIZONTAL, minX, cutline - 1, minY, maxY)
-        biggerValues = new Nothing(HORIZONTAL, cutline, maxX, minY, maxY)
+        biggerValues = new Node(HORIZONTAL, cutline, maxX, minY, maxY)
         for (point <- locations) {
           if (point.getX < cutline) smallerValues.addLocation(point)
           else biggerValues.addLocation(point)
