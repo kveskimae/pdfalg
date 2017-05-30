@@ -6,6 +6,7 @@ import java.util.regex.Pattern
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.graphics.state.PDTextState
 import org.apache.pdfbox.text.{PDFTextStripper, TextPosition}
+import posorder.GridConstants
 import regex.RegexUtils
 
 import scala.collection.LinearSeq

@@ -4,8 +4,8 @@ import java.awt.Point
 import java.io.IOException
 
 import candidate.Candidate
-import dictionary.{HORIZONTAL, PaymentFieldType}
-import parser.GridConstants
+import dictionary.PaymentFieldType
+import posorder.GridConstants._
 
 import scala.collection._
 

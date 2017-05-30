@@ -3,8 +3,6 @@ package posorder
 import java.awt._
 
 import candidate.Candidate
-import dictionary.{CutDirectionType, HORIZONTAL, VERTICAL}
-import parser.GridConstants
 
 import scala.collection.mutable.ArrayBuffer
 

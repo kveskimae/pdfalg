@@ -1,4 +1,4 @@
-package dictionary
+package posorder
 
 sealed trait CutDirectionType
 
