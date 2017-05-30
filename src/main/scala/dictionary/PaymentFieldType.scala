@@ -27,4 +27,6 @@ object PaymentFieldType {
     case _ => throw new IllegalArgumentException("Unknown payment field type name: " + name)
   }
 
+  val values: Seq[PaymentFieldType] = Seq(IBAN, INVOICE_ID, NAME, REFERENCE_NUMBER, TOTAL, TOTAL_BEFORE_TAXES, ISSUE_DATE, DUE_DATE, VATIN)
+
 }
