@@ -1,7 +1,7 @@
 package io
 
 import java.awt._
-import java.io.InputStream
+import java.io.{File, InputStream}
 
 import dictionary.PaymentFieldType
 import net.liftweb.json.JsonAST.JValue
@@ -88,6 +88,22 @@ object IOHelper {
   private def getInputStreamFromFile(fileName: String): InputStream = {
     val inputStream: InputStream = Thread.currentThread.getContextClassLoader.getResourceAsStream(fileName)
     inputStream
+  }
+
+  def checkFileExistsAndIsReadable(file: File, checkIsDirectory: Boolean): Unit = {
+    if (!file.exists) {
+      throw new RuntimeException("Location '" + file + "' does not exist")
+    }
+
+    if (!file.canRead) {
+      throw new RuntimeException("Location '" + file + "' is not readable for application")
+    }
+
+    if (checkIsDirectory) {
+      if (!file.isDirectory) {
+        throw new RuntimeException("Location '" + file + "' is not a folder")
+      }
+    }
   }
 
 }
