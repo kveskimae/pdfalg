@@ -12,4 +12,10 @@ object SupportedLocales {
 
   val ITALY: Locale = Locale.ITALY
 
+  def findLocaleByLanguage(language: String): Locale = language match {
+    case ESTONIAN_LANG_CODE => ESTONIA
+    case ITALIAN_LANG_CODE => ITALY
+    case _ => throw new IllegalArgumentException("Unknown locale language: " + language)
+  }
+
 }

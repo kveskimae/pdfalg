@@ -1,14 +1,18 @@
 package regex
 
-object CommonRegexPatterns {
+import java.util.regex.Pattern
 
-  import java.util.regex.Pattern
+object CommonRegexPatterns {
 
   val ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND = "[\\-\\w\\sÕõüÜÄäÖöÜüžŽšŠ&]"
 
   val ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND = "[\\-\\w\\s&]"
 
   val ITALIAN_INVOICE_ID_WORDS = "(numero|codice|id|n[or]{0,1}[.]{0,1})"
+
+  val MINIMUM_NUMBER_OF_CHARACTERS = 3
+
+  val PATTERN_MINIMUM_CHARACTERS = Pattern.compile("^.*" + ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND + "{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}.*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
 
   val VOID_CHARACTER = "[\\s:.€]"
 
