@@ -30,16 +30,16 @@ object RegexUtils {
     throw new IllegalArgumentException("No match of pattern " + pattern + " was found in text '" + text + "'")
   }
 
-  def findMatches(text: String, pattern: Pattern): util.List[String] = {
-    val foundMatches = new util.ArrayList[String]
+  def findMatches(text: String, pattern: Pattern): Seq[String] = {
+    val foundMatches: collection.mutable.ListBuffer[String] = collection.mutable.ListBuffer.empty[String]
     val matcher = pattern.matcher(text)
     while ( {
       matcher.find
     }) {
       val `match` = matcher.group
-      foundMatches.add(`match`)
+      foundMatches += `match`
     }
-    foundMatches
+    foundMatches.toList
   }
 
   def searchForEstonianDoubleValuesAfterText(searchString: String): util.List[Double] = {
