@@ -29,7 +29,7 @@ object AbstractFinder {
   }
 }
 
-abstract class AbstractFinder(val phraseTypesStore: PhraseTypesStore, val searchPattern: Pattern, val valuePattern: Pattern, val combinePhrases: Boolean, val combineFuzzy: Boolean = false) {
+abstract class AbstractFinder(val phraseTypesStore: PhraseTypesStore, var searchPattern: Pattern, var valuePattern: Pattern, val combinePhrases: Boolean, val combineFuzzy: Boolean = false) {
 
   protected def searchWithPattern(parseResult: ParseResult, search: Pattern, value: Pattern): Seq[Candidate] = {
     val ret: ListBuffer[Candidate] = collection.mutable.ListBuffer.empty[Candidate]
