@@ -13,6 +13,26 @@ import phrase.PhraseTypesStore
 import regex.CommonRegexPatterns._
 import regex.RegexUtils
 
+object EstonianTotalFinder {
+
+  def countDotsAndCommas(number: String): Int = {
+    val replaced = number.replaceAll(",", ".")
+    val dotCount = StringUtils.countMatches(replaced, ".")
+    dotCount
+  }
+
+  def isEuroPresent(text: String): Boolean = {
+    val ret = RegexUtils.patternExistsInText(text, PATTERN_EURO_SIGN)
+    ret
+  }
+
+  def isNormalTotalLine(text: String) = {
+    val ret = RegexUtils.patternExistsInText(text, PATTERN_ESTONIAN_ORDINARY_TOTAL_LINE)
+    ret
+  }
+
+}
+
 class EstonianTotalFinder(override val phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, true) {
 
   def refreshed(): Unit = {
@@ -29,7 +49,7 @@ class EstonianTotalFinder(override val phraseTypesStore: PhraseTypesStore) exten
         totalAsNumberMatcher.find
       }) {
         var totalAsString = totalAsNumberMatcher.group
-        val dotCount = countDotsAndCommas(totalAsString)
+        val dotCount = EstonianTotalFinder.countDotsAndCommas(totalAsString)
         if (dotCount < 2) {
           totalAsString = totalAsString.replaceAll(",", ".")
           val doubleNumber = dotCount > 0
@@ -43,27 +63,11 @@ class EstonianTotalFinder(override val phraseTypesStore: PhraseTypesStore) exten
     ret
   }
 
-  def countDotsAndCommas(number: String): Int = {
-    val replaced = number.replaceAll(",", ".")
-    val dotCount = StringUtils.countMatches(replaced, ".")
-    dotCount
-  }
-
-  def isEuroPresent(text: String): Boolean = {
-    val ret = RegexUtils.patternExistsInText(text, PATTERN_EURO_SIGN)
-    ret
-  }
-
-  private def isNormalTotalLine(text: String) = {
-    val ret = RegexUtils.patternExistsInText(text, PATTERN_ESTONIAN_ORDINARY_TOTAL_LINE)
-    ret
-  }
-
   protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
     val doubleNumber = params(0).asInstanceOf[Boolean]
     val `type` = params(1).asInstanceOf[PhraseType]
-    val euroSignFound = isEuroPresent(phrase.text)
-    val normalTotalLine = isNormalTotalLine(phrase.text)
+    val euroSignFound = EstonianTotalFinder.isEuroPresent(phrase.text)
+    val normalTotalLine = EstonianTotalFinder.isNormalTotalLine(phrase.text)
     val properties: Map[PropertyType, Any] = Map(DOUBLE_NUMBER -> doubleNumber, PHRASE_TYPE -> `type`, EURO_SIGN_FOUND -> euroSignFound, NORMAL_LINE -> normalTotalLine)
     val ret = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, TOTAL, properties)
     ret
