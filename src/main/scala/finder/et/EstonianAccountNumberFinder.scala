@@ -6,6 +6,7 @@ import candidate.Candidate
 import dictionary.{IBAN, SupportedLocales}
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
+import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 import regex.RegexUtils
@@ -18,9 +19,10 @@ object EstonianAccountNumberFinder {
 
 }
 
+@Service
 class EstonianAccountNumberFinder(override val phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, PATTERN_ESTONIAN_IBAN_START_WITH_REST_OF_LINE, PATTERN_ESTONIAN_IBAN, false) {
 
-  def findCandidates(parseResult: ParseResult): Seq[Candidate]  = {
+  override def findCandidates(parseResult: ParseResult): Seq[Candidate]  = {
     val ret: ListBuffer[Candidate] = collection.mutable.ListBuffer.empty[Candidate]
     val linesContainingIBANStart: ListBuffer[String] = RegexUtils.findMatches(parseResult.text, searchPattern)
     val linesContainingIBANWithoutSpaces: ListBuffer[String] = ListBuffer.empty[String]

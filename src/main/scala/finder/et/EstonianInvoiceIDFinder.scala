@@ -6,11 +6,14 @@ import candidate.Candidate
 import dictionary.{INVOICE_ID, SupportedLocales}
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
+import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 import regex.CommonRegexPatterns._
 import regex.RegexUtils
 
+
+@Service
 class EstonianInvoiceIDFinder(override val phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, true) {
 
   // TODO needs to listen context events together with other finders

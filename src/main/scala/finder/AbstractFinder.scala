@@ -12,6 +12,9 @@ import regex.{CommonRegexPatterns, RegexUtils}
 
 import scala.collection.mutable.ListBuffer
 
+import candidate.Candidate
+import parser.ParseResult
+
 object AbstractFinder {
   private val FOCUS_TYPE = INVOICE_ID // if you have a trouble with particular field type, set it here & let it log
   val log: Logger = LoggerFactory.getLogger(classOf[AbstractFinder])
@@ -31,21 +34,25 @@ object AbstractFinder {
 
 abstract class AbstractFinder(val phraseTypesStore: PhraseTypesStore, var searchPattern: Pattern, var valuePattern: Pattern, val combinePhrases: Boolean, val combineFuzzy: Boolean = false) {
 
+  def findCandidates(parseResult: ParseResult): Seq[Candidate] = {
+    searchWithPattern(parseResult, searchPattern, valuePattern)
+  }
+
   protected def searchWithPattern(parseResult: ParseResult, search: Pattern, value: Pattern): Seq[Candidate] = {
-    val ret: ListBuffer[Candidate] = collection.mutable.ListBuffer.empty[Candidate]
+    val ret = collection.mutable.ListBuffer.empty[Candidate]
     if (AbstractFinder.log.isDebugEnabled && AbstractFinder.FOCUS_TYPE.equals(getType)) AbstractFinder.log.debug("Search pattern: " + search)
     for (phrase <- parseResult.phrases) {
       if (RegexUtils.patternExistsInText(phrase.text, search)) {
         if (AbstractFinder.log.isDebugEnabled && AbstractFinder.FOCUS_TYPE.equals(getType)) AbstractFinder.log.debug("Potential match: " + phrase.text)
-        val foundValues: ListBuffer[Candidate] = searchValuesFromPhrase(phrase, parseResult, value)
+        val foundValues = searchValuesFromPhrase(phrase, parseResult, value)
         if (combinePhrases) {
           if (foundValues.isEmpty) {
-            var closestPhraseOnRight: Phrase = parseResult.findClosestPhraseOnRight(phrase)
+            var closestPhraseOnRight = parseResult.findClosestPhraseOnRight(phrase)
             while ( {
               closestPhraseOnRight != null
             }) if (AbstractFinder.isVoidPhrase(closestPhraseOnRight)) closestPhraseOnRight = parseResult.findClosestPhraseOnRight(closestPhraseOnRight)
             else {
-              val combined: Phrase = AbstractFinder.combinePhrases(phrase, closestPhraseOnRight)
+              val combined = AbstractFinder.combinePhrases(phrase, closestPhraseOnRight)
               if (AbstractFinder.log.isDebugEnabled) {
                 AbstractFinder.log.debug("combined with right: '" + combined + "'")
                 AbstractFinder.log.debug("text on closestPhraseOnRight: '" + closestPhraseOnRight.text + "'")

@@ -6,6 +6,7 @@ import candidate.Candidate
 import dictionary._
 import finder.AbstractFinder
 import finder.it.ItalianRegexPatterns._
+import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 import regex.CommonRegexPatterns._
@@ -17,6 +18,7 @@ object ItalianNameFinder {
   private val PATTERN_MINIMUM_CHARACTERS: Pattern = Pattern.compile ("^.*" + ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND + "{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}.*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
 }
 
+@Service
 class ItalianNameFinder(phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, false) {
 
   def refreshed(): Unit = {

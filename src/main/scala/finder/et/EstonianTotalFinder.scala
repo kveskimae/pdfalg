@@ -8,6 +8,7 @@ import dictionary._
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
 import org.apache.commons.lang3.StringUtils
+import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 import regex.CommonRegexPatterns._
@@ -33,6 +34,7 @@ object EstonianTotalFinder {
 
 }
 
+@Service
 class EstonianTotalFinder(override val phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, true) {
 
   def refreshed(): Unit = {

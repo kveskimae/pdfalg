@@ -5,11 +5,13 @@ import java.util.regex.Pattern
 import candidate.Candidate
 import dictionary.{INVOICE_ID, PaymentFieldType, SupportedLocales}
 import finder.AbstractFinder
+import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 import regex.CommonRegexPatterns._
 import regex.RegexUtils
 
+@Service
 class ItalianInvoiceIDFinder(phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, true) {
 
   private[it] var PATTERN_ITALIAN_INVOICE_ID_START_PART: Pattern = null

@@ -8,16 +8,16 @@ import scala.collection.mutable
 
 class FinderResult {
 
-  private val candidatesBuilder: mutable.MapBuilder[PaymentFieldType, Set[Candidate], Map[PaymentFieldType, Set[Candidate]]] = new scala.collection.mutable.MapBuilder[PaymentFieldType, Set[Candidate], Map[PaymentFieldType, Set[Candidate]]](Map.empty)
+  private val candidatesBuilder: mutable.MapBuilder[PaymentFieldType, mutable.Set[Candidate], Map[PaymentFieldType, mutable.Set[Candidate]]] = new scala.collection.mutable.MapBuilder[PaymentFieldType, mutable.Set[Candidate], Map[PaymentFieldType, mutable.Set[Candidate]]](Map.empty)
 
   PaymentFieldType.values.foreach(fieldType => {
-    val mapElem: Tuple2[PaymentFieldType, Set[Candidate]] = Tuple2(fieldType, Set.empty)
+    val mapElem: Tuple2[PaymentFieldType, mutable.Set[Candidate]] = Tuple2(fieldType, mutable.Set.empty)
     candidatesBuilder += mapElem
   })
 
-  val candidatesMap: Map[PaymentFieldType, Set[Candidate]] = candidatesBuilder.result()
+  val candidatesMap: Map[PaymentFieldType, mutable.Set[Candidate]] = candidatesBuilder.result()
 
-  def getCandidates(fieldType: PaymentFieldType): Set[Candidate] = {
+  def getCandidates(fieldType: PaymentFieldType): mutable.Set[Candidate] = {
     candidatesMap(fieldType)
   }
 

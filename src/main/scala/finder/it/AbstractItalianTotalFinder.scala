@@ -8,6 +8,7 @@ import candidate.Candidate
 import dictionary._
 import finder.AbstractFinder
 import finder.et.EstonianTotalFinder
+import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 import regex.CommonRegexPatterns._
@@ -15,6 +16,7 @@ import regex.RegexUtils
 
 import scala.collection.mutable.ListBuffer
 
+@Service
 abstract class AbstractItalianTotalFinder(phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, true, true) {
 	// TODO What about thread safety?
 

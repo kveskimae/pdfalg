@@ -6,12 +6,14 @@ import candidate.Candidate
 import dictionary.{PaymentFieldType, SupportedLocales, VATIN}
 import finder.AbstractFinder
 import finder.it.ItalianRegexPatterns._
+import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 import regex.RegexUtils
 
 import scala.collection.mutable.ListBuffer
 
+@Service
 class ItalianVATIdNumberFinder(phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, PATTERN_ITALIAN_VATIN, PATTERN_ITALIAN_VATIN_VALUE, true, true) {
 
   protected override def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Pattern): ListBuffer[Candidate] = {
