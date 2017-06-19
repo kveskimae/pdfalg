@@ -3,8 +3,9 @@ package finder.it
 import java.util.regex.Pattern
 
 import candidate.Candidate
-import dictionary.{INVOICE_ID, PaymentFieldType, SupportedLocales}
+import dictionary.SupportedLocales
 import finder.AbstractFinder
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
@@ -62,6 +63,6 @@ class ItalianInvoiceIDFinder(phraseTypesStore: PhraseTypesStore) extends Abstrac
     ret
   }
 
-  override def getType: PaymentFieldType = INVOICE_ID
+  override def getType = INVOICE_ID
 
 }

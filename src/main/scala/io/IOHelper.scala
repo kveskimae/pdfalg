@@ -3,10 +3,10 @@ package io
 import java.awt._
 import java.io.{File, InputStream}
 
-import dictionary.PaymentFieldType
 import net.liftweb.json.JsonAST.JValue
 import net.liftweb.json._
 import org.apache.commons.io.IOUtils
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
 import scala.collection.immutable.Map.Map2
 import scala.collection.mutable.ArrayBuffer
@@ -53,13 +53,13 @@ object IOHelper {
     points
   }
 
-  private def extractEntry(jsonAsMapEntry: (Any, Any)): (_root_.dictionary.PaymentFieldType, scala.Seq[_root_.java.awt.Point]) = {
+  private def extractEntry(jsonAsMapEntry: (Any, Any)): (PaymentFieldType, scala.Seq[_root_.java.awt.Point]) = {
 
     val field2PointsTuple: Tuple2[String, Seq[Map2[String, BigInt]]] = jsonAsMapEntry.asInstanceOf[Tuple2[String, Seq[Map2[String, BigInt]]]]
 
     val fieldAsString: String = field2PointsTuple._1
 
-    val fieldType: PaymentFieldType = PaymentFieldType.convert(fieldAsString)
+    val fieldType: PaymentFieldType = PaymentFieldType.valueOf(fieldAsString)
 
     val points: Seq[Point] = extractPoints(field2PointsTuple)
 

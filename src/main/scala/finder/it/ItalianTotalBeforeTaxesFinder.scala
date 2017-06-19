@@ -1,6 +1,7 @@
 package finder.it
 
-import dictionary.{PaymentFieldType, TOTAL_BEFORE_TAXES}
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType.TOTAL_BEFORE_TAXES
 import org.springframework.stereotype.Service
 import phrase.PhraseTypesStore
 

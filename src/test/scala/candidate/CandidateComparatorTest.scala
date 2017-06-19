@@ -1,7 +1,8 @@
 package candidate
 
-import dictionary.{INVOICE_ID, SupportedLocales}
+import dictionary.SupportedLocales
 import org.junit.runner.RunWith
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.scalatest._
 import org.scalatest.junit.JUnitRunner
 

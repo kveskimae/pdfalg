@@ -7,6 +7,7 @@ import candidate.{Candidate, PhraseType}
 import dictionary._
 import finder.AbstractFinder
 import finder.it.ItalianRegexPatterns._
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType.ISSUE_DATE
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore

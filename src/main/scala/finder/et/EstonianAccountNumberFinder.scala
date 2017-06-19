@@ -3,9 +3,10 @@ package finder.et
 import java.math.BigInteger
 
 import candidate.Candidate
-import dictionary.{IBAN, SupportedLocales}
+import dictionary.SupportedLocales
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType.IBAN
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore

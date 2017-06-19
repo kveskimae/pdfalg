@@ -1,19 +1,16 @@
 package finder
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.regex.Pattern
 
 import candidate.Candidate
-import dictionary.{INVOICE_ID, PaymentFieldType, TOTAL}
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
+import org.slf4j.{Logger, LoggerFactory}
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 import regex.{CommonRegexPatterns, RegexUtils}
 
 import scala.collection.mutable.ListBuffer
-
-import candidate.Candidate
-import parser.ParseResult
 
 object AbstractFinder {
   private val FOCUS_TYPE = INVOICE_ID // if you have a trouble with particular field type, set it here & let it log

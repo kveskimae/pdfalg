@@ -2,9 +2,11 @@ package finder
 
 import java.util.Locale
 
-import dictionary.{PaymentFieldType, SupportedLocales, _}
+import dictionary.SupportedLocales
 import finder.et._
 import finder.it._
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service

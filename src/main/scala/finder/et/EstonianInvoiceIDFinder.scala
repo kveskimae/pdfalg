@@ -3,15 +3,15 @@ package finder.et
 import java.util.regex.Pattern
 
 import candidate.Candidate
-import dictionary.{INVOICE_ID, SupportedLocales}
+import dictionary.SupportedLocales
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 import regex.CommonRegexPatterns._
 import regex.RegexUtils
-
 
 @Service
 class EstonianInvoiceIDFinder(override val phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, true) {

@@ -2,8 +2,9 @@ package candidate
 
 import java.util.Locale
 
-import dictionary.{PaymentFieldType, PropertyType}
+import dictionary.PropertyType
 import org.apache.commons.lang3.builder.{HashCodeBuilder, ReflectionToStringBuilder, ToStringStyle}
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
 /*
 * Note: Natural orderings in subclass implementations of Comparable are not consistent with equals.

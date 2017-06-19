@@ -1,8 +1,8 @@
 package finder
 
 import candidate.Candidate
-import dictionary.PaymentFieldType
 import org.apache.commons.lang3.builder.{ReflectionToStringBuilder, ToStringStyle}
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
 import scala.collection.mutable
 

@@ -1,12 +1,12 @@
 package finder.et
 
 import java.math.BigInteger
-import java.util
 
 import candidate.Candidate
-import dictionary.{REFERENCE_NUMBER, SupportedLocales}
+import dictionary.SupportedLocales
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType.REFERENCE_NUMBER
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore

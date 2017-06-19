@@ -1,6 +1,7 @@
 package finder.et
 
 import java.util.regex.Pattern
+
 import regex.CommonRegexPatterns._
 
 // Ä, ä \u00c4, \u00e4

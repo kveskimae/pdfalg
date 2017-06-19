@@ -3,16 +3,17 @@ package finder.it
 import java.util.regex.Pattern
 
 import candidate.Candidate
-import dictionary.{PaymentFieldType, SupportedLocales, VATIN}
+import dictionary.SupportedLocales
 import finder.AbstractFinder
 import finder.it.ItalianRegexPatterns._
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType.VATIN
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 import regex.RegexUtils
 
 import scala.collection.mutable.ListBuffer
-
 @Service
 class ItalianVATIdNumberFinder(phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, PATTERN_ITALIAN_VATIN, PATTERN_ITALIAN_VATIN_VALUE, true, true) {
 

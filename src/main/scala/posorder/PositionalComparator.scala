@@ -4,8 +4,7 @@ import java.awt.Point
 import java.io.IOException
 
 import candidate.Candidate
-import dictionary.PaymentFieldType
-import posorder.GridConstants._
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
 import scala.collection._
 

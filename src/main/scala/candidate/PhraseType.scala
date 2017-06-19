@@ -2,8 +2,8 @@ package candidate
 
 import java.util.regex.Pattern
 
-import dictionary.PaymentFieldType
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
 class PhraseType {
 
