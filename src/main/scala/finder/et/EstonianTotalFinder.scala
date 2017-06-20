@@ -9,6 +9,7 @@ import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
 import org.apache.commons.lang3.StringUtils
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.TOTAL
+import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore

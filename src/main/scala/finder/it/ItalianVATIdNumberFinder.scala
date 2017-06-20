@@ -3,10 +3,9 @@ package finder.it
 import java.util.regex.Pattern
 
 import candidate.Candidate
-import dictionary.SupportedLocales
 import finder.AbstractFinder
 import finder.it.ItalianRegexPatterns._
-import org.pdfextractor.db.domain.dictionary.PaymentFieldType
+import org.pdfextractor.db.domain.dictionary.{PaymentFieldType, SupportedLocales}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.VATIN
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}

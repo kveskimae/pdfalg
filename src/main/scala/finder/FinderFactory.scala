@@ -2,10 +2,9 @@ package finder
 
 import java.util.Locale
 
-import dictionary.SupportedLocales
 import finder.et._
 import finder.it._
-import org.pdfextractor.db.domain.dictionary.PaymentFieldType
+import org.pdfextractor.db.domain.dictionary.{PaymentFieldType, SupportedLocales}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.ContextRefreshedEvent

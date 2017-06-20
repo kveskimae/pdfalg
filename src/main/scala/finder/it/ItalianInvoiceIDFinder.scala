@@ -3,9 +3,9 @@ package finder.it
 import java.util.regex.Pattern
 
 import candidate.Candidate
-import dictionary.SupportedLocales
 import finder.AbstractFinder
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
+import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore

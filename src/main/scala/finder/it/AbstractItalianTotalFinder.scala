@@ -8,6 +8,7 @@ import candidate.Candidate
 import dictionary._
 import finder.AbstractFinder
 import finder.et.EstonianTotalFinder
+import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore

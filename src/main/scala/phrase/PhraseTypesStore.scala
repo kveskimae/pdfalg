@@ -5,7 +5,7 @@ import java.util.concurrent.locks.{Lock, ReentrantLock}
 
 import candidate.PhraseType
 import dictionary._
-import org.pdfextractor.db.domain.dictionary.PaymentFieldType
+import org.pdfextractor.db.domain.dictionary.{PaymentFieldType, SupportedLocales}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.slf4j.{Logger, LoggerFactory}
 import regex.CommonRegexPatterns

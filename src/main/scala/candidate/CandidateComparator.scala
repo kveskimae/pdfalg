@@ -3,6 +3,7 @@ package candidate
 import candidate.Coefficients._
 import dictionary._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
+import org.pdfextractor.db.domain.dictionary.SupportedLocales
 
 object CandidateComparator {
 

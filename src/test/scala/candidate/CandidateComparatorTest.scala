@@ -1,8 +1,8 @@
 package candidate
 
-import dictionary.SupportedLocales
 import org.junit.runner.RunWith
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
+import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.scalatest._
 import org.scalatest.junit.JUnitRunner
 
