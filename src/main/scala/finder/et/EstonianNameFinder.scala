@@ -8,14 +8,16 @@ import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.NAME
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
+import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.PhraseTypesStore
+import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
 import regex.RegexUtils
 
 @Service
-class EstonianNameFinder(override val phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, true) {
+class EstonianNameFinder extends AbstractFinder(null, null, true) {
 
+  @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
     searchPattern = Pattern.compile("^" + phraseTypesStore.buildAllStarts(SupportedLocales.ESTONIA, NAME) + "$", Pattern.MULTILINE)
     valuePattern = Pattern.compile(phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, NAME), Pattern.MULTILINE)

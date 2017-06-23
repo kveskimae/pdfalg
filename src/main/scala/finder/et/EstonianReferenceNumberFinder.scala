@@ -14,7 +14,7 @@ import phrase.PhraseTypesStore
 import scala.collection.mutable.ListBuffer
 
 @Service
-class EstonianReferenceNumberFinder(override val phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, PATTERN_ESTONIAN_REFERENCE_NUMBER_LINE, PATTERN_ESTONIAN_REFERENCE_NUMBER_DIGITS, true) {
+class EstonianReferenceNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_REFERENCE_NUMBER_LINE, PATTERN_ESTONIAN_REFERENCE_NUMBER_DIGITS, true) {
 
   def parseValue(raw: String): Any = raw
 

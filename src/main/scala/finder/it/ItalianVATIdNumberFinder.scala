@@ -14,7 +14,7 @@ import regex.RegexUtils
 
 import scala.collection.mutable.ListBuffer
 @Service
-class ItalianVATIdNumberFinder(phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, PATTERN_ITALIAN_VATIN, PATTERN_ITALIAN_VATIN_VALUE, true, true) {
+class ItalianVATIdNumberFinder extends AbstractFinder(PATTERN_ITALIAN_VATIN, PATTERN_ITALIAN_VATIN_VALUE, true, true) {
 
   protected override def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Pattern): ListBuffer[Candidate] = {
     val ret: ListBuffer[Candidate] = ListBuffer.empty

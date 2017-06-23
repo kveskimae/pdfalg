@@ -1,5 +1,6 @@
 package finder
 
+import java.io.InputStream
 import java.util.Locale
 
 import finder.et._
@@ -86,13 +87,13 @@ class FinderFactory {
     ret
   }
 
-  def extractEstonian(pdfContentStream: Nothing): FinderResult = {
+  def extractEstonian(pdfContentStream: InputStream): FinderResult = {
     val parseResult = PDFFileParser.parse(pdfContentStream)
     val finderResult = findCandidates(parseResult, SupportedLocales.ESTONIA, IBAN, INVOICE_ID, NAME, REFERENCE_NUMBER, TOTAL)
     finderResult
   }
 
-  def extractItalian(pdfContentStream: Nothing): FinderResult = {
+  def extractItalian(pdfContentStream: InputStream): FinderResult = {
     val parseResult = PDFFileParser.parse(pdfContentStream)
     val finderResult = findCandidates(parseResult, SupportedLocales.ITALY, NAME, TOTAL, INVOICE_ID, ISSUE_DATE, VATIN, TOTAL_BEFORE_TAXES)
     finderResult

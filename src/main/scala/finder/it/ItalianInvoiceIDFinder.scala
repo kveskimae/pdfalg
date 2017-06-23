@@ -8,18 +8,19 @@ import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.PhraseTypesStore
+import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
 import regex.CommonRegexPatterns._
 import regex.RegexUtils
 
 @Service
-class ItalianInvoiceIDFinder(phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, true) {
+class ItalianInvoiceIDFinder extends AbstractFinder(null, null, true) {
 
   private[it] var PATTERN_ITALIAN_INVOICE_ID_START_PART: Pattern = null
   private[it] var PATTERN_ITALIAN_INVOICE_ID_START_BARE: Pattern = null
   private[it] var PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART: Pattern = null
   private[it] var PATTERN_ITALIAN_INVOICE_ID_LINE_BARE: Pattern = null
 
+  @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
     searchPattern = Pattern.compile("^" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, INVOICE_ID) + "(.*)$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
     valuePattern = Pattern.compile(phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, INVOICE_ID) + "([\\s]{0,})([:]{0,1})([\\s]{0,})(\\w{1,}[^\\s]{0,})", Pattern.CASE_INSENSITIVE)

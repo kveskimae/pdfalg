@@ -3,16 +3,18 @@ package finder.et
 import java.util
 import java.util.regex.Pattern
 
-import candidate.{Candidate, PhraseType}
+import candidate.Candidate
 import dictionary._
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
 import org.apache.commons.lang3.StringUtils
+import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.TOTAL
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
+import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.PhraseTypesStore
+import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
 import regex.CommonRegexPatterns._
 import regex.RegexUtils
 
@@ -37,8 +39,9 @@ object EstonianTotalFinder {
 }
 
 @Service
-class EstonianTotalFinder(override val phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, true) {
+class EstonianTotalFinder extends AbstractFinder(null, null, true) {
 
+  @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
     searchPattern = Pattern.compile("^(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, TOTAL) + "(.*)$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
     valuePattern = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS

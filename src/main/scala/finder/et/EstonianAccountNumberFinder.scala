@@ -21,7 +21,7 @@ object EstonianAccountNumberFinder {
 }
 
 @Service
-class EstonianAccountNumberFinder(override val phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, PATTERN_ESTONIAN_IBAN_START_WITH_REST_OF_LINE, PATTERN_ESTONIAN_IBAN, false) {
+class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN_START_WITH_REST_OF_LINE, PATTERN_ESTONIAN_IBAN, false) {
 
   override def findCandidates(parseResult: ParseResult): Seq[Candidate]  = {
     val ret: ListBuffer[Candidate] = collection.mutable.ListBuffer.empty[Candidate]

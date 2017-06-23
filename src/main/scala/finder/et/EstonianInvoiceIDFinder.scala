@@ -7,16 +7,18 @@ import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
+import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.PhraseTypesStore
+import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
 import regex.CommonRegexPatterns._
 import regex.RegexUtils
 
 @Service
-class EstonianInvoiceIDFinder(override val phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, true) {
+class EstonianInvoiceIDFinder extends AbstractFinder(null, null, true) {
 
   // TODO needs to listen context events together with other finders
+  @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
     searchPattern = Pattern.compile(phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID), Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
     valuePattern = Pattern.compile(phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID) + "([.]{0,1})([\\s]{0,})([:]{0,1})([\\s]{0,})([^\\s]{1,})", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)

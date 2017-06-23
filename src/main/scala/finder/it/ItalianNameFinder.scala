@@ -8,9 +8,10 @@ import finder.AbstractFinder
 import finder.it.ItalianRegexPatterns._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.NAME
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
+import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.PhraseTypesStore
+import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
 import regex.CommonRegexPatterns._
 import regex.RegexUtils
 
@@ -21,8 +22,9 @@ object ItalianNameFinder {
 }
 
 @Service
-class ItalianNameFinder(phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, false) {
+class ItalianNameFinder extends AbstractFinder(null, null, false) {
 
+  @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
     searchPattern = Pattern.compile("^" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, NAME) + "$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
     valuePattern = Pattern.compile("^(.*)$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)

@@ -3,10 +3,11 @@ package finder.it
 import java.text.{ParseException, SimpleDateFormat}
 import java.util.Date
 
-import candidate.{Candidate, PhraseType}
+import candidate.{Candidate}
 import dictionary._
 import finder.AbstractFinder
 import finder.it.ItalianRegexPatterns._
+import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.ISSUE_DATE
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
@@ -14,7 +15,7 @@ import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 
 @Service
-class ItalianIssueDateFinder(phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, PATTERN_ITALIAN_DATE, PATTERN_ITALIAN_DATE, false) {
+class ItalianIssueDateFinder extends AbstractFinder(PATTERN_ITALIAN_DATE, PATTERN_ITALIAN_DATE, false) {
 
   protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
     val `type`: PhraseType = findType(parseResult, phrase)

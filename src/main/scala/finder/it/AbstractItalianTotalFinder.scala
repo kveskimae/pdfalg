@@ -9,16 +9,17 @@ import dictionary._
 import finder.AbstractFinder
 import finder.et.EstonianTotalFinder
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
+import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.PhraseTypesStore
+import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
 import regex.CommonRegexPatterns._
 import regex.RegexUtils
 
 import scala.collection.mutable.ListBuffer
 
 @Service
-abstract class AbstractItalianTotalFinder(phraseTypesStore: PhraseTypesStore) extends AbstractFinder(phraseTypesStore, null, null, true, true) {
+abstract class AbstractItalianTotalFinder extends AbstractFinder(null, null, true, true) {
 	// TODO What about thread safety?
 
 	val otherSymbolsForCommaAsThousandsSeparator : DecimalFormatSymbols= new DecimalFormatSymbols(Locale.ITALY)
@@ -36,6 +37,7 @@ abstract class AbstractItalianTotalFinder(phraseTypesStore: PhraseTypesStore) ex
 	
 	private[it] val PATTERN_ITALIAN_ORDINARY_TOTAL_LINE = Pattern.compile("^.{0,30}:([\\s]{0,})" + EUR + "?([\\s]{0,})" + DIGITS_WITH_COMMAS_AND_DOTS + "([\\s]{0,})" + EUR + "?([\\s]{0,})$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
 
+	@org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
 	def refreshed(): Unit = {
 		searchPattern = Pattern.compile("^(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, getType) + "(.*)$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
 		valuePattern = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS

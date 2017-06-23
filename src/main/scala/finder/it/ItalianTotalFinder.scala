@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 import phrase.PhraseTypesStore
 
 @Service
-class ItalianTotalFinder(phraseTypesStore: PhraseTypesStore) extends AbstractItalianTotalFinder(phraseTypesStore) {
+class ItalianTotalFinder extends AbstractItalianTotalFinder {
 
   override def getType: PaymentFieldType = TOTAL
 

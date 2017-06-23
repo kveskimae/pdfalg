@@ -3,9 +3,11 @@ package finder
 import java.util.regex.Pattern
 
 import candidate.Candidate
+import finder.et.EstonianAccountNumberFinder
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.slf4j.{Logger, LoggerFactory}
+import org.springframework.beans.factory.annotation.Autowired
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 import regex.{CommonRegexPatterns, RegexUtils}
@@ -29,7 +31,9 @@ object AbstractFinder {
   }
 }
 
-abstract class AbstractFinder(val phraseTypesStore: PhraseTypesStore, var searchPattern: Pattern, var valuePattern: Pattern, val combinePhrases: Boolean, val combineFuzzy: Boolean = false) {
+abstract class AbstractFinder(var searchPattern: Pattern, var valuePattern: Pattern, val combinePhrases: Boolean, val combineFuzzy: Boolean = false) {
+
+  @Autowired var phraseTypesStore: PhraseTypesStore = null
 
   def findCandidates(parseResult: ParseResult): Seq[Candidate] = {
     searchWithPattern(parseResult, searchPattern, valuePattern)
