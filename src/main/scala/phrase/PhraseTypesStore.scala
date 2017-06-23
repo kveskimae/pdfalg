@@ -3,40 +3,51 @@ package phrase
 import java.util.Locale
 import java.util.concurrent.locks.{Lock, ReentrantLock}
 
-import candidate.PhraseType
-import dictionary._
-import org.pdfextractor.db.domain.dictionary.{PaymentFieldType, SupportedLocales}
+import org.pdfextractor.db.dao.PhraseTypeDao
+import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
+import org.pdfextractor.db.domain.dictionary.{PaymentFieldType, SupportedLocales}
 import org.slf4j.{Logger, LoggerFactory}
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
+import org.springframework.context.event.ContextRefreshedEvent
+import org.springframework.stereotype.Service
 import regex.CommonRegexPatterns
 import regex.CommonRegexPatterns._
 
-import scala.collection.mutable
+import scala.collection.{JavaConverters, mutable}
 
+@Service
 class PhraseTypesStore() {
 
   val log: Logger = LoggerFactory.getLogger(classOf[PhraseTypesStore])
+
+  @Autowired private var applicationContext: ApplicationContext = null
+
+  @Autowired private var phraseTypeDao: PhraseTypeDao = null
 
   val lock: Lock = new ReentrantLock
 
   val typesMap: collection.mutable.Map[Locale, collection.mutable.Map[PaymentFieldType, collection.mutable.Seq[PhraseType]]] = collection.mutable.Map.empty[Locale, collection.mutable.Map[PaymentFieldType, collection.mutable.Seq[PhraseType]]]
 
-  def refreshed(phraseTypes: Seq[PhraseType]): Unit = {
+  @org.springframework.context.event.EventListener(Array(classOf[ContextRefreshedEvent]))
+  def refreshed(): PhraseTypesRefreshedEvent = {
     lock.lock()
     try {
       log.info("Refreshing phrase types store started")
+      val phraseTypes = JavaConverters.asScalaBuffer(phraseTypeDao.findAll)
       typesMap.clear()
-      for (phraseType <- phraseTypes) {
-        val locale: Locale = SupportedLocales.findLocaleByLanguage(phraseType.locale)
+      for (phraseType: PhraseType <- phraseTypes) {
+        val locale: Locale = SupportedLocales.findLocaleByLanguage(phraseType.getLocale)
         val localeMapOp: Option[collection.mutable.Map[PaymentFieldType, collection.mutable.Seq[PhraseType]]] = typesMap.get(locale)
         val localeMap: collection.mutable.Map[PaymentFieldType, collection.mutable.Seq[PhraseType]] = localeMapOp.getOrElse(collection.mutable.Map.empty)
         if (localeMapOp.isEmpty) {
           typesMap.put(locale, localeMap)
         }
-        val fieldTypeListOp: Option[collection.mutable.Seq[PhraseType]] = localeMap.get(phraseType.paymentFieldType)
+        val fieldTypeListOp: Option[collection.mutable.Seq[PhraseType]] = localeMap.get(phraseType.getPaymentFieldType)
         val fieldTypeList: collection.mutable.Seq[PhraseType] = fieldTypeListOp.getOrElse(collection.mutable.Seq.empty[PhraseType])
         if (fieldTypeListOp.isEmpty) {
-          localeMap.put(phraseType.paymentFieldType, fieldTypeList)
+          localeMap.put(phraseType.getPaymentFieldType, fieldTypeList)
         }
         fieldTypeList :+ phraseType
       }
@@ -44,13 +55,13 @@ class PhraseTypesStore() {
     } finally {
       lock.unlock()
     }
-    // TODO return PhraseTypesRefreshedEvent
+    new PhraseTypesRefreshedEvent(applicationContext)
   }
 
   def findType(locale: Locale, paymentFieldType: PaymentFieldType, s: String): PhraseType = {
     val phraseTypes: mutable.Seq[PhraseType] = getPhraseTypes(locale, paymentFieldType)
     for (phraseType <- phraseTypes) {
-      if (phraseType.pattern.matcher(s).matches) {
+      if (phraseType.getPattern.matcher(s).matches) {
         return phraseType
       }
     }
@@ -63,13 +74,15 @@ class PhraseTypesStore() {
     }
     lock.lock()
     try {
-      if (typesMap.get(locale) == null) {
+      val fieldType2Phrase: Option[collection.mutable.Map[PaymentFieldType, collection.mutable.Seq[PhraseType]]] = typesMap.get(locale)
+      if (fieldType2Phrase.isEmpty) {
         throw new IllegalArgumentException("Unsupported locale: " + locale)
       }
-      if (typesMap.get(locale).get(paymentFieldType) == null) {
+      val phraseTypes: Option[collection.mutable.Seq[PhraseType]] = fieldType2Phrase.get.get(paymentFieldType)
+      if (phraseTypes.isEmpty) {
         throw new IllegalArgumentException("Locale " + locale + " does not support field type: " + paymentFieldType)
       }
-      typesMap.get(locale).get(paymentFieldType)
+      phraseTypes.get
     } finally {
       lock.unlock()
     }
@@ -86,7 +99,7 @@ class PhraseTypesStore() {
             while ( {
               it.hasNext
             }) {
-              ret.append(it.next.keyPhrase).append("(-saateleht)?").append(OPTIONAL_WHITESPACE).append("(nr|number)")
+              ret.append(it.next.getKeyPhrase).append("(-saateleht)?").append(OPTIONAL_WHITESPACE).append("(nr|number)")
               if (it.hasNext) {
                 ret.append('|')
               }
@@ -97,7 +110,7 @@ class PhraseTypesStore() {
             while ( {
               it.hasNext
             }) {
-              val abbrevation: String = it.next.keyPhrase
+              val abbrevation: String = it.next.getKeyPhrase
               ret.append("([\\s]{0,})")
               ret.append(abbrevation)
               ret.append("([\\s]{1,})")
@@ -119,7 +132,7 @@ class PhraseTypesStore() {
             while ( {
               it.hasNext
             }) {
-              ret.append(it.next.keyPhrase)
+              ret.append(it.next.getKeyPhrase)
               if (it.hasNext) {
                 ret.append('|')
               }
@@ -137,7 +150,7 @@ class PhraseTypesStore() {
             while ( {
               it.hasNext
             }) {
-              val kp: String = it.next.keyPhrase
+              val kp: String = it.next.getKeyPhrase
               if (!("Invoice Number".equalsIgnoreCase(kp))) {
                 // TODO Add properties metadata option for PhraseType!
                 ret.append(kp).append(OPTIONAL_WHITESPACE).append(ITALIAN_INVOICE_ID_WORDS)
@@ -158,7 +171,7 @@ class PhraseTypesStore() {
             while ( {
               it.hasNext
             }) {
-              val abbrevation: String = it.next.keyPhrase
+              val abbrevation: String = it.next.getKeyPhrase
               ret.append("([\\s]{0,})")
               ret.append(abbrevation)
               ret.append("([\\s]{1,})")
@@ -182,7 +195,7 @@ class PhraseTypesStore() {
             while ( {
               it.hasNext
             }) {
-              ret.append(it.next.keyPhrase)
+              ret.append(it.next.getKeyPhrase)
               if (it.hasNext) {
                 ret.append('|')
               }
@@ -210,7 +223,7 @@ class PhraseTypesStore() {
             while ( {
               it.hasNext
             }) {
-              val abbrevation: String = it.next.keyPhrase
+              val abbrevation: String = it.next.getKeyPhrase
               ret.append("([\\s]{0,})(Saaja[:]?)?([\\s]{0,})")
               ret.append(abbrevation)
               ret.append("([\\s]{1,})")
@@ -240,7 +253,7 @@ class PhraseTypesStore() {
             while ( {
               it.hasNext
             }) {
-              val abbreviation: String = it.next.keyPhrase
+              val abbreviation: String = it.next.getKeyPhrase
               ret.append(abbreviation)
               ret.append("([\\s]{1,})")
               ret.append(CommonRegexPatterns.ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
