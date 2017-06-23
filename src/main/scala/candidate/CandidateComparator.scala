@@ -2,6 +2,7 @@ package candidate
 
 import candidate.Coefficients._
 import dictionary._
+import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 
@@ -102,21 +103,21 @@ object CandidateComparator {
   private def calculateItalianNamePhraseTypeComparisonPart(candidate: Candidate) = {
     var ret = 0.0
     val `type`: PhraseType = candidate.properties.get(PHRASE_TYPE).asInstanceOf[Nothing]
-    ret += `type`.comparisonPart * PHRASE_TYPE_FRACTION
+    ret += `type`.getComparisonPart * PHRASE_TYPE_FRACTION
     ret
   }
 
   private def calculateItalianTotalPhraseTypeComparisonPart(candidate: Candidate) = {
     var ret = 0.0
     val `type`: PhraseType = candidate.properties.get(PHRASE_TYPE).asInstanceOf[Nothing]
-    ret += `type`.comparisonPart * PHRASE_TYPE_FRACTION
+    ret += `type`.getComparisonPart * PHRASE_TYPE_FRACTION
     ret
   }
 
   private def calculateEstonianNameComparisonSum(candidate: Candidate) = {
     var ret = 0.0
     val `type`: PhraseType = candidate.properties.get(PHRASE_TYPE).asInstanceOf[Nothing]
-    ret += `type`.comparisonPart * PHRASE_TYPE_FRACTION
+    ret += `type`.getComparisonPart * PHRASE_TYPE_FRACTION
     if (candidate.bold) ret += -0.3
     val isPank1 = candidate.properties.get(ESTONIAN_IS_PANK_PRESENT).asInstanceOf[Boolean]
     if (!isPank1) ret += PANK_FRACTION
@@ -126,7 +127,7 @@ object CandidateComparator {
   private def calculateEstonianTotalPhraseTypeComparisonPart(first: Candidate) = {
     var ret = 0.0
     val `type`: PhraseType = first.properties.get(PHRASE_TYPE).asInstanceOf[Nothing]
-    ret += `type`.comparisonPart * PHRASE_TYPE_FRACTION
+    ret += `type`.getComparisonPart * PHRASE_TYPE_FRACTION
     ret
   }
 
