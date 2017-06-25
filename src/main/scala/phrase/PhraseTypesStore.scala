@@ -28,7 +28,7 @@ class PhraseTypesStore() {
 
   val lock: Lock = new ReentrantLock
 
-  val typesMap: collection.mutable.Map[Locale, collection.mutable.Map[PaymentFieldType, collection.mutable.Seq[PhraseType]]] = collection.mutable.Map.empty[Locale, collection.mutable.Map[PaymentFieldType, collection.mutable.Seq[PhraseType]]]
+  val typesMap: collection.mutable.Map[Locale, collection.mutable.Map[PaymentFieldType, collection.mutable.ListBuffer[PhraseType]]] = collection.mutable.Map.empty[Locale, collection.mutable.Map[PaymentFieldType, collection.mutable.ListBuffer[PhraseType]]]
 
   @org.springframework.context.event.EventListener(Array(classOf[ContextRefreshedEvent]))
   def refreshed(): PhraseTypesRefreshedEvent = {
@@ -39,17 +39,15 @@ class PhraseTypesStore() {
       typesMap.clear()
       for (phraseType: PhraseType <- phraseTypes) {
         val locale: Locale = SupportedLocales.findLocaleByLanguage(phraseType.getLocale)
-        val localeMapOp: Option[collection.mutable.Map[PaymentFieldType, collection.mutable.Seq[PhraseType]]] = typesMap.get(locale)
-        val localeMap: collection.mutable.Map[PaymentFieldType, collection.mutable.Seq[PhraseType]] = localeMapOp.getOrElse(collection.mutable.Map.empty)
-        if (localeMapOp.isEmpty) {
+        val localeMapOp: Option[collection.mutable.Map[PaymentFieldType, collection.mutable.ListBuffer[PhraseType]]] = typesMap.get(locale)
+        val localeMap: collection.mutable.Map[PaymentFieldType, collection.mutable.ListBuffer[PhraseType]] = localeMapOp.getOrElse(collection.mutable.Map.empty)
+        if (!typesMap.contains(locale)) {
           typesMap.put(locale, localeMap)
         }
-        val fieldTypeListOp: Option[collection.mutable.Seq[PhraseType]] = localeMap.get(phraseType.getPaymentFieldType)
-        val fieldTypeList: collection.mutable.Seq[PhraseType] = fieldTypeListOp.getOrElse(collection.mutable.Seq.empty[PhraseType])
-        if (fieldTypeListOp.isEmpty) {
-          localeMap.put(phraseType.getPaymentFieldType, fieldTypeList)
-        }
-        fieldTypeList :+ phraseType
+        val fieldTypeListOp: Option[collection.mutable.ListBuffer[PhraseType]] = localeMap.get(phraseType.getPaymentFieldType)
+        val fieldTypeList: collection.mutable.ListBuffer[PhraseType] = fieldTypeListOp.getOrElse(new collection.mutable.ListBuffer[PhraseType])
+        fieldTypeList += phraseType
+        localeMap.put(phraseType.getPaymentFieldType, fieldTypeList)
       }
       log.info("Refreshing phrase types store completed")
     } finally {
@@ -74,15 +72,19 @@ class PhraseTypesStore() {
     }
     lock.lock()
     try {
-      val fieldType2Phrase: Option[collection.mutable.Map[PaymentFieldType, collection.mutable.Seq[PhraseType]]] = typesMap.get(locale)
+      val fieldType2Phrase: Option[collection.mutable.Map[PaymentFieldType, collection.mutable.ListBuffer[PhraseType]]] = typesMap.get(locale)
       if (fieldType2Phrase.isEmpty) {
         throw new IllegalArgumentException("Unsupported locale: " + locale)
       }
-      val phraseTypes: Option[collection.mutable.Seq[PhraseType]] = fieldType2Phrase.get.get(paymentFieldType)
-      if (phraseTypes.isEmpty) {
+      val phraseTypesOp: Option[collection.mutable.Seq[PhraseType]] = fieldType2Phrase.get.get(paymentFieldType)
+      if (phraseTypesOp.isEmpty) {
         throw new IllegalArgumentException("Locale " + locale + " does not support field type: " + paymentFieldType)
       }
-      phraseTypes.get
+      val phraseTypes: collection.mutable.Seq[PhraseType] = phraseTypesOp.get
+      if (phraseTypes.isEmpty) {
+        throw new IllegalStateException("Phrase types list is emtpy for " + locale + " / " + paymentFieldType)
+      }
+      phraseTypes
     } finally {
       lock.unlock()
     }
