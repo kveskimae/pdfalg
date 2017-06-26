@@ -79,15 +79,27 @@ object IOHelper {
     jsonAsMap
   }
 
-  private def getStringFromFile(fileName: String): String = {
+  def getStringFromFile(fileName: String): String = {
     val inputStream = getInputStreamFromFile(fileName)
     val ret = IOUtils.toString(inputStream)
     ret
   }
 
-  private def getInputStreamFromFile(fileName: String): InputStream = {
+  def getInputStreamFromFile(fileName: String): InputStream = {
     val inputStream: InputStream = Thread.currentThread.getContextClassLoader.getResourceAsStream(fileName)
     inputStream
+  }
+
+  def getFolderAsFile(location2: String): File = {
+    val url: java.net.URL = Thread.currentThread.getContextClassLoader.getResource(location2)
+    val location: String = url.getFile
+    val file: File = new File(location)
+
+    if (file == null) throw new IllegalArgumentException("No folder was found at '" + location + "'")
+
+    IOHelper.checkFileExistsAndIsReadable(file, true)
+
+    file
   }
 
   def checkFileExistsAndIsReadable(file: File, checkIsDirectory: Boolean): Unit = {
