@@ -14,6 +14,7 @@ lazy val root = (project in file(".")).
 
     libraryDependencies += scalaTest % Test,
     libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.0",
+    libraryDependencies += "commons-configuration" % "commons-configuration" % "1.10" % Test,
     libraryDependencies += "commons-io" % "commons-io" % "2.5",
     libraryDependencies += "org.apache.pdfbox" % "pdfbox" % "2.0.1",
     libraryDependencies += "log4j" % "log4j" % "1.2.17",
