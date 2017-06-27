@@ -1,24 +1,15 @@
 package finder
 
-import org.junit.runner.RunWith
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
-import java.io.InputStream
 import java.util.Locale
 
 import config.ExtractorConfig
-import org.pdfextractor.db.config.{JpaConfig, StandaloneDataConfig}
-import finder.FinderFactory
-import finder.FinderResult
 import io.IOHelper
+import org.junit.runner.RunWith
+import org.pdfextractor.db.config.{JpaConfig, StandaloneDataConfig}
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.beans.factory.annotation.Autowired
-import java.io.InputStream
-import java.util.Locale
-
-import org.scalatest.{FlatSpec, Matchers}
+import org.springframework.test.context.{ActiveProfiles, ContextConfiguration}
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 
 object AbstractInvoiceFileReader {
 

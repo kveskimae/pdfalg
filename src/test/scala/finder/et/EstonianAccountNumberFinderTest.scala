@@ -10,10 +10,12 @@ import org.junit.Assert._
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.pdfextractor.db.config.{JpaConfig, StandaloneDataConfig}
+import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.{ActiveProfiles, ContextConfiguration}
 import parser.{PDFFileParser, ParseResult}
+import phrase.PhraseTypesStore
 
 import scala.collection.LinearSeq
 
@@ -22,11 +24,13 @@ import scala.collection.LinearSeq
 @ActiveProfiles(Array("unittest"))
 class EstonianAccountNumberFinderTest extends AbstractInvoiceFileReader {
 
+  val log: Logger = LoggerFactory.getLogger(classOf[PhraseTypesStore])
+
   @Autowired var estonianAccountNumberFinder: EstonianAccountNumberFinder = _
 
   @Test
   @throws[IOException]
-  def testFindsSeveralAccountNumbers(): Unit = {
+  def testFindsAccountsFromRealPDF(): Unit = {
     val inputStream = IOHelper.getInputStreamFromFile(AbstractInvoiceFileReader.Starman)
     val parseResult = PDFFileParser.parse(inputStream)
     val candidates = estonianAccountNumberFinder.findCandidates(parseResult)
@@ -37,11 +41,13 @@ class EstonianAccountNumberFinderTest extends AbstractInvoiceFileReader {
     assertTrue(foundValues.contains("EE921010002046022001"))
     assertTrue(foundValues.contains("EE103300332097940003"))
     assertTrue(foundValues.contains("EE561700017000030979"))
+
+    log.info("Tested Estonian accounts from real PDF")
   }
 
   @Test
   @throws[IOException]
-  def testFindingReferenceNumber(): Unit = {
+  def testFindsAccountsFromString(): Unit = {
     val invoiceAsString = IOHelper.getStringFromFile("EestiEnergia.txt")
     val candidates: Seq[Candidate] = estonianAccountNumberFinder.findCandidates(new ParseResult(invoiceAsString, LinearSeq.empty))
     val foundValues: Seq[String] = candidates.map(_.getValue.asInstanceOf[String])
@@ -56,7 +62,7 @@ class EstonianAccountNumberFinderTest extends AbstractInvoiceFileReader {
 
   @Test
   @throws[IOException]
-  def testNotFindingIncorrectReferenceNumber(): Unit = {
+  def testDoesNotFindIncorrectAccounts(): Unit = {
     val invoiceAsString = IOHelper.getStringFromFile("RiggedInvoice.txt")
     val candidates: Seq[Candidate] = estonianAccountNumberFinder.findCandidates(new ParseResult(invoiceAsString, LinearSeq.empty))
     assert(candidates.isEmpty)

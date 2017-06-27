@@ -1,0 +1,36 @@
+Postiaadress
+Mari Maasikas
+Ostja
+Mari Maasikas
+Aia 1-2
+12345 Tallinn Harju maakond
+Arve nr 12345
+Arve kuupäev: 31.05.2015
+Maksetähtaeg: 17.06.2015
+Viitenumber: 12345678
+Nimetus Maksumus
+Elektrienergia 2.72 €
+Võrguteenus 3.93 €
+Taastuvenergia tasu ja elektriaktsiis 1.02 €
+Summa käibemaksuta: 7.67 €
+Käibemaks 20%: 1.53 €
+Viivis: 0.00 €
+Arve summa: 9.20 €
+Kuulus tasumisele eelmise perioodi lõpul: 9.82 €
+Perioodi eest laekunud arve koostamise, 01.01.2016, hetkeks: 10.00 €
+Kuulub tasumisele: 9.02 €
+Tasumisel palume maksekorraldusele kindlasti märkida viitenumbri 12345678.
+Arve detailne info on järgmisel lehel.
+Me ei väljasta arveid, mille summa on alla 3 euro. Liidame summa järgmisele arvele ja väljastame arve 3 euro täitumisel.
+Täname Teid õigeaegselt tasutud arve eest!
+Eesti Energia AS, Lelle tänav 22, 11318 Tallinna linn Harju maakond
+Reg kood: 10421629, KMKR: EE100366327
+Swedbank SWIFT/BIC: HABAEE2X; IBAN: EE23 2200 0011 8000 5555
+SEB Pank SWIFT/BIC: EEUHEE2X; IBAN: EE08 1010 0020 5941 3005
+Danske Bank SWIFT/BIC: FOREEE2X; IBAN: EE70 3300 3320 9900 0006
+Nordea Pank SWIFT/BIC: NDEAEE2X; IBAN: EE43 1700 0170 0011 5797
+Hoiame kontakti!
+Koduleht energia.ee
+E-post: teenindus@energia.ee
+Klienditelefon 777 1545
+(E-R 8.00-18.00)
