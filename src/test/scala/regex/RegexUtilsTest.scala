@@ -1,12 +1,9 @@
 package regex
 
-import org.junit.runner.RunWith
 import org.scalatest._
-import org.scalatest.junit.JUnitRunner
 
 import scala.collection.immutable.List
 
-@RunWith(classOf[JUnitRunner])
 class RegexUtilsTest  extends FlatSpec with Matchers {
 
   "A RegexUtils" should "find a double value" in {

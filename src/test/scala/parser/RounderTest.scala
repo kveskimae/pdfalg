@@ -1,11 +1,8 @@
 package parser
 
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class RounderTest extends FunSpec {
 
   describe("A Rounder") {

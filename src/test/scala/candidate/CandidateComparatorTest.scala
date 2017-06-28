@@ -1,14 +1,11 @@
 package candidate
 
-import org.junit.runner.RunWith
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.scalatest._
-import org.scalatest.junit.JUnitRunner
 
 import scala.collection.immutable.TreeSet
 
-@RunWith(classOf[JUnitRunner])
 class CandidateComparatorTest  extends FlatSpec with Matchers {
 
   "A CandidateComparator" should "prefer a candidate in an earlier page" in {

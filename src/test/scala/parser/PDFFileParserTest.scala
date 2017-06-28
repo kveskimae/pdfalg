@@ -3,11 +3,8 @@ package parser
 import java.io.InputStream
 
 import exception.AppBadInputException
-import org.junit.runner.RunWith
 import org.scalatest._
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class PDFFileParserTest  extends FlatSpec with Matchers {
 
   "A PDFFileParser" should "extract positional info" in {

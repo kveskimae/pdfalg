@@ -2,13 +2,10 @@ package io
 
 import java.awt.Point
 
-import org.junit.runner.RunWith
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.scalatest._
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class IOHelperTest  extends FlatSpec with Matchers {
 
   "An IOHelper" should "find " in {
