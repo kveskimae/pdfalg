@@ -1,30 +1,20 @@
 package finder.et
 
 import candidate.Candidate
-import config.ExtractorConfig
-import finder.{AbstractInvoiceFileReader, FinderFactory}
+import finder.{AbstractFinderTest, AbstractInvoiceFileReader}
 import io.IOHelper
-import org.pdfextractor.db.config.{JpaConfig, StandaloneDataConfig}
-import org.scalatest.{FlatSpec, Matchers}
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.test.context.{ActiveProfiles, ContextConfiguration, TestContextManager}
 import parser.{PDFFileParser, ParseResult, Phrase}
 import phrase.PhraseTypesStore
 
 import scala.collection.LinearSeq
 
-@ContextConfiguration(classes = Array(classOf[JpaConfig], classOf[StandaloneDataConfig], classOf[ExtractorConfig]))
-@ActiveProfiles(Array("unittest"))
-class EstonianInvoiceIDFinderTest extends FlatSpec with Matchers {
+class EstonianInvoiceIDFinderTest extends AbstractFinderTest {
 
   val log: Logger = LoggerFactory.getLogger(classOf[PhraseTypesStore])
 
-  @Autowired var finderFactory: FinderFactory = _
-
   @Autowired var estonianInvoiceIDFinder: EstonianInvoiceIDFinder = _
-
-  new TestContextManager(this.getClass()).prepareTestInstance(this)
 
   "An Estonian invoice ID finder" should "find incoice ID from long text" in {
     val invoiceAsString = IOHelper.getStringFromFile("EestiEnergia.txt")
@@ -34,7 +24,7 @@ class EstonianInvoiceIDFinderTest extends FlatSpec with Matchers {
 
     val candidates: Seq[Candidate] = estonianInvoiceIDFinder.findCandidates(parseResult)
 
-    assert(!candidates.isEmpty)
+    assert(candidates.nonEmpty)
 
     val foundValues: Seq[String] = candidates.map(_.getValue.asInstanceOf[String])
 
@@ -46,7 +36,7 @@ class EstonianInvoiceIDFinderTest extends FlatSpec with Matchers {
     val parseResult = PDFFileParser.parse(inputStream)
     val candidates = estonianInvoiceIDFinder.findCandidates(parseResult)
 
-    assert(!candidates.isEmpty)
+    assert(candidates.nonEmpty)
     assert(candidates.size == 1)
 
     val firstCandidate = candidates.head
