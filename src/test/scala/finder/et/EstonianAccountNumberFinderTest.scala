@@ -16,7 +16,7 @@ class EstonianAccountNumberFinderTest extends AbstractFinderTest {
 
   @Autowired var estonianAccountNumberFinder: EstonianAccountNumberFinder = _
 
-  "An Estonian account number finder" should "find accounts from real PDF" in {
+  "Estonian account finder" should "find from real PDF" in {
     val inputStream = IOHelper.getInputStreamFromFile(AbstractInvoiceFileReader.Starman)
     val parseResult = PDFFileParser.parse(inputStream)
     val candidates = estonianAccountNumberFinder.findCandidates(parseResult)
@@ -29,7 +29,7 @@ class EstonianAccountNumberFinderTest extends AbstractFinderTest {
     assert(foundValues.contains("EE561700017000030979"))
   }
 
-  "An Estonian account number finder" should "search accounts from the invoice string" in {
+  "Estonian account finder" should "find from invoice as a string" in {
     val invoiceAsString = IOHelper.getStringFromFile("EestiEnergia.txt")
     val candidates: Seq[Candidate] = estonianAccountNumberFinder.findCandidates(new ParseResult(invoiceAsString, LinearSeq.empty))
     val foundValues: Seq[String] = candidates.map(_.getValue.asInstanceOf[String])
@@ -40,7 +40,7 @@ class EstonianAccountNumberFinderTest extends AbstractFinderTest {
     assert(foundValues.contains("EE431700017000115797"))
   }
 
-  "An Estonian account number finder" should "not find incorrect accounts" in {
+  "Estonian account finder" should "discard invalid accounts" in {
     val invoiceAsString = IOHelper.getStringFromFile("RiggedInvoice.txt")
     val candidates: Seq[Candidate] = estonianAccountNumberFinder.findCandidates(new ParseResult(invoiceAsString, LinearSeq.empty))
     assert(candidates.isEmpty)
