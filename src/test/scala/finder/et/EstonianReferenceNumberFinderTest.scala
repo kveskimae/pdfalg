@@ -16,15 +16,14 @@ class EstonianReferenceNumberFinderTest extends AbstractFinderTest {
 
   @Autowired var estonianReferenceNumberFinder: EstonianReferenceNumberFinder = _
 
-  // TODO fixme
-  ignore should "find from phrases" in {
+  "Estonian ref number finder" should "find from phrases" in {
     val invoiceAsString = IOHelper.getStringFromFile("EestiEnergia.txt")
     val phrases: LinearSeq[Phrase] = LinearSeq(new Phrase(1, 1, 1, 1, 1, invoiceAsString, false))
     val parseResult: ParseResult = new ParseResult("", phrases)
     val candidates: Seq[Candidate] = estonianReferenceNumberFinder.findCandidates(parseResult)
     assert(candidates.nonEmpty)
     val first: String = candidates.head.value.asInstanceOf[String]
-    assert(first == "12345678")
+    assert(first == "02613469450")
   }
 
   "Estonian ref number finder" should "not find invalid" in {
