@@ -102,21 +102,21 @@ object CandidateComparator {
 
   private def calculateItalianNamePhraseTypeComparisonPart(candidate: Candidate) = {
     var ret = 0.0
-    val `type`: PhraseType = candidate.properties.get(PHRASE_TYPE).asInstanceOf[Nothing]
+    val `type`: PhraseType = candidate.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
     ret += `type`.getComparisonPart * PHRASE_TYPE_FRACTION
     ret
   }
 
   private def calculateItalianTotalPhraseTypeComparisonPart(candidate: Candidate) = {
     var ret = 0.0
-    val `type`: PhraseType = candidate.properties.get(PHRASE_TYPE).asInstanceOf[Nothing]
+    val `type`: PhraseType = candidate.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
     ret += `type`.getComparisonPart * PHRASE_TYPE_FRACTION
     ret
   }
 
   private def calculateEstonianNameComparisonSum(candidate: Candidate) = {
     var ret = 0.0
-    val `type`: PhraseType = candidate.properties.get(PHRASE_TYPE).asInstanceOf[Nothing]
+    val `type`: PhraseType = candidate.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
     ret += `type`.getComparisonPart * PHRASE_TYPE_FRACTION
     if (candidate.bold) ret += -0.3
     val isPank1 = candidate.properties.get(ESTONIAN_IS_PANK_PRESENT).asInstanceOf[Boolean]
@@ -126,16 +126,18 @@ object CandidateComparator {
 
   private def calculateEstonianTotalPhraseTypeComparisonPart(first: Candidate) = {
     var ret = 0.0
-    val `type`: PhraseType = first.properties.get(PHRASE_TYPE).asInstanceOf[Nothing]
+    val phraseTypeOption: Option[Any] = first.properties.get(PHRASE_TYPE)
+    if (phraseTypeOption.isEmpty) throw new IllegalStateException("Expecting phrase type to be present")
+    val `type`: PhraseType = phraseTypeOption.get.asInstanceOf[PhraseType]
     ret += `type`.getComparisonPart * PHRASE_TYPE_FRACTION
     ret
   }
 
   private def calculateTotalComparisonSum(candidate: Candidate) = {
     var ret = 0.0
-    if (candidate.properties.get(NORMAL_LINE).asInstanceOf[Boolean]) ret += NORMAL_TOTAL_LINE
-    if (candidate.properties.get(EURO_SIGN_FOUND).asInstanceOf[Boolean]) ret += EURO_SIGN_FRACTION
-    if (candidate.properties.get(DOUBLE_NUMBER).asInstanceOf[Boolean]) ret += DOUBLE_NUMBER_FRACTION
+    if (candidate.properties.get(NORMAL_LINE).get.asInstanceOf[Boolean]) ret += NORMAL_TOTAL_LINE
+    if (candidate.properties.get(EURO_SIGN_FOUND).get.asInstanceOf[Boolean]) ret += EURO_SIGN_FRACTION
+    if (candidate.properties.get(DOUBLE_NUMBER).get.asInstanceOf[Boolean]) ret += DOUBLE_NUMBER_FRACTION
     ret
   }
 

@@ -67,9 +67,9 @@ class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN
     ret
   }
 
-  protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*) = new Candidate(value, 1, 1, false, 1, 1, SupportedLocales.ESTONIA, IBAN, Map.empty)
+  override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*) = new Candidate(value, 1, 1, false, 1, 1, SupportedLocales.ESTONIA, IBAN, Map.empty)
 
-  def isValueAllowed(raw: Any): Boolean = {
+  override def isValueAllowed(raw: Any): Boolean = {
     val value = raw.asInstanceOf[String]
 
     if (value == null) return false

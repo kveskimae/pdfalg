@@ -24,19 +24,19 @@ class EstonianInvoiceIDFinder extends AbstractFinder(null, null, true) {
     valuePattern = Pattern.compile(phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID) + "([.]{0,1})([\\s]{0,})([:]{0,1})([\\s]{0,})([^\\s]{1,})", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
   }
 
-  protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
+  override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
     val ret = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, INVOICE_ID, Map.empty)
     ret
   }
 
-  def isValueAllowed(value: Any): Boolean = {
+  override def isValueAllowed(value: Any): Boolean = {
     if (RegexUtils.patternExistsInText(value.asInstanceOf[String], PATTERN_ESTONIAN_IBAN)) return false
     val ret = RegexUtils.patternExistsInText(value.asInstanceOf[String], PATTERN_AT_LEAST_2_INTEGER_NUMBERS)
     ret
   }
 
-  def parseValue(raw: String): Any = RegexUtils.fixWhiteSpace(raw)
+  override def parseValue(raw: String): Any = RegexUtils.fixWhiteSpace(raw)
 
-  def getType = INVOICE_ID
+  override def getType = INVOICE_ID
 
 }

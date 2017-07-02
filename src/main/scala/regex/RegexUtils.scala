@@ -49,7 +49,7 @@ object RegexUtils {
       val totalAsStringReplaced = totalAsString.replaceAll(",", ".")
       val dotCount = StringUtils.countMatches(totalAsStringReplaced, ".")
       if (dotCount < 2) {
-        val totalAsDouble = Double.unbox(totalAsStringReplaced)
+        val totalAsDouble: Double = totalAsStringReplaced.toDouble
         ret.add(totalAsDouble)
       }
     }

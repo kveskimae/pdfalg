@@ -18,6 +18,8 @@ import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
 import regex.CommonRegexPatterns._
 import regex.RegexUtils
 
+import scala.collection.mutable.ListBuffer
+
 object EstonianTotalFinder {
 
   def countDotsAndCommas(number: String): Int = {
@@ -47,8 +49,8 @@ class EstonianTotalFinder extends AbstractFinder(null, null, true) {
     valuePattern = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS
   }
 
-  protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Nothing): util.List[Candidate] = {
-    val ret = new util.ArrayList[Candidate]
+  override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Pattern): ListBuffer[Candidate] = {
+    val ret = scala.collection.mutable.ListBuffer.empty[Candidate]
     val doubleValues = RegexUtils.searchForEstonianDoubleValuesAfterText(phrase.text)
     if (doubleValues.size == 1) {
       val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS.matcher(phrase.text)
@@ -63,14 +65,14 @@ class EstonianTotalFinder extends AbstractFinder(null, null, true) {
           val totalAsDouble = parseValue(totalAsString).asInstanceOf[Double]
           val `type` = phraseTypesStore.findType(SupportedLocales.ESTONIA, TOTAL, phrase.text)
           val candidate = buildCandidate(parseResult, phrase, totalAsDouble, doubleNumber, `type`)
-          ret.add(candidate)
+          ret += candidate
         }
       }
     }
     ret
   }
 
-  protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
+  override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
     val doubleNumber = params(0).asInstanceOf[Boolean]
     val `type` = params(1).asInstanceOf[PhraseType]
     val euroSignFound = EstonianTotalFinder.isEuroPresent(phrase.text)
@@ -80,10 +82,10 @@ class EstonianTotalFinder extends AbstractFinder(null, null, true) {
     ret
   }
 
-  def isValueAllowed(value: Any) = true
+  override def isValueAllowed(value: Any) = true
 
-  def parseValue(raw: String): Any = raw.toDouble
+  override def parseValue(raw: String): Any = raw.replace(',', '.').toDouble
 
-  def getType = TOTAL
+  override def getType = TOTAL
 
 }

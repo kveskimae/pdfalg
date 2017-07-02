@@ -14,6 +14,16 @@ import parser.{ParseResult, Phrase}
 import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
 import regex.RegexUtils
 
+object EstonianNameFinder {
+
+
+  def isPankPresent(text: String): Boolean = {
+    val ret = RegexUtils.patternExistsInText(text, PATTERN_ESTONIAN_PANK)
+    ret
+  }
+
+}
+
 @Service
 class EstonianNameFinder extends AbstractFinder(null, null, true) {
 
@@ -23,17 +33,17 @@ class EstonianNameFinder extends AbstractFinder(null, null, true) {
     valuePattern = Pattern.compile(phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, NAME), Pattern.MULTILINE)
   }
 
-  protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
+  override  protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
     val `type` = phraseTypesStore.findType(SupportedLocales.ESTONIA, NAME, phrase.text)
-    val pankPresent = isPankPresent(phrase.text)
+    val pankPresent = EstonianNameFinder.isPankPresent(phrase.text)
     val properties: Map[PropertyType, Any] = Map(PHRASE_TYPE -> `type`, ESTONIAN_IS_PANK_PRESENT -> pankPresent)
     val ret = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, NAME, properties)
     ret
   }
 
-  def isValueAllowed(value: Any) = true
+  override def isValueAllowed(value: Any) = true
 
-  def parseValue(raw: String): Any = {
+  override  def parseValue(raw: String): Any = {
     if (raw == null) return null
     var ret = raw.replaceAll("(Registrikood)(.{0,})", "")
     ret = ret.split("[\\s]{3,}")(0)
@@ -41,11 +51,6 @@ class EstonianNameFinder extends AbstractFinder(null, null, true) {
     ret
   }
 
-  def isPankPresent(text: String): Boolean = {
-    val ret = RegexUtils.patternExistsInText(text, PATTERN_ESTONIAN_PANK)
-    ret
-  }
-
-  def getType = NAME
+  override def getType = NAME
 
 }

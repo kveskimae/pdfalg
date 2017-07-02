@@ -98,7 +98,7 @@ abstract class AbstractFinder(var searchPattern: Pattern, var valuePattern: Patt
         addElementsToAnotherListIfNotAlreadyContained(ret, foundValues)
       }
     }
-    ret.toList
+    ret.toList.sorted
   }
 
   protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Pattern): ListBuffer[Candidate] = {

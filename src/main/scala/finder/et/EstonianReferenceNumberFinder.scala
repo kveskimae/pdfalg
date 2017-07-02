@@ -16,13 +16,13 @@ import scala.collection.mutable.ListBuffer
 @Service
 class EstonianReferenceNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_REFERENCE_NUMBER_LINE, PATTERN_ESTONIAN_REFERENCE_NUMBER_DIGITS, true) {
 
-  def parseValue(raw: String): Any = raw
+  override def parseValue(raw: String): Any = raw
 
-  protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*) = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, REFERENCE_NUMBER, Map.empty)
+  override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*) = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, REFERENCE_NUMBER, Map.empty)
 
-  def getType = REFERENCE_NUMBER
+  override def getType = REFERENCE_NUMBER
 
-  def isValueAllowed(raw: Any): Boolean = {
+  override def isValueAllowed(raw: Any): Boolean = {
     var value: BigInteger = null
     try
       value = new BigInteger(raw.asInstanceOf[String])
@@ -30,7 +30,7 @@ class EstonianReferenceNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_REFE
       case e: Exception =>
         return false
     }
-    if (value == null || value.signum <= 0) return false
+    if (value == null) return false
     if (isCorrectFormat(value)) {
       val checkDigit = calculateCheckDigit(value)
       if (checkDigitMatches(value, checkDigit)) return true
