@@ -2,21 +2,21 @@ package finder.it
 
 import java.text.{DecimalFormat, DecimalFormatSymbols, ParseException}
 import java.util.Locale
-import java.util.regex.Pattern
 
 import candidate.Candidate
 import dictionary._
 import finder.AbstractFinder
 import finder.et.EstonianTotalFinder
+import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
-import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
-import regex.CommonRegexPatterns._
+import phrase.PhraseTypesRefreshedEvent
+import regex.CommonRegex._
 import regex.RegexUtils
 
 import scala.collection.mutable.ListBuffer
+import scala.util.matching.Regex
 
 @Service
 abstract class AbstractItalianTotalFinder extends AbstractFinder(null, null, true, true) {
@@ -35,34 +35,34 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(null, null, tru
 	// Even if dot is used as radix character (decimal separator), pattern is always defined with comma as separator
 	val decimalFormatWithDotAsThousandsSeparator: DecimalFormat = new DecimalFormat("###,###.##", otherSymbolsForDotAsThousandsSeparator)
 	
-	private[it] val PATTERN_ITALIAN_ORDINARY_TOTAL_LINE = Pattern.compile("^.{0,30}:([\\s]{0,})" + EUR + "?([\\s]{0,})" + DIGITS_WITH_COMMAS_AND_DOTS + "([\\s]{0,})" + EUR + "?([\\s]{0,})$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
+	private[it] val PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX = ("^(?ims).{0,30}:([\\s]{0,})" + EUR + "?([\\s]{0,})" + DIGITS_WITH_COMMAS_AND_DOTS + "([\\s]{0,})" + EUR + "?([\\s]{0,})$").r
 
 	@org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
 	def refreshed(): Unit = {
-		searchPattern = Pattern.compile("^(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, getType) + "(.*)$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
-		valuePattern = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS
+		searchPattern = ("^(?ims)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, getType) + "(.*)$").r
+		valuePattern = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX
 	}
 
-	override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Pattern): ListBuffer[Candidate] = {
+	override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {
 		val ret: ListBuffer[Candidate] = ListBuffer.empty
 		val doubleValues = RegexUtils.searchForDoubleValues(phrase.text)
 		if (doubleValues.size == 1) {
-			val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS.matcher(phrase.text)
+			val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findAllIn(phrase.text)
 			while ( {
-				totalAsNumberMatcher.find
+				totalAsNumberMatcher.hasNext
 			}) {
-				val totalAsString = totalAsNumberMatcher.group
+				val totalAsString = totalAsNumberMatcher.next()
 				val candidate: Candidate = findCandidateValue(totalAsString, phrase, parseResult)
 				if (candidate != null) ret += candidate
 			}
 		}
 		else {
-			val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS.matcher(phrase.text)
+			val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findAllIn(phrase.text)
 			var biggest: Candidate = null
 			while ( {
-				totalAsNumberMatcher.find
+				totalAsNumberMatcher.hasNext
 			}) {
-				val totalAsString = totalAsNumberMatcher.group
+				val totalAsString = totalAsNumberMatcher.next()
 				val candidate = findCandidateValue(totalAsString, phrase, parseResult)
 				if (biggest == null) biggest = candidate
 				else if (candidate != null && candidate.value.asInstanceOf[Double] > biggest.value.asInstanceOf[Double]) biggest = candidate
@@ -107,18 +107,16 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(null, null, tru
 	def isDouble(number: Double): Boolean = (number % 1) != 0
 
 	def isEuroPresent(text: String): Boolean = {
-		val ret = RegexUtils.patternExistsInText(text, PATTERN_EURO_SIGN)
-		ret
+		PATTERN_EURO_SIGN_AS_REGEX.findFirstIn(text).nonEmpty
 	}
 
 	private def isNormalTotalLine(text: String): Boolean = {
-		val ret = RegexUtils.patternExistsInText(text, PATTERN_ITALIAN_ORDINARY_TOTAL_LINE)
-		ret
+		PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX.findFirstIn(text).nonEmpty
 	}
 
 	override def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
 		val doubleNumber = params(0).asInstanceOf[Boolean]
-		val `type` = params(1).asInstanceOf[Nothing]
+		val `type` = params(1).asInstanceOf[PhraseType]
 		val euroSignFound = isEuroPresent(phrase.text)
 		val normalTotalLine = isNormalTotalLine(phrase.text)
 		val properties: Map[PropertyType, Any] = Map(DOUBLE_NUMBER -> doubleNumber, PHRASE_TYPE -> `type`, EURO_SIGN_FOUND -> euroSignFound, NORMAL_LINE -> normalTotalLine)

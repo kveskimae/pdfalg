@@ -1,24 +1,21 @@
 package finder.it
 
-import java.util.regex.Pattern
-
 import candidate.Candidate
 import dictionary._
 import finder.AbstractFinder
 import finder.it.ItalianRegexPatterns._
+import org.apache.commons.lang3.StringUtils
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.NAME
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
-import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
-import regex.CommonRegexPatterns._
-import regex.RegexUtils
+import phrase.PhraseTypesRefreshedEvent
+import regex.CommonRegex._
 
 object ItalianNameFinder {
   val MINIMUM_NUMBER_OF_CHARACTERS: Integer = 3
 
-  private val PATTERN_MINIMUM_CHARACTERS: Pattern = Pattern.compile ("^.*" + ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND + "{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}.*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
+  private val PATTERN_MINIMUM_CHARACTERS_AS_REGEX2 = ("^(?ims).*" + ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND + "{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}.*$").r
 }
 
 @Service
@@ -26,8 +23,8 @@ class ItalianNameFinder extends AbstractFinder(null, null, false) {
 
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
-    searchPattern = Pattern.compile("^" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, NAME) + "$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
-    valuePattern = Pattern.compile("^(.*)$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
+    searchPattern = ("^(?ims)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, NAME) + "$").r
+    valuePattern = ("^(?ims)(.*)$").r
   }
 
   protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
@@ -38,14 +35,14 @@ class ItalianNameFinder extends AbstractFinder(null, null, false) {
   }
 
   def isValueAllowed(value: Any): Boolean = {
-    val ret = !AbstractFinder.isVoidText(value.asInstanceOf[String]) && !RegexUtils.patternExistsInText(value.asInstanceOf[String], PATTERN_ITALIAN_NAME_FORBIDDEN) && RegexUtils.patternExistsInText(value.asInstanceOf[String], PATTERN_MINIMUM_CHARACTERS)
+    val ret = !AbstractFinder.isVoidText(value.asInstanceOf[String]) && PATTERN_ITALIAN_NAME_FORBIDDEN_AS_REGEX.findFirstIn(value.asInstanceOf[String]).isEmpty && PATTERN_MINIMUM_CHARACTERS_AS_REGEX.findFirstIn(value.asInstanceOf[String]).nonEmpty
     ret
   }
 
   def parseValue(raw: String): Any = {
     if (raw == null) return null
     var ret = raw
-    ret = RegexUtils.fixWhiteSpace(ret)
+    ret = StringUtils.normalizeSpace(ret)
     val bits = ret.split(",")
     ret = bits(0)
     ret

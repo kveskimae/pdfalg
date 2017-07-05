@@ -14,39 +14,27 @@ class RegexUtilsTest  extends FlatSpec with Matchers {
   }
 
   "A RegexUtils" should "not find a number in a comma" in {
-    val commaIsFalsePositive: Boolean = RegexUtils.patternExistsInText(",", CommonRegexPatterns.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS)
-
-    assert(!commaIsFalsePositive)
+    assert(CommonRegex.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findFirstIn(",").isEmpty)
   }
 
   "A RegexUtils" should "not find a number in a dot" in {
-    val dotIsFalsePositive: Boolean = RegexUtils.patternExistsInText(".", CommonRegexPatterns.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS)
-
-    assert(!dotIsFalsePositive)
+    assert(CommonRegex.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findFirstIn(".").isEmpty)
   }
 
   "A RegexUtils" should "regard a single digit as a number" in {
-    val found: Boolean = RegexUtils.patternExistsInText("1", CommonRegexPatterns.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS)
-
-    assert(found)
+    assert(CommonRegex.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findFirstIn("1").nonEmpty)
   }
 
   "A RegexUtils" should "regard several digits as a number" in {
-    val found: Boolean = RegexUtils.patternExistsInText("123", CommonRegexPatterns.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS)
-
-    assert(found)
+    assert(CommonRegex.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findFirstIn("123").nonEmpty)
   }
 
   "A RegexUtils" should "regard several digits with a dot as a number" in {
-    val found: Boolean = RegexUtils.patternExistsInText("123.456", CommonRegexPatterns.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS)
-
-    assert(found)
+    assert(CommonRegex.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findFirstIn("123.456").nonEmpty)
   }
 
   "A RegexUtils" should "regard several digits with several dots as a number" in {
-    val found: Boolean = RegexUtils.patternExistsInText("123.456.789", CommonRegexPatterns.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS)
-
-    assert(found)
+    assert(CommonRegex.PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findFirstIn("123.456.789").nonEmpty)
   }
 
   "A RegexUtils" should "not find a double value from a date formatted with slashes" in {

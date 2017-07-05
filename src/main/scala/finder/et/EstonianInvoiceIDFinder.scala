@@ -1,18 +1,15 @@
 package finder.et
 
-import java.util.regex.Pattern
-
 import candidate.Candidate
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
+import org.apache.commons.lang3.StringUtils
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
-import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
-import regex.CommonRegexPatterns._
-import regex.RegexUtils
+import phrase.PhraseTypesRefreshedEvent
+import regex.CommonRegex._
 
 @Service
 class EstonianInvoiceIDFinder extends AbstractFinder(null, null, true) {
@@ -20,8 +17,8 @@ class EstonianInvoiceIDFinder extends AbstractFinder(null, null, true) {
   // TODO needs to listen context events together with other finders
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
-    searchPattern = Pattern.compile(phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID), Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
-    valuePattern = Pattern.compile(phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID) + "([.]{0,1})([\\s]{0,})([:]{0,1})([\\s]{0,})([^\\s]{1,})", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
+    searchPattern = ("(?ism)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID)).r
+    valuePattern = ("(?ism)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID) + "([.]{0,1})([\\s]{0,})([:]{0,1})([\\s]{0,})([^\\s]{1,})").r
   }
 
   override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
@@ -30,12 +27,10 @@ class EstonianInvoiceIDFinder extends AbstractFinder(null, null, true) {
   }
 
   override def isValueAllowed(value: Any): Boolean = {
-    if (RegexUtils.patternExistsInText(value.asInstanceOf[String], PATTERN_ESTONIAN_IBAN)) return false
-    val ret = RegexUtils.patternExistsInText(value.asInstanceOf[String], PATTERN_AT_LEAST_2_INTEGER_NUMBERS)
-    ret
+    PATTERN_ESTONIAN_IBAN_AS_REGEX.findFirstIn(value.asInstanceOf[String]).isEmpty && PATTERN_AT_LEAST_2_INTEGER_NUMBERS_AS_REGEX.findFirstIn(value.asInstanceOf[String]).nonEmpty
   }
 
-  override def parseValue(raw: String): Any = RegexUtils.fixWhiteSpace(raw)
+  override def parseValue(raw: String): Any = StringUtils.normalizeSpace(raw)
 
   override def getType = INVOICE_ID
 

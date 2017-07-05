@@ -5,8 +5,8 @@ import java.util.Locale
 
 import finder.et._
 import finder.it._
-import org.pdfextractor.db.domain.dictionary.{PaymentFieldType, SupportedLocales}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
+import org.pdfextractor.db.domain.dictionary.{PaymentFieldType, SupportedLocales}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service

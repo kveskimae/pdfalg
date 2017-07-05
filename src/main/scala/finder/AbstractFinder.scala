@@ -1,18 +1,16 @@
 package finder
 
-import java.util.regex.Pattern
-
 import candidate.Candidate
-import finder.et.EstonianAccountNumberFinder
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
-import regex.{CommonRegexPatterns, RegexUtils}
+import regex.CommonRegex
 
 import scala.collection.mutable.ListBuffer
+import scala.util.matching.Regex
 
 object AbstractFinder {
   private val FOCUS_TYPE = INVOICE_ID // if you have a trouble with particular field type, set it here & let it log
@@ -23,7 +21,7 @@ object AbstractFinder {
     true
   }
 
-  def isVoidText(text: String): Boolean = RegexUtils.patternMatches(text, CommonRegexPatterns.PATTERN_VOID)
+  def isVoidText(text: String): Boolean = CommonRegex.PATTERN_VOID_AS_REGEX.pattern.matcher(text).matches
 
   def combinePhrases(phrase: Phrase, otherPhrase: Phrase): Phrase = {
     val ret = new Phrase(otherPhrase.x, otherPhrase.y, otherPhrase.pageNumber, otherPhrase.height, phrase.width, phrase.text + " " + otherPhrase.text, otherPhrase.bold)
@@ -31,7 +29,7 @@ object AbstractFinder {
   }
 }
 
-abstract class AbstractFinder(var searchPattern: Pattern, var valuePattern: Pattern, val combinePhrases: Boolean, val combineFuzzy: Boolean = false) {
+abstract class AbstractFinder(var searchPattern: Regex, var valuePattern: Regex, val combinePhrases: Boolean, val combineFuzzy: Boolean = false) {
 
   @Autowired var phraseTypesStore: PhraseTypesStore = null
 
@@ -39,11 +37,11 @@ abstract class AbstractFinder(var searchPattern: Pattern, var valuePattern: Patt
     searchWithPattern(parseResult, searchPattern, valuePattern)
   }
 
-  protected def searchWithPattern(parseResult: ParseResult, search: Pattern, value: Pattern): Seq[Candidate] = {
+  protected def searchWithPattern(parseResult: ParseResult, search: Regex, value: Regex): Seq[Candidate] = {
     val ret = collection.mutable.ListBuffer.empty[Candidate]
     if (AbstractFinder.log.isDebugEnabled && AbstractFinder.FOCUS_TYPE.equals(getType)) AbstractFinder.log.debug("Search pattern: " + search)
     for (phrase <- parseResult.phrases) {
-      if (RegexUtils.patternExistsInText(phrase.text, search)) {
+      if (search.findFirstIn(phrase.text).nonEmpty) {
         if (AbstractFinder.log.isDebugEnabled && AbstractFinder.FOCUS_TYPE.equals(getType)) AbstractFinder.log.debug("Potential match: " + phrase.text)
         val foundValues = searchValuesFromPhrase(phrase, parseResult, value)
         if (combinePhrases) {
@@ -101,10 +99,10 @@ abstract class AbstractFinder(var searchPattern: Pattern, var valuePattern: Patt
     ret.toList.sorted
   }
 
-  protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Pattern): ListBuffer[Candidate] = {
+  protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {
     val ret = scala.collection.mutable.ListBuffer.empty[Candidate]
-    val potentialValues: Seq[String] = RegexUtils.findMatches(phrase.text, valuePattern2)
-    if (AbstractFinder.log.isDebugEnabled && AbstractFinder.FOCUS_TYPE.equals(getType)) AbstractFinder.log.debug("Searching values from phrase: " + phrase.text)
+    val potentialValues: Regex.MatchIterator = valuePattern2.findAllIn(phrase.text)
+    // if (AbstractFinder.log.isDebugEnabled && AbstractFinder.FOCUS_TYPE.equals(getType)) AbstractFinder.log.debug("Searching values from phrase: " + phrase.text)
     for (potentialValue <- potentialValues) {
       val value = parseValue(potentialValue, valuePattern2)
       if (AbstractFinder.log.isDebugEnabled && AbstractFinder.FOCUS_TYPE.equals(getType)) AbstractFinder.log.debug("Potential value: " + value)
@@ -140,13 +138,13 @@ abstract class AbstractFinder(var searchPattern: Pattern, var valuePattern: Patt
 
   def isValueAllowed(value: Any): Boolean
 
-  def parseValue(raw: String, pattern: Pattern): Any = parseValue(raw)
+  def parseValue(raw: String, pattern: Regex): Any = parseValue(raw)
 
   def parseValue(raw: String): Any
 
   def getType: PaymentFieldType
 
-  def getSearchPattern: Pattern = searchPattern
+  def getSearchPattern: Regex = searchPattern
 
-  def getValuePattern: Pattern = valuePattern
+  def getValuePattern: Regex = valuePattern
 }

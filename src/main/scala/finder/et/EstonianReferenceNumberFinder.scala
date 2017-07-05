@@ -9,12 +9,11 @@ import org.pdfextractor.db.domain.dictionary.PaymentFieldType.REFERENCE_NUMBER
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.PhraseTypesStore
 
 import scala.collection.mutable.ListBuffer
 
 @Service
-class EstonianReferenceNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_REFERENCE_NUMBER_LINE, PATTERN_ESTONIAN_REFERENCE_NUMBER_DIGITS, true) {
+class EstonianReferenceNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_REFERENCE_NUMBER_LINE_AS_REGEX, PATTERN_ESTONIAN_REFERENCE_NUMBER_DIGITS_AS_REGEX, true) {
 
   override def parseValue(raw: String): Any = raw
 

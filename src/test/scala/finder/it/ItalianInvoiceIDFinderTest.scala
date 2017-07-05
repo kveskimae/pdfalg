@@ -4,7 +4,6 @@ import finder.AbstractFinderTest
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import phrase.PhraseTypesStore
-import regex.RegexUtils
 
 class ItalianInvoiceIDFinderTest extends AbstractFinderTest {
 
@@ -19,14 +18,14 @@ class ItalianInvoiceIDFinderTest extends AbstractFinderTest {
   }
 
   "Italian invoice ID finder" should "find from start" in {
-    assert(RegexUtils.patternExistsInText ("Fattura n.6 del 23.02.2016", italianInvoiceIDFinder.getSearchPattern) )
+    assert(italianInvoiceIDFinder.getSearchPattern.findFirstIn("Fattura n.6 del 23.02.2016").nonEmpty)
   }
 
   "Italian invoice ID finder" should "find from line" in {
-    assert(RegexUtils.patternExistsInText ("Fattura n.6 del 23.02.2016", italianInvoiceIDFinder.getValuePattern) )
-    assert("Fattura n.6" == RegexUtils.findMFirstMatch ("Fattura n.6 del 23.02.2016", italianInvoiceIDFinder.getValuePattern) )
-    assert("Fattura n.654343-3s" == RegexUtils.findMFirstMatch ("Fattura n.654343-3s del 23.02.2016", italianInvoiceIDFinder.getValuePattern) )
-    assert("654343-3s" == RegexUtils.removeFirstOccurrence ("Fattura n.654343-3s", italianInvoiceIDFinder.PATTERN_ITALIAN_INVOICE_ID_START_PART) )
+    assert(italianInvoiceIDFinder.getValuePattern.findFirstIn("Fattura n.6 del 23.02.2016").nonEmpty)
+    assert("Fattura n.6" == italianInvoiceIDFinder.getValuePattern.findFirstIn("Fattura n.6 del 23.02.2016").get)
+    assert("Fattura n.654343-3s" == italianInvoiceIDFinder.getValuePattern.findFirstIn("Fattura n.654343-3s del 23.02.2016").get)
+    assert("654343-3s" == italianInvoiceIDFinder.PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX.replaceFirstIn("Fattura n.654343-3s", ""))
   }
 
 }

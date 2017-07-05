@@ -1,24 +1,22 @@
 package parser
 
 import java.io.IOException
-import java.util.regex.Pattern
 
+import org.apache.commons.lang3.StringUtils
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.graphics.state.PDTextState
 import org.apache.pdfbox.text.{PDFTextStripper, TextPosition}
 import posorder.GridConstants
-import regex.RegexUtils
 
 import scala.collection.LinearSeq
 import scala.collection.mutable.ListBuffer
 
 object PageParser {
 
-  private val PATTERN_BOLD = Pattern.compile("BOLD", Pattern.CASE_INSENSITIVE) // Text style
+  private val Bold = "(?i)BOLD".r // Text style
 
   def isBoldFont(fontName: String): Boolean = {
-    if (fontName == null) return false
-    RegexUtils.patternExistsInText(fontName, PATTERN_BOLD)
+    !StringUtils.isBlank(fontName) && Bold.findFirstIn(fontName).nonEmpty
   }
 
 }

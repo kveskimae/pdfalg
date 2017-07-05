@@ -1,8 +1,5 @@
 package finder.et
 
-import java.util
-import java.util.regex.Pattern
-
 import candidate.Candidate
 import dictionary._
 import finder.AbstractFinder
@@ -11,14 +8,14 @@ import org.apache.commons.lang3.StringUtils
 import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.TOTAL
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
-import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
-import regex.CommonRegexPatterns._
+import phrase.PhraseTypesRefreshedEvent
+import regex.CommonRegex._
 import regex.RegexUtils
 
 import scala.collection.mutable.ListBuffer
+import scala.util.matching.Regex
 
 object EstonianTotalFinder {
 
@@ -29,13 +26,11 @@ object EstonianTotalFinder {
   }
 
   def isEuroPresent(text: String): Boolean = {
-    val ret = RegexUtils.patternExistsInText(text, PATTERN_EURO_SIGN)
-    ret
+    PATTERN_EURO_SIGN_AS_REGEX.findFirstIn(text).nonEmpty
   }
 
   def isNormalTotalLine(text: String) = {
-    val ret = RegexUtils.patternExistsInText(text, PATTERN_ESTONIAN_ORDINARY_TOTAL_LINE)
-    ret
+    PATTERN_ESTONIAN_ORDINARY_TOTAL_LINE_AS_REGEX.findFirstIn(text).nonEmpty
   }
 
 }
@@ -45,19 +40,19 @@ class EstonianTotalFinder extends AbstractFinder(null, null, true) {
 
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
-    searchPattern = Pattern.compile("^(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, TOTAL) + "(.*)$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
-    valuePattern = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS
+    searchPattern = ("^(?ism)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, TOTAL) + "(.*)$").r
+    valuePattern = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX
   }
 
-  override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Pattern): ListBuffer[Candidate] = {
+  override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {
     val ret = scala.collection.mutable.ListBuffer.empty[Candidate]
     val doubleValues = RegexUtils.searchForEstonianDoubleValuesAfterText(phrase.text)
     if (doubleValues.size == 1) {
-      val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS.matcher(phrase.text)
+      val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findAllIn(phrase.text)
       while ( {
-        totalAsNumberMatcher.find
+        totalAsNumberMatcher.hasNext
       }) {
-        var totalAsString = totalAsNumberMatcher.group
+        var totalAsString = totalAsNumberMatcher.next()
         val dotCount = EstonianTotalFinder.countDotsAndCommas(totalAsString)
         if (dotCount < 2) {
           totalAsString = totalAsString.replaceAll(",", ".")

@@ -9,9 +9,8 @@ import org.pdfextractor.db.domain.dictionary.PaymentFieldType.IBAN
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.PhraseTypesStore
-import regex.RegexUtils
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 object EstonianAccountNumberFinder {
@@ -21,14 +20,14 @@ object EstonianAccountNumberFinder {
 }
 
 @Service
-class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN_START_WITH_REST_OF_LINE, PATTERN_ESTONIAN_IBAN, false) {
+class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN_START_WITH_REST_OF_LINE_AS_REGEX, PATTERN_ESTONIAN_IBAN_AS_REGEX, false) {
 
   override def findCandidates(parseResult: ParseResult): Seq[Candidate]  = {
     val ret: ListBuffer[Candidate] = collection.mutable.ListBuffer.empty[Candidate]
-    val linesContainingIBANStart: ListBuffer[String] = RegexUtils.findMatches(parseResult.text, searchPattern)
+    val linesContainingIBANStart: mutable.Buffer[String] = searchPattern.findAllIn(parseResult.text).toBuffer
     val linesContainingIBANWithoutSpaces: ListBuffer[String] = ListBuffer.empty[String]
     for (oneLineContainingIBANStart <- linesContainingIBANStart) {
-      val foundAccountNrValues = RegexUtils.findMatches(oneLineContainingIBANStart, valuePattern)
+      val foundAccountNrValues = valuePattern.findAllIn(oneLineContainingIBANStart)
       if (!foundAccountNrValues.isEmpty) linesContainingIBANWithoutSpaces += oneLineContainingIBANStart
       for (accountNrValue <- foundAccountNrValues) {
         if (isValueAllowed(accountNrValue)) {
@@ -39,24 +38,24 @@ class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN
     }
     linesContainingIBANStart --= linesContainingIBANWithoutSpaces
     for (oneLineContainingIBANStart <- linesContainingIBANStart) {
-      val ibanStartingPartMatcher = PATTERN_ESTONIAN_IBAN_START.matcher(oneLineContainingIBANStart)
-      if (ibanStartingPartMatcher.find) {
+      val ibanStartingPartMatcher = PATTERN_ESTONIAN_IBAN_START_AS_REGEX.pattern.matcher(oneLineContainingIBANStart)
+      while (ibanStartingPartMatcher.find()) {
         val accountNumberValueBuilder = new StringBuilder
         val remainingPartStartIdx = ibanStartingPartMatcher.end
-        val ibanStart = ibanStartingPartMatcher.group
+        val ibanStart = ibanStartingPartMatcher.group()
         accountNumberValueBuilder.append(ibanStart)
         val remainingPartAfterIBANStart = oneLineContainingIBANStart.substring(remainingPartStartIdx)
-        val numbersMatcher = regex.CommonRegexPatterns.PATTERN_INTEGER_NUMBER.matcher(remainingPartAfterIBANStart)
+        val numbersMatcher = regex.CommonRegex.PATTERN_INTEGER_NUMBER.findAllIn(remainingPartAfterIBANStart)
         while ( {
-          numbersMatcher.find
+          numbersMatcher.hasNext
         }) {
-          val nextNumberPart = numbersMatcher.group
+          val nextNumberPart = numbersMatcher.next()
           accountNumberValueBuilder.append(nextNumberPart)
         }
         val builtAccountNr = accountNumberValueBuilder.toString
-        val builtIBANMatcher = PATTERN_ESTONIAN_IBAN.matcher(builtAccountNr)
-        if (builtIBANMatcher.find) {
-          val accountNr = builtIBANMatcher.group
+        val builtIBANMatcher = PATTERN_ESTONIAN_IBAN_AS_REGEX.findFirstIn(builtAccountNr)
+        if (builtIBANMatcher.nonEmpty) {
+          val accountNr = builtIBANMatcher.get
           if (isValueAllowed(accountNr)) {
             val candidate = buildCandidate(parseResult, null, accountNr)
             addOneElementToListIfNotAlreadyContained(ret, candidate)

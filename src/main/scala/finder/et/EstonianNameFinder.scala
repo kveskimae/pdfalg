@@ -1,25 +1,20 @@
 package finder.et
 
-import java.util.regex.Pattern
-
 import candidate.Candidate
 import dictionary._
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
+import org.apache.commons.lang3.StringUtils
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.NAME
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
-import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
-import phrase.{PhraseTypesRefreshedEvent, PhraseTypesStore}
-import regex.RegexUtils
+import phrase.PhraseTypesRefreshedEvent
 
 object EstonianNameFinder {
 
-
   def isPankPresent(text: String): Boolean = {
-    val ret = RegexUtils.patternExistsInText(text, PATTERN_ESTONIAN_PANK)
-    ret
+    PATTERN_ESTONIAN_PANK_AS_REGEX.findFirstIn(text).nonEmpty
   }
 
 }
@@ -29,8 +24,8 @@ class EstonianNameFinder extends AbstractFinder(null, null, true) {
 
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
-    searchPattern = Pattern.compile("^" + phraseTypesStore.buildAllStarts(SupportedLocales.ESTONIA, NAME) + "$", Pattern.MULTILINE)
-    valuePattern = Pattern.compile(phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, NAME), Pattern.MULTILINE)
+    searchPattern = ("^(?m)" + phraseTypesStore.buildAllStarts(SupportedLocales.ESTONIA, NAME) + "$").r
+    valuePattern = ("(?m)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, NAME)).r
   }
 
   override  protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
@@ -47,7 +42,7 @@ class EstonianNameFinder extends AbstractFinder(null, null, true) {
     if (raw == null) return null
     var ret = raw.replaceAll("(Registrikood)(.{0,})", "")
     ret = ret.split("[\\s]{3,}")(0)
-    ret = RegexUtils.fixWhiteSpace(ret)
+    ret = StringUtils.normalizeSpace(ret)
     ret
   }
 
