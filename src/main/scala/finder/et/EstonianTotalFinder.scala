@@ -5,14 +5,13 @@ import dictionary._
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
 import org.apache.commons.lang3.StringUtils
+import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.TOTAL
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesRefreshedEvent
-import regex.CommonRegex._
-import regex.RegexUtils
 
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
@@ -46,7 +45,7 @@ class EstonianTotalFinder extends AbstractFinder(null, null, true) {
 
   override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {
     val ret = scala.collection.mutable.ListBuffer.empty[Candidate]
-    val doubleValues = RegexUtils.searchForEstonianDoubleValuesAfterText(phrase.text)
+    val doubleValues = searchForEstonianDoubleValuesAfterText(phrase.text)
     if (doubleValues.size == 1) {
       val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findAllIn(phrase.text)
       while ( {

@@ -1,4 +1,4 @@
-package io
+package org.pdfextractor.algorithm.io
 
 import java.awt.Point
 
@@ -9,7 +9,7 @@ import org.scalatest._
 class IOHelperTest  extends FlatSpec with Matchers {
 
   "An IOHelper" should "find " in {
-    val locationsMap: scala.collection.Map[PaymentFieldType, Seq[Point]] = IOHelper.getMapFromFile("locations.json");
+    val locationsMap: scala.collection.Map[PaymentFieldType, Seq[Point]] = getMapFromFile("locations.json");
     assert(locationsMap != null)
     assert(locationsMap.size > 0)
     assert(locationsMap.get(TOTAL).nonEmpty)

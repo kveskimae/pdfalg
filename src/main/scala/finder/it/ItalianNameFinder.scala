@@ -5,12 +5,12 @@ import dictionary._
 import finder.AbstractFinder
 import finder.it.ItalianRegexPatterns._
 import org.apache.commons.lang3.StringUtils
+import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.NAME
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesRefreshedEvent
-import regex.CommonRegex._
 
 object ItalianNameFinder {
   val MINIMUM_NUMBER_OF_CHARACTERS: Integer = 3

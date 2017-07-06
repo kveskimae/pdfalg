@@ -4,12 +4,12 @@ import candidate.Candidate
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
 import org.apache.commons.lang3.StringUtils
+import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesRefreshedEvent
-import regex.CommonRegex._
 
 @Service
 class EstonianInvoiceIDFinder extends AbstractFinder(null, null, true) {
@@ -18,7 +18,7 @@ class EstonianInvoiceIDFinder extends AbstractFinder(null, null, true) {
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
     searchPattern = ("(?ism)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID)).r
-    valuePattern = ("(?ism)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID) + "([.]{0,1})([\\s]{0,})([:]{0,1})([\\s]{0,})([^\\s]{1,})").r
+    valuePattern = ("(?ism)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID) + """([.]{0,1})([\s]{0,})([:]{0,1})([\s]{0,})([^\s]{1,})""").r
   }
 
   override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {

@@ -2,7 +2,7 @@ package finder.et
 
 import candidate.Candidate
 import finder.{AbstractFinderTest, AbstractInvoiceFileReader}
-import io.IOHelper
+import org.pdfextractor.algorithm.io._
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import parser.{PDFFileParser, ParseResult, Phrase}
@@ -17,7 +17,7 @@ class EstonianReferenceNumberFinderTest extends AbstractFinderTest {
   @Autowired var estonianReferenceNumberFinder: EstonianReferenceNumberFinder = _
 
   "Estonian ref number finder" should "find from phrases" in {
-    val invoiceAsString = IOHelper.getStringFromFile("EestiEnergia.txt")
+    val invoiceAsString = getStringFromFile("EestiEnergia.txt")
     val phrases: LinearSeq[Phrase] = LinearSeq(new Phrase(1, 1, 1, 1, 1, invoiceAsString, false))
     val parseResult: ParseResult = new ParseResult("", phrases)
     val candidates: Seq[Candidate] = estonianReferenceNumberFinder.findCandidates(parseResult)
@@ -27,13 +27,13 @@ class EstonianReferenceNumberFinderTest extends AbstractFinderTest {
   }
 
   "Estonian ref number finder" should "not find invalid" in {
-    val invoiceAsString = IOHelper.getStringFromFile("RiggedInvoice.txt")
+    val invoiceAsString = getStringFromFile("RiggedInvoice.txt")
     val candidates: Seq[Candidate] = estonianReferenceNumberFinder.findCandidates(new ParseResult(invoiceAsString, LinearSeq.empty))
     assert(candidates.isEmpty)
   }
 
   "Estonian invoice ID finder" should "leave positional info" in {
-    val inputStream = IOHelper.getInputStreamFromFile(AbstractInvoiceFileReader.Starman)
+    val inputStream = getInputStreamFromFile(AbstractInvoiceFileReader.Starman)
     val parseResult = PDFFileParser.parse(inputStream)
     val candidates = estonianReferenceNumberFinder.findCandidates(parseResult)
 

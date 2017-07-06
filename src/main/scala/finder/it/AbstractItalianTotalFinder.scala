@@ -7,13 +7,12 @@ import candidate.Candidate
 import dictionary._
 import finder.AbstractFinder
 import finder.et.EstonianTotalFinder
+import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesRefreshedEvent
-import regex.CommonRegex._
-import regex.RegexUtils
 
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
@@ -35,7 +34,7 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(null, null, tru
 	// Even if dot is used as radix character (decimal separator), pattern is always defined with comma as separator
 	val decimalFormatWithDotAsThousandsSeparator: DecimalFormat = new DecimalFormat("###,###.##", otherSymbolsForDotAsThousandsSeparator)
 	
-	private[it] val PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX = ("^(?ims).{0,30}:([\\s]{0,})" + EUR + "?([\\s]{0,})" + DIGITS_WITH_COMMAS_AND_DOTS + "([\\s]{0,})" + EUR + "?([\\s]{0,})$").r
+	private[it] val PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX = ("""^(?ims).{0,30}:([\s]{0,})""" + EUR + """?([\s]{0,})""" + DIGITS_WITH_COMMAS_AND_DOTS + """([\s]{0,})""" + EUR + """?([\s]{0,})$""").r
 
 	@org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
 	def refreshed(): Unit = {
@@ -45,7 +44,7 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(null, null, tru
 
 	override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {
 		val ret: ListBuffer[Candidate] = ListBuffer.empty
-		val doubleValues = RegexUtils.searchForDoubleValues(phrase.text)
+		val doubleValues = searchForDoubleValues(phrase.text)
 		if (doubleValues.size == 1) {
 			val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findAllIn(phrase.text)
 			while ( {

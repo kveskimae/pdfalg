@@ -8,7 +8,7 @@ lazy val root = (project in file(".")).
       version      := "0.1.0-SNAPSHOT"
     )),
 
-    name := "PDF Extractor Core",
+    name := "PDF Extractor Algorithm",
 
     resolvers += Resolver.mavenLocal,
 

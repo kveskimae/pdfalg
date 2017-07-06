@@ -3,6 +3,7 @@ package phrase
 import java.util.Locale
 import java.util.concurrent.locks.{Lock, ReentrantLock}
 
+import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.dao.PhraseTypeDao
 import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
@@ -12,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
-import regex.CommonRegex
-import regex.CommonRegex._
 
 import scala.collection.{JavaConverters, mutable}
 
@@ -113,16 +112,15 @@ class PhraseTypesStore() {
               it.hasNext
             }) {
               val abbrevation: String = it.next.getKeyPhrase
-              ret.append("([\\s]{0,})")
+              ret.append("""([\s]{0,})""")
               ret.append(abbrevation)
-              ret.append("([\\s]{1,})")
-              ret.append(CommonRegex.ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
-              // ret.append("([,][\\s].*)?");
+              ret.append("""([\s]{1,})""")
+              ret.append(ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
               ret.append('|')
-              ret.append(CommonRegex.ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
-              ret.append("([\\s]{1,})")
+              ret.append(ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
+              ret.append("""([\s]{1,})""")
               ret.append(abbrevation)
-              ret.append("([\\s]{0,})")
+              ret.append("""([\s]{0,})""")
               if (it.hasNext) {
                 ret.append('|')
               }
@@ -174,17 +172,17 @@ class PhraseTypesStore() {
               it.hasNext
             }) {
               val abbrevation: String = it.next.getKeyPhrase
-              ret.append("([\\s]{0,})")
+              ret.append("""([\s]{0,})""")
               ret.append(abbrevation)
-              ret.append("([\\s]{1,})")
-              ret.append(CommonRegex.ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}")
-              ret.append("([,][\\s].*)?")
+              ret.append("""([\s]{1,})""")
+              ret.append(ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}")
+              ret.append("""([,][\s].*)?""")
               ret.append('|')
-              ret.append(CommonRegex.ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}")
-              ret.append("([\\s]{1,})")
+              ret.append(ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}")
+              ret.append("""([\s]{1,})""")
               ret.append(abbrevation)
-              ret.append("([\\s]{0,})")
-              ret.append("([,][\\s].*)?")
+              ret.append("""([\s]{0,})""")
+              ret.append("""([,][\s].*)?""")
               if (it.hasNext) {
                 ret.append('|')
               }
@@ -226,18 +224,18 @@ class PhraseTypesStore() {
               it.hasNext
             }) {
               val abbrevation: String = it.next.getKeyPhrase
-              ret.append("([\\s]{0,})(Saaja[:]?)?([\\s]{0,})")
+              ret.append("""([\s]{0,})(Saaja[:]?)?([\s]{0,})""")
               ret.append(abbrevation)
-              ret.append("([\\s]{1,})")
-              ret.append(CommonRegex.ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
-              ret.append("([\\s]{3,}.*|[,].*)?")
+              ret.append("""([\s]{1,})""")
+              ret.append(ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
+              ret.append("""([\s]{3,}.*|[,].*)?""")
               ret.append('|')
-              ret.append("([\\s]{0,})(Saaja[:]?)?([\\s]{0,})")
-              ret.append(CommonRegex.ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
-              ret.append("([\\s]{1,})")
+              ret.append("""([\s]{0,})(Saaja[:]?)?([\s]{0,})""")
+              ret.append(ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
+              ret.append("""([\s]{1,})""")
               ret.append(abbrevation)
-              ret.append("([\\s]{0,})")
-              ret.append("([\\s]{3,}.*|[,].*)?")
+              ret.append("""([\s]{0,})""")
+              ret.append("""([\s]{3,}.*|[,].*)?""")
               if (it.hasNext) {
                 ret.append('|')
               }
@@ -257,11 +255,11 @@ class PhraseTypesStore() {
             }) {
               val abbreviation: String = it.next.getKeyPhrase
               ret.append(abbreviation)
-              ret.append("([\\s]{1,})")
-              ret.append(CommonRegex.ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
+              ret.append("""([\s]{1,})""")
+              ret.append(ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
               ret.append('|')
-              ret.append(CommonRegex.ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
-              ret.append("([\\s]{1,})")
+              ret.append(ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
+              ret.append("""([\s]{1,})""")
               ret.append(abbreviation)
               if (it.hasNext) {
                 ret.append('|')

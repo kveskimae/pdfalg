@@ -5,6 +5,7 @@ import java.math.BigInteger
 import candidate.Candidate
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
+import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.IBAN
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
@@ -45,7 +46,7 @@ class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN
         val ibanStart = ibanStartingPartMatcher.group()
         accountNumberValueBuilder.append(ibanStart)
         val remainingPartAfterIBANStart = oneLineContainingIBANStart.substring(remainingPartStartIdx)
-        val numbersMatcher = regex.CommonRegex.PATTERN_INTEGER_NUMBER.findAllIn(remainingPartAfterIBANStart)
+        val numbersMatcher = PATTERN_INTEGER_NUMBER.findAllIn(remainingPartAfterIBANStart)
         while ( {
           numbersMatcher.hasNext
         }) {

@@ -1,13 +1,13 @@
 package finder
 
 import candidate.Candidate
+import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
-import regex.CommonRegex
 
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
@@ -21,7 +21,7 @@ object AbstractFinder {
     true
   }
 
-  def isVoidText(text: String): Boolean = CommonRegex.PATTERN_VOID_AS_REGEX.pattern.matcher(text).matches
+  def isVoidText(text: String): Boolean = PATTERN_VOID_AS_REGEX.pattern.matcher(text).matches
 
   def combinePhrases(phrase: Phrase, otherPhrase: Phrase): Phrase = {
     val ret = new Phrase(otherPhrase.x, otherPhrase.y, otherPhrase.pageNumber, otherPhrase.height, phrase.width, phrase.text + " " + otherPhrase.text, otherPhrase.bold)

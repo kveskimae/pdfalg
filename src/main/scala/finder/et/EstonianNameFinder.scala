@@ -41,7 +41,7 @@ class EstonianNameFinder extends AbstractFinder(null, null, true) {
   override  def parseValue(raw: String): Any = {
     if (raw == null) return null
     var ret = raw.replaceAll("(Registrikood)(.{0,})", "")
-    ret = ret.split("[\\s]{3,}")(0)
+    ret = ret.split("""[\s]{3,}""")(0)
     ret = StringUtils.normalizeSpace(ret)
     ret
   }

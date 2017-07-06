@@ -1,4 +1,4 @@
-package io
+package org.pdfextractor.algorithm
 
 import java.awt._
 import java.io.{File, InputStream}
@@ -12,8 +12,7 @@ import scala.collection.immutable.Map.Map2
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{Map, mutable}
 
-
-object IOHelper {
+package object io {
 
   def getMapFromFile(fileName: String): Map[PaymentFieldType, Seq[Point]] = {
 
@@ -97,7 +96,7 @@ object IOHelper {
 
     if (file == null) throw new IllegalArgumentException("No folder was found at '" + location + "'")
 
-    IOHelper.checkFileExistsAndIsReadable(file, true)
+    checkFileExistsAndIsReadable(file, true)
 
     file
   }

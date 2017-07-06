@@ -2,7 +2,7 @@ package finder.et
 
 import candidate.Candidate
 import finder.{AbstractFinderTest, AbstractInvoiceFileReader}
-import io.IOHelper
+import org.pdfextractor.algorithm.io._
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import parser.{PDFFileParser, ParseResult}
@@ -17,7 +17,7 @@ class EstonianAccountNumberFinderTest extends AbstractFinderTest {
   @Autowired var estonianAccountNumberFinder: EstonianAccountNumberFinder = _
 
   "Estonian account finder" should "find from real PDF" in {
-    val inputStream = IOHelper.getInputStreamFromFile(AbstractInvoiceFileReader.Starman)
+    val inputStream = getInputStreamFromFile(AbstractInvoiceFileReader.Starman)
     val parseResult = PDFFileParser.parse(inputStream)
     val candidates = estonianAccountNumberFinder.findCandidates(parseResult)
     assert(candidates.nonEmpty)
@@ -30,7 +30,7 @@ class EstonianAccountNumberFinderTest extends AbstractFinderTest {
   }
 
   "Estonian account finder" should "find from invoice as a string" in {
-    val invoiceAsString = IOHelper.getStringFromFile("EestiEnergia.txt")
+    val invoiceAsString = getStringFromFile("EestiEnergia.txt")
     val candidates: Seq[Candidate] = estonianAccountNumberFinder.findCandidates(new ParseResult(invoiceAsString, LinearSeq.empty))
     val foundValues: Seq[String] = candidates.map(_.getValue.asInstanceOf[String])
     assert(foundValues.nonEmpty)
@@ -41,7 +41,7 @@ class EstonianAccountNumberFinderTest extends AbstractFinderTest {
   }
 
   "Estonian account finder" should "discard invalid accounts" in {
-    val invoiceAsString = IOHelper.getStringFromFile("RiggedInvoice.txt")
+    val invoiceAsString = getStringFromFile("RiggedInvoice.txt")
     val candidates: Seq[Candidate] = estonianAccountNumberFinder.findCandidates(new ParseResult(invoiceAsString, LinearSeq.empty))
     assert(candidates.isEmpty)
   }

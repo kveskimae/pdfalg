@@ -2,7 +2,7 @@ package finder.et
 
 import dictionary._
 import finder.{AbstractFinderTest, AbstractInvoiceFileReader}
-import io.IOHelper
+import org.pdfextractor.algorithm.io._
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import parser.PDFFileParser
@@ -14,7 +14,7 @@ class EstonianTotalFinderTest extends AbstractFinderTest {
   @Autowired var estonianTotalFinder: EstonianTotalFinder = _
 
   "Estonian total finder" should "find from real invoice and have additional info present" in {
-    val inputStream = IOHelper.getInputStreamFromFile(AbstractInvoiceFileReader.Starman)
+    val inputStream = getInputStreamFromFile(AbstractInvoiceFileReader.Starman)
     val parseResult = PDFFileParser.parse(inputStream)
     val candidates = estonianTotalFinder.findCandidates(parseResult)
 

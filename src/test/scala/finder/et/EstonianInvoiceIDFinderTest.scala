@@ -2,7 +2,7 @@ package finder.et
 
 import candidate.Candidate
 import finder.{AbstractFinderTest, AbstractInvoiceFileReader}
-import io.IOHelper
+import org.pdfextractor.algorithm.io._
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import parser.{PDFFileParser, ParseResult, Phrase}
@@ -17,7 +17,7 @@ class EstonianInvoiceIDFinderTest extends AbstractFinderTest {
   @Autowired var estonianInvoiceIDFinder: EstonianInvoiceIDFinder = _
 
   "Estonian invoice ID finder" should "find from phrase" in {
-    val invoiceAsString = IOHelper.getStringFromFile("EestiEnergia.txt")
+    val invoiceAsString = getStringFromFile("EestiEnergia.txt")
     val phrase: Phrase = new Phrase(1, 1, 1, 1, 1, invoiceAsString, false)
     val phrases: LinearSeq[Phrase] = LinearSeq(phrase)
     val parseResult: ParseResult = new ParseResult("", phrases)
@@ -32,7 +32,7 @@ class EstonianInvoiceIDFinderTest extends AbstractFinderTest {
   }
 
   "Estonian invoice ID finder" should "find from real PDF" in {
-    val inputStream = IOHelper.getInputStreamFromFile(AbstractInvoiceFileReader.Starman)
+    val inputStream = getInputStreamFromFile(AbstractInvoiceFileReader.Starman)
     val parseResult = PDFFileParser.parse(inputStream)
     val candidates = estonianInvoiceIDFinder.findCandidates(parseResult)
 

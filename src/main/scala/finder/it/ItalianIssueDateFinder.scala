@@ -61,8 +61,8 @@ class ItalianIssueDateFinder extends AbstractFinder(PATTERN_ITALIAN_DATE_AS_REGE
   def parseValue(raw: String): Any = {
     if (raw == null) return null
     var replaced = raw.replaceAll("-", "/")
-    replaced = replaced.replaceAll("\\s", "/")
-    replaced = replaced.replaceAll("\\.", "/")
+    replaced = replaced.replaceAll("""\s""", "/")
+    replaced = replaced.replaceAll("""\.""", "/")
     try {
       var df: SimpleDateFormat = null
       if (raw.length == 10) df = new SimpleDateFormat("dd/MM/yyyy")
