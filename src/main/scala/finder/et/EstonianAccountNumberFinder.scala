@@ -2,7 +2,7 @@ package finder.et
 
 import java.math.BigInteger
 
-import candidate.Candidate
+import org.pdfextractor.algorithm.candidate.Candidate
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
 import org.pdfextractor.algorithm.regex._

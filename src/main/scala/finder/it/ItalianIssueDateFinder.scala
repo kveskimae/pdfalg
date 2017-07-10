@@ -3,8 +3,7 @@ package finder.it
 import java.text.{ParseException, SimpleDateFormat}
 import java.util.Date
 
-import candidate.Candidate
-import dictionary._
+import org.pdfextractor.algorithm.candidate.{Candidate, PHRASE_TYPE, PropertyType}
 import finder.AbstractFinder
 import finder.it.ItalianRegexPatterns._
 import org.pdfextractor.db.domain.PhraseType

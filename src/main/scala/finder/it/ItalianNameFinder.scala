@@ -1,7 +1,6 @@
 package finder.it
 
-import candidate.Candidate
-import dictionary._
+import org.pdfextractor.algorithm.candidate.{Candidate, PHRASE_TYPE, PropertyType}
 import finder.AbstractFinder
 import finder.it.ItalianRegexPatterns._
 import org.apache.commons.lang3.StringUtils

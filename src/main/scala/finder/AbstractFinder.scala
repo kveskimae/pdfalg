@@ -1,6 +1,6 @@
 package finder
 
-import candidate.Candidate
+import org.pdfextractor.algorithm.candidate.Candidate
 import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._

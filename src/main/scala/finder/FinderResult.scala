@@ -1,6 +1,6 @@
 package finder
 
-import candidate.Candidate
+import org.pdfextractor.algorithm.candidate.Candidate
 import org.apache.commons.lang3.builder.{ReflectionToStringBuilder, ToStringStyle}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
@@ -10,8 +10,10 @@ class FinderResult {
 
   private val candidatesBuilder: mutable.MapBuilder[PaymentFieldType, mutable.Set[Candidate], Map[PaymentFieldType, mutable.Set[Candidate]]] = new scala.collection.mutable.MapBuilder[PaymentFieldType, mutable.Set[Candidate], Map[PaymentFieldType, mutable.Set[Candidate]]](Map.empty)
 
+  type Field2Candidates = Tuple2[PaymentFieldType, mutable.Set[Candidate]]
+
   PaymentFieldType.values.foreach(fieldType => {
-    val mapElem: Tuple2[PaymentFieldType, mutable.Set[Candidate]] = Tuple2(fieldType, mutable.Set.empty)
+    val mapElem: Field2Candidates = Tuple2(fieldType, mutable.Set.empty)
     candidatesBuilder += mapElem
   })
 

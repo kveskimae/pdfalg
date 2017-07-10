@@ -1,4 +1,4 @@
-package dictionary
+package org.pdfextractor.algorithm.candidate
 
 sealed trait PropertyType
 

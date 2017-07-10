@@ -1,4 +1,4 @@
-package candidate
+package org.pdfextractor.algorithm.candidate
 
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.pdfextractor.db.domain.dictionary.SupportedLocales

@@ -3,7 +3,7 @@ package posorder
 import java.awt.Point
 import java.io.IOException
 
-import candidate.Candidate
+import org.pdfextractor.algorithm.candidate.Candidate
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
 import scala.collection._

@@ -3,8 +3,7 @@ package finder.it
 import java.text.{DecimalFormat, DecimalFormatSymbols, ParseException}
 import java.util.Locale
 
-import candidate.Candidate
-import dictionary._
+import org.pdfextractor.algorithm.candidate._
 import finder.AbstractFinder
 import finder.et.EstonianTotalFinder
 import org.pdfextractor.algorithm.regex._

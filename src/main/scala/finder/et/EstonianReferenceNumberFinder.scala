@@ -2,7 +2,7 @@ package finder.et
 
 import java.math.BigInteger
 
-import candidate.Candidate
+import org.pdfextractor.algorithm.candidate.Candidate
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.REFERENCE_NUMBER
@@ -22,27 +22,19 @@ class EstonianReferenceNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_REFE
   override def getType = REFERENCE_NUMBER
 
   override def isValueAllowed(raw: Any): Boolean = {
-    var value: BigInteger = null
-    try
-      value = new BigInteger(raw.asInstanceOf[String])
-    catch {
-      case e: Exception =>
-        return false
+    try {
+      val value = new BigInteger(raw.asInstanceOf[String])
+      isCorrectFormat(value) && checkDigitMatches(value, calculateCheckDigit(value))
+    } catch {
+      case e: Exception => false
     }
-    if (value == null) return false
-    if (isCorrectFormat(value)) {
-      val checkDigit = calculateCheckDigit(value)
-      if (checkDigitMatches(value, checkDigit)) return true
-    }
-    false
   }
 
   private def calculateCheckDigit(value: BigInteger) = {
     val digits: Seq[Integer] = findDigitsUntilOneBeforeLastInReverseOrder(value)
     val productsSum = calculate731Sum(digits)
     val tensMultiple = findTensMultiple(productsSum)
-    val checkDigit = tensMultiple - productsSum
-    checkDigit
+    tensMultiple - productsSum
   }
 
   private def checkDigitMatches(value: BigInteger, checkDigit: Int) = {
@@ -88,14 +80,10 @@ class EstonianReferenceNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_REFE
   }
 
   private def isCorrectFormat(value: BigInteger): Boolean = {
-    if (value == null) return false
-    if (value.signum != 1) { // must be positive
-      return false
-    }
-    if (value.toString.length < 2 || value.toString.length > 20) { // must have 2 - 20 digits
-      return false
-    }
-    true
+    value != null &&
+    value.signum > 0 && // must be positive
+    value.toString.length >= 2 && // must have 2 - 20 digits
+    value.toString.length <= 20
   }
 
 }

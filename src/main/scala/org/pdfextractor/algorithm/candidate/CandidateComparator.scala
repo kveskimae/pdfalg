@@ -1,12 +1,22 @@
-package candidate
+package org.pdfextractor.algorithm
 
-import candidate.Coefficients._
-import dictionary._
 import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 
-object CandidateComparator {
+package object candidate {
+
+  val HEIGHT_FRACTION = 0.3
+  val PAGE_FRACTION = 0.3
+  val BOLD_FRACTION = 0.5
+  val LOCATION_FRACTION = 0.5
+  val PHRASE_TYPE_FRACTION = 0.5
+  val PANK_FRACTION = 0.5
+  val EURO_SIGN_FRACTION = 0.2
+  val DOUBLE_NUMBER_FRACTION = 0.3
+  val BELOW_FRACTION = 0.8
+  val BIGGER_SUM_FRACTION = 0.8
+  val NORMAL_TOTAL_LINE = 1.5
 
   // Assumes that payment field types match for the parameter candidates
   def compare(first: Candidate, other: Candidate): Int = {

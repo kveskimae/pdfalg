@@ -1,7 +1,6 @@
 package finder.et
 
-import candidate.Candidate
-import dictionary._
+import org.pdfextractor.algorithm.candidate.{Candidate, ESTONIAN_IS_PANK_PRESENT, PHRASE_TYPE, PropertyType}
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
 import org.apache.commons.lang3.StringUtils
@@ -28,12 +27,11 @@ class EstonianNameFinder extends AbstractFinder(null, null, true) {
     valuePattern = ("(?m)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, NAME)).r
   }
 
-  override  protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
-    val `type` = phraseTypesStore.findType(SupportedLocales.ESTONIA, NAME, phrase.text)
+  override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
+    val phraseType = phraseTypesStore.findType(SupportedLocales.ESTONIA, NAME, phrase.text)
     val pankPresent = EstonianNameFinder.isPankPresent(phrase.text)
-    val properties: Map[PropertyType, Any] = Map(PHRASE_TYPE -> `type`, ESTONIAN_IS_PANK_PRESENT -> pankPresent)
-    val ret = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, NAME, properties)
-    ret
+    val properties: Map[PropertyType, Any] = Map(PHRASE_TYPE -> phraseType, ESTONIAN_IS_PANK_PRESENT -> pankPresent)
+    new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, NAME, properties)
   }
 
   override def isValueAllowed(value: Any) = true

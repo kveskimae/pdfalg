@@ -2,7 +2,7 @@ package posorder
 
 import java.awt._
 
-import candidate.Candidate
+import org.pdfextractor.algorithm.candidate.Candidate
 
 import scala.collection.mutable.ArrayBuffer
 

@@ -1,6 +1,6 @@
 package finder.it
 
-import candidate.Candidate
+import org.pdfextractor.algorithm.candidate.Candidate
 import finder.AbstractFinder
 import finder.it.ItalianRegexPatterns._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.VATIN

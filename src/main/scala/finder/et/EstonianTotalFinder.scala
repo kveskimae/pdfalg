@@ -1,7 +1,6 @@
 package finder.et
 
-import candidate.Candidate
-import dictionary._
+import org.pdfextractor.algorithm.candidate._
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
 import org.apache.commons.lang3.StringUtils

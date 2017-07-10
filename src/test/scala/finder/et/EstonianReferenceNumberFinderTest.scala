@@ -1,6 +1,6 @@
 package finder.et
 
-import candidate.Candidate
+import org.pdfextractor.algorithm.candidate.Candidate
 import finder.{AbstractFinderTest, AbstractInvoiceFileReader}
 import org.pdfextractor.algorithm.io._
 import org.slf4j.{Logger, LoggerFactory}

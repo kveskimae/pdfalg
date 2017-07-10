@@ -1,8 +1,7 @@
-package candidate
+package org.pdfextractor.algorithm.candidate
 
 import java.util.Locale
 
-import dictionary.PropertyType
 import org.apache.commons.lang3.builder.{HashCodeBuilder, ReflectionToStringBuilder, ToStringStyle}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
@@ -23,7 +22,7 @@ class Candidate(@BeanProperty val value: Any,
                 val paymentFieldType: PaymentFieldType,
                 val properties: Map[PropertyType, Any]) extends Comparable[Candidate] {
 
-  def compareTo(other: Candidate): Int = CandidateComparator.compare(this, other)
+  override def compareTo(other: Candidate): Int = compare(this, other)
 
   override def equals(other: Any): Boolean = {
     if (other.isInstanceOf[Candidate]) {

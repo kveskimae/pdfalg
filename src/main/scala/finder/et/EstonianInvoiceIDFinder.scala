@@ -1,6 +1,6 @@
 package finder.et
 
-import candidate.Candidate
+import org.pdfextractor.algorithm.candidate.Candidate
 import finder.AbstractFinder
 import finder.et.EstonianRegexPatterns._
 import org.apache.commons.lang3.StringUtils
@@ -22,8 +22,7 @@ class EstonianInvoiceIDFinder extends AbstractFinder(null, null, true) {
   }
 
   override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
-    val ret = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, INVOICE_ID, Map.empty)
-    ret
+    new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, INVOICE_ID, Map.empty)
   }
 
   override def isValueAllowed(value: Any): Boolean = {

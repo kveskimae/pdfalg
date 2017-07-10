@@ -1,6 +1,6 @@
 package finder.it
 
-import candidate.Candidate
+import org.pdfextractor.algorithm.candidate.Candidate
 import finder.AbstractFinder
 import org.apache.commons.lang3.StringUtils
 import org.pdfextractor.algorithm.regex._

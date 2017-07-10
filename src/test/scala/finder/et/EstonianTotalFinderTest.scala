@@ -1,6 +1,6 @@
 package finder.et
 
-import dictionary._
+import org.pdfextractor.algorithm.candidate.{DOUBLE_NUMBER, EURO_SIGN_FOUND}
 import finder.{AbstractFinderTest, AbstractInvoiceFileReader}
 import org.pdfextractor.algorithm.io._
 import org.slf4j.{Logger, LoggerFactory}
