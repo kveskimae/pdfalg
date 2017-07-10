@@ -5,7 +5,7 @@ import finder.{AbstractFinderTest, AbstractInvoiceFileReader}
 import org.pdfextractor.algorithm.io._
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
-import parser.PDFFileParser
+import org.pdfextractor.algorithm.parser.PDFFileParser
 import phrase.PhraseTypesStore
 class EstonianTotalFinderTest extends AbstractFinderTest {
 

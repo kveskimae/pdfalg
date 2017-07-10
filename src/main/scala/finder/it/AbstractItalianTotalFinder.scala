@@ -10,7 +10,7 @@ import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
-import parser.{ParseResult, Phrase}
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import phrase.PhraseTypesRefreshedEvent
 
 import scala.collection.mutable.ListBuffer

@@ -1,4 +1,4 @@
-package parser
+package org.pdfextractor.algorithm.parser
 
 import java.io.InputStream
 

@@ -6,7 +6,7 @@ import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
-import parser.{ParseResult, Phrase}
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 
 import scala.collection.mutable.ListBuffer

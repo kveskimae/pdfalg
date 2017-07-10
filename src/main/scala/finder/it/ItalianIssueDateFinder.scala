@@ -10,7 +10,7 @@ import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.ISSUE_DATE
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
-import parser.{ParseResult, Phrase}
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 
 @Service
 class ItalianIssueDateFinder extends AbstractFinder(PATTERN_ITALIAN_DATE_AS_REGEX, PATTERN_ITALIAN_DATE_AS_REGEX, false) {

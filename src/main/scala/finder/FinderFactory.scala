@@ -10,7 +10,7 @@ import org.pdfextractor.db.domain.dictionary.{PaymentFieldType, SupportedLocales
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
-import parser.{PDFFileParser, ParseResult}
+import org.pdfextractor.algorithm.parser.{PDFFileParser, ParseResult}
 
 @Service
 class FinderFactory {

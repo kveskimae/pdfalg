@@ -6,7 +6,7 @@ import finder.it.ItalianRegexPatterns._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.VATIN
 import org.pdfextractor.db.domain.dictionary.{PaymentFieldType, SupportedLocales}
 import org.springframework.stereotype.Service
-import parser.{ParseResult, Phrase}
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex

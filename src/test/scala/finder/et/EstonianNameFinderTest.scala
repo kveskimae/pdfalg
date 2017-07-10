@@ -3,7 +3,7 @@ package finder.et
 import finder.AbstractFinderTest
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
-import parser.{ParseResult, Phrase}
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import phrase.PhraseTypesStore
 
 import scala.collection.LinearSeq
