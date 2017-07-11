@@ -17,29 +17,29 @@ class FinderFactory {
 
   // ESTONIA
 
-  @Autowired var estonianAccountNumberFinder: EstonianAccountNumberFinder = null
+  @Autowired var estonianAccountNumberFinder: EstonianAccountNumberFinder = _
 
-  @Autowired var estonianInvoiceIDFinder: EstonianInvoiceIDFinder = null
+  @Autowired var estonianInvoiceIDFinder: EstonianInvoiceIDFinder = _
 
-  @Autowired var estonianNameFinder: EstonianNameFinder = null
+  @Autowired var estonianNameFinder: EstonianNameFinder = _
 
-  @Autowired var estonianReferenceNumberFinder: EstonianReferenceNumberFinder = null
+  @Autowired var estonianReferenceNumberFinder: EstonianReferenceNumberFinder = _
 
-  @Autowired var estonianTotalFinder: EstonianTotalFinder = null
+  @Autowired var estonianTotalFinder: EstonianTotalFinder = _
 
   // ITALY
 
-  @Autowired var italianInvoiceIDFinder: ItalianInvoiceIDFinder = null
+  @Autowired var italianInvoiceIDFinder: ItalianInvoiceIDFinder = _
 
-  @Autowired var italianIssueDateFinder: ItalianIssueDateFinder = null
+  @Autowired var italianIssueDateFinder: ItalianIssueDateFinder = _
 
-  @Autowired var italianNameFinder: ItalianNameFinder = null
+  @Autowired var italianNameFinder: ItalianNameFinder = _
 
-  @Autowired var italianTotalBeforeTaxesFinder: ItalianTotalBeforeTaxesFinder = null
+  @Autowired var italianTotalBeforeTaxesFinder: ItalianTotalBeforeTaxesFinder = _
 
-  @Autowired var italianTotalFinder: ItalianTotalFinder = null
+  @Autowired var italianTotalFinder: ItalianTotalFinder = _
 
-  @Autowired var italianVATIdNumberFinder: ItalianVATIdNumberFinder = null
+  @Autowired var italianVATIdNumberFinder: ItalianVATIdNumberFinder = _
 
   var finders: Map[Locale, Map[PaymentFieldType, AbstractFinder]] = Map.empty
 
@@ -69,11 +69,12 @@ class FinderFactory {
     }
   }
 
-  private def makeFinder(lang: Locale, paymentFieldType: PaymentFieldType) = {
-    val langFinders = finders.get(lang)
-    val ret = langFinders.get(paymentFieldType)
-    if (ret == null) throw new IllegalArgumentException("Locale " + lang + " does not support payment field type " + paymentFieldType)
-    ret
+  private def makeFinder(lang: Locale, paymentFieldType: PaymentFieldType): AbstractFinder = {
+    val langFinders: Option[Map[PaymentFieldType, AbstractFinder]] = finders.get(lang)
+    if (langFinders.isEmpty) throw new IllegalArgumentException("Locale is not supported: " + lang)
+    val ret: Option[AbstractFinder] = langFinders.get.get(paymentFieldType)
+    if (ret.isEmpty) throw new IllegalArgumentException("Locale " + lang + " does not support payment field type " + paymentFieldType)
+    ret.get
   }
 
   private def findCandidates(parseResult: ParseResult, lang: Locale, fieldTypes: PaymentFieldType*) = {

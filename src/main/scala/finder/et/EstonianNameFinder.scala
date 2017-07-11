@@ -19,12 +19,12 @@ object EstonianNameFinder {
 }
 
 @Service
-class EstonianNameFinder extends AbstractFinder(null, null, true) {
+class EstonianNameFinder extends AbstractFinder {
 
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
-    searchPattern = ("^(?m)" + phraseTypesStore.buildAllStarts(SupportedLocales.ESTONIA, NAME) + "$").r
-    valuePattern = ("(?m)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, NAME)).r
+    searchPattern = Some(("^(?m)" + phraseTypesStore.buildAllStarts(SupportedLocales.ESTONIA, NAME) + "$").r)
+    valuePattern = Some(("(?m)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, NAME)).r)
   }
 
   override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
@@ -37,7 +37,6 @@ class EstonianNameFinder extends AbstractFinder(null, null, true) {
   override def isValueAllowed(value: Any) = true
 
   override  def parseValue(raw: String): Any = {
-    if (raw == null) return null
     var ret = raw.replaceAll("(Registrikood)(.{0,})", "")
     ret = ret.split("""[\s]{3,}""")(0)
     ret = StringUtils.normalizeSpace(ret)

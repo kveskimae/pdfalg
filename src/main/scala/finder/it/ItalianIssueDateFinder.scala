@@ -23,35 +23,35 @@ class ItalianIssueDateFinder extends AbstractFinder(PATTERN_ITALIAN_DATE_AS_REGE
   }
 
   private def findType(parseResult: ParseResult, phrase: Phrase): PhraseType = {
-    var `type` = tryParseType(phrase)
-    if (`type` != null) return `type`
+    var `type`: Option[PhraseType] = tryParseType(phrase)
+    if (`type`.isDefined) return `type`.get
     var closestPhraseOnLeft = parseResult.findClosestPhraseOnLeft(phrase)
     while ( {
-      closestPhraseOnLeft != null
-    }) if (AbstractFinder.isVoidPhrase(closestPhraseOnLeft)) closestPhraseOnLeft = parseResult.findClosestPhraseOnRight(closestPhraseOnLeft)
+      closestPhraseOnLeft.isDefined
+    }) if (AbstractFinder.isVoidPhrase(closestPhraseOnLeft.get)) closestPhraseOnLeft = parseResult.findClosestPhraseOnRight(closestPhraseOnLeft.get)
     else {
-      `type` = tryParseType(closestPhraseOnLeft)
-      closestPhraseOnLeft = null
+      `type` = tryParseType(closestPhraseOnLeft.get)
+      closestPhraseOnLeft = None
     }
-    if (`type` != null) return `type`
+    if (`type`.isDefined) return `type`.get
     var closestPhraseAbove = parseResult.findClosestPhraseAbove(phrase)
     while ( {
-      closestPhraseAbove != null
-    }) if (AbstractFinder.isVoidPhrase(closestPhraseAbove)) closestPhraseAbove = parseResult.findClosestPhraseAbove(closestPhraseAbove)
+      closestPhraseAbove.isDefined
+    }) if (AbstractFinder.isVoidPhrase(closestPhraseAbove.get)) closestPhraseAbove = parseResult.findClosestPhraseAbove(closestPhraseAbove.get)
     else {
-      `type` = tryParseType(closestPhraseAbove)
-      closestPhraseAbove = null
+      `type` = tryParseType(closestPhraseAbove.get)
+      closestPhraseAbove = None
     }
-    `type`
+    `type`.get
   }
 
-  private def tryParseType(phrase: Phrase): PhraseType = {
+  private def tryParseType(phrase: Phrase): Option[PhraseType] = {
     try
-      return phraseTypesStore.findType(SupportedLocales.ITALY, ISSUE_DATE, phrase.text)
+      Some(phraseTypesStore.findType(SupportedLocales.ITALY, ISSUE_DATE, phrase.text))
     catch {
-      case ignored: IllegalArgumentException =>
+      case _: IllegalArgumentException =>
+        None
     }
-    null
   }
 
 

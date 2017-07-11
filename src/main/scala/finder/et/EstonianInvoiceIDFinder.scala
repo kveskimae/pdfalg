@@ -12,13 +12,13 @@ import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import phrase.PhraseTypesRefreshedEvent
 
 @Service
-class EstonianInvoiceIDFinder extends AbstractFinder(null, null, true) {
+class EstonianInvoiceIDFinder extends AbstractFinder {
 
   // TODO needs to listen context events together with other finders
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
-    searchPattern = ("(?ism)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID)).r
-    valuePattern = ("(?ism)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID) + """([.]{0,1})([\s]{0,})([:]{0,1})([\s]{0,})([^\s]{1,})""").r
+    searchPattern = Some(("(?ism)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID)).r)
+    valuePattern = Some(("(?ism)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID) + """([.]{0,1})([\s]{0,})([:]{0,1})([\s]{0,})([^\s]{1,})""").r)
   }
 
   override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {

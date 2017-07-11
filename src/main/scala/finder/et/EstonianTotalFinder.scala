@@ -34,12 +34,12 @@ object EstonianTotalFinder {
 }
 
 @Service
-class EstonianTotalFinder extends AbstractFinder(null, null, true) {
+class EstonianTotalFinder extends AbstractFinder {
 
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
-    searchPattern = ("^(?ism)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, TOTAL) + "(.*)$").r
-    valuePattern = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX
+    searchPattern = Some(("^(?ism)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, TOTAL) + "(.*)$").r)
+    valuePattern = Some(PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX)
   }
 
   override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {

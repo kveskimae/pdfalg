@@ -15,9 +15,9 @@ class ItalianVATIdNumberFinder extends AbstractFinder(PATTERN_ITALIAN_VATIN_AS_R
 
   protected override def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {
     val ret: ListBuffer[Candidate] = ListBuffer.empty
-    val lines: Regex.MatchIterator = searchPattern.findAllIn(parseResult.text)
+    val lines: Regex.MatchIterator = getSearchPattern.findAllIn(parseResult.text)
     for (line <- lines) {
-      val foundValues: Regex.MatchIterator = valuePattern.findAllIn(line)
+      val foundValues: Regex.MatchIterator = getValuePattern.findAllIn(line)
       for (value <- foundValues) {
         if (isValueAllowed(value)) {
           val candidate: Candidate = buildCandidate(parseResult, null, value)

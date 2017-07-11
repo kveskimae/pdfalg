@@ -21,9 +21,9 @@ class PhraseTypesStore() {
 
   val log: Logger = LoggerFactory.getLogger(classOf[PhraseTypesStore])
 
-  @Autowired private var applicationContext: ApplicationContext = null
+  @Autowired private var applicationContext: ApplicationContext = _
 
-  @Autowired private var phraseTypeDao: PhraseTypeDao = null
+  @Autowired private var phraseTypeDao: PhraseTypeDao = _
 
   val lock: Lock = new ReentrantLock
 
@@ -66,9 +66,7 @@ class PhraseTypesStore() {
   }
 
   private def getPhraseTypes(locale: Locale, paymentFieldType: PaymentFieldType): collection.mutable.Seq[PhraseType] = {
-    if (locale == null) {
-      throw new NullPointerException("Parameter locale is null")
-    }
+    Option(locale).orElse(throw new NullPointerException)
     lock.lock()
     try {
       val fieldType2Phrase: Option[collection.mutable.Map[PaymentFieldType, collection.mutable.ListBuffer[PhraseType]]] = typesMap.get(locale)

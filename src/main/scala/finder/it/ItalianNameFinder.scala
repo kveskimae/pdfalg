@@ -18,12 +18,12 @@ object ItalianNameFinder {
 }
 
 @Service
-class ItalianNameFinder extends AbstractFinder(null, null, false) {
+class ItalianNameFinder extends AbstractFinder(None, None, false) {
 
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
-    searchPattern = ("^(?ims)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, NAME) + "$").r
-    valuePattern = ("^(?ims)(.*)$").r
+    searchPattern = Some(("^(?ims)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, NAME) + "$").r)
+    valuePattern = Some(("^(?ims)(.*)$").r)
   }
 
   protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {

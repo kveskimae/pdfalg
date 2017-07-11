@@ -12,8 +12,8 @@ class Node(val cutDirection: CutDirectionType,
            val maxX: Int,
            val minY: Int,
            val maxY: Int,
-           var smallerValues: Node = null,
-           var biggerValues: Node = null) {
+           var smallerValues: Option[Node] = Option.empty,
+           var biggerValues: Option[Node] = Option.empty) {
 
   var locations: ArrayBuffer[Point] = ArrayBuffer.empty
 
@@ -36,25 +36,25 @@ class Node(val cutDirection: CutDirectionType,
     cutDirection match {
       case VERTICAL =>
         cutline = (minX + maxX) / 2
-        smallerValues = new Node(HORIZONTAL, minX, cutline - 1, minY, maxY)
-        biggerValues = new Node(HORIZONTAL, cutline, maxX, minY, maxY)
+        smallerValues = Option(new Node(HORIZONTAL, minX, cutline - 1, minY, maxY))
+        biggerValues = Option(new Node(HORIZONTAL, cutline, maxX, minY, maxY))
         for (point <- locations) {
-          if (point.getX < cutline) smallerValues.addLocation(point)
-          else biggerValues.addLocation(point)
+          if (point.getX < cutline) smallerValues.get.addLocation(point)
+          else biggerValues.get.addLocation(point)
         }
       case HORIZONTAL =>
         cutline = (minY + maxY) / 2
-        smallerValues = new Node(VERTICAL, minX, maxX, minY, cutline - 1)
-    smallerValues = new Node(VERTICAL, minX, maxX, cutline, maxY)
+        smallerValues = Option(new Node(VERTICAL, minX, maxX, minY, cutline - 1))
+    smallerValues = Option(new Node(VERTICAL, minX, maxX, cutline, maxY))
         for (point <- locations) {
-          if (point.getY < cutline) smallerValues.addLocation(point)
-          else biggerValues.addLocation(point)
+          if (point.getY < cutline) smallerValues.get.addLocation(point)
+          else biggerValues.get.addLocation(point)
         }
       case _ =>
         throw new IllegalStateException("Unknown cut direction: " + cutDirection)
     }
-    smallerValues.split
-    biggerValues.split
+    smallerValues.get.split
+    biggerValues.get.split
   }
 
   override def toString: String = {
@@ -69,13 +69,13 @@ class Node(val cutDirection: CutDirectionType,
     sb.append('(').append("x:").append(minX).append(',').append(maxX).append(';')
     sb.append("y:").append(minY).append(',').append(maxY)
     sb.append(')').append(' ').append(getNumberOfLocations)
-    if (this.smallerValues != null) {
+    if (this.smallerValues.isDefined) {
       sb.append('\n')
-      sb.append(smallerValues.getStringRepresentation(prefixWhitespace + "\t"))
+      sb.append(smallerValues.get.getStringRepresentation(prefixWhitespace + "\t"))
     }
-    if (this.biggerValues != null) {
+    if (this.biggerValues.isDefined) {
       sb.append('\n')
-      sb.append(biggerValues.getStringRepresentation(prefixWhitespace + "\t"))
+      sb.append(biggerValues.get.getStringRepresentation(prefixWhitespace + "\t"))
     }
     sb.toString
   }
@@ -84,14 +84,14 @@ class Node(val cutDirection: CutDirectionType,
     checkLocationArgument(location)
     cutDirection match {
       case HORIZONTAL =>
-        if (location.y < (minY + maxY) / 2) if (smallerValues != null) smallerValues.getMaxDepthForLocation(location) + 1
+        if (location.y < (minY + maxY) / 2) if (smallerValues.isDefined) smallerValues.get.getMaxDepthForLocation(location) + 1
         else 0
-        else if (biggerValues != null) biggerValues.getMaxDepthForLocation(location) + 1
+        else if (biggerValues.isDefined) biggerValues.get.getMaxDepthForLocation(location) + 1
         else 0
       case VERTICAL =>
-        if (location.x < (minX + maxX) / 2) if (smallerValues != null) smallerValues.getMaxDepthForLocation(location) + 1
+        if (location.x < (minX + maxX) / 2) if (smallerValues.isDefined) smallerValues.get.getMaxDepthForLocation(location) + 1
         else 0
-        else if (biggerValues != null) biggerValues.getMaxDepthForLocation(location) + 1
+        else if (biggerValues.isDefined) biggerValues.get.getMaxDepthForLocation(location) + 1
         else 0
       case _ =>
         throw new IllegalStateException("Unknown cut direction: " + cutDirection)
@@ -103,14 +103,14 @@ class Node(val cutDirection: CutDirectionType,
     if (depth < 0) throw new IllegalArgumentException("Depth must be non-negative")
     cutDirection match {
       case HORIZONTAL =>
-        if (location.y < (minY + maxY) / 2) if (smallerValues != null) smallerValues.getDataPointsAtLevelForLocation(location, depth)
+        if (location.y < (minY + maxY) / 2) if (smallerValues.isDefined) smallerValues.get.getDataPointsAtLevelForLocation(location, depth)
         else getNumberOfLocations
-        else if (biggerValues != null) biggerValues.getDataPointsAtLevelForLocation(location, depth)
+        else if (biggerValues.isDefined) biggerValues.get.getDataPointsAtLevelForLocation(location, depth)
         else getNumberOfLocations
       case VERTICAL =>
-        if (location.x < (minX + maxX) / 2) if (smallerValues != null) smallerValues.getDataPointsAtLevelForLocation(location, depth)
+        if (location.x < (minX + maxX) / 2) if (smallerValues.isDefined) smallerValues.get.getDataPointsAtLevelForLocation(location, depth)
         else getNumberOfLocations
-        else if (biggerValues != null) biggerValues.getDataPointsAtLevelForLocation(location, depth)
+        else if (biggerValues.isDefined) biggerValues.get.getDataPointsAtLevelForLocation(location, depth)
         else getNumberOfLocations
       case _ =>
         throw new IllegalStateException("Unknown cut direction: " + cutDirection)
@@ -118,7 +118,6 @@ class Node(val cutDirection: CutDirectionType,
   }
 
   def checkLocationArgument(location: Candidate) = {
-    if (location == null) throw new NullPointerException("Parameter location is null")
     if (location.x > maxX || location.y > maxY) throw new IllegalArgumentException("Location must be contained inside grid: " + location)
   }
 

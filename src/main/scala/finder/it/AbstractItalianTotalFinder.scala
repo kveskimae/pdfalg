@@ -17,7 +17,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
 
 @Service
-abstract class AbstractItalianTotalFinder extends AbstractFinder(null, null, true, true) {
+abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, true, true) {
 	// TODO What about thread safety?
 
 	val otherSymbolsForCommaAsThousandsSeparator : DecimalFormatSymbols= new DecimalFormatSymbols(Locale.ITALY)
@@ -37,8 +37,8 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(null, null, tru
 
 	@org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
 	def refreshed(): Unit = {
-		searchPattern = ("^(?ims)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, getType) + "(.*)$").r
-		valuePattern = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX
+		searchPattern = Some(("^(?ims)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, getType) + "(.*)$").r)
+		valuePattern = Some(PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX)
 	}
 
 	override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {

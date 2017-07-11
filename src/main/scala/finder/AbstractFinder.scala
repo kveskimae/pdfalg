@@ -29,48 +29,54 @@ object AbstractFinder {
   }
 }
 
-abstract class AbstractFinder(var searchPattern: Regex, var valuePattern: Regex, val combinePhrases: Boolean, val combineFuzzy: Boolean = false) {
+abstract class AbstractFinder(var searchPattern: Option[Regex], var valuePattern: Option[Regex], val combinePhrases: Boolean = true, val combineFuzzy: Boolean = false) {
 
-  @Autowired var phraseTypesStore: PhraseTypesStore = null
+  def this() = this(None, None, true, false)
+  def this(searchPattern2: Regex, valuePattern2: Regex) = this(Some(searchPattern2), Some(valuePattern2))
+  def this(searchPattern2: Regex, valuePattern2: Regex, combinePhrases2: Boolean) = this(Some(searchPattern2), Some(valuePattern2), combinePhrases2)
+  def this(searchPattern2: Regex, valuePattern2: Regex, combinePhrases2: Boolean, combineFuzzy2: Boolean) = this(Some(searchPattern2), Some(valuePattern2), combinePhrases2, combineFuzzy2)
+
+  @Autowired var phraseTypesStore: PhraseTypesStore = _
 
   def findCandidates(parseResult: ParseResult): Seq[Candidate] = {
-    searchWithPattern(parseResult, searchPattern, valuePattern)
+    searchWithPattern(parseResult, getSearchPattern, getValuePattern)
   }
 
   protected def searchWithPattern(parseResult: ParseResult, search: Regex, value: Regex): Seq[Candidate] = {
+    Option(parseResult).orElse(throw new NullPointerException)
     val ret = collection.mutable.ListBuffer.empty[Candidate]
     if (AbstractFinder.log.isDebugEnabled && AbstractFinder.FOCUS_TYPE.equals(getType)) AbstractFinder.log.debug("Search pattern: " + search)
-    for (phrase <- parseResult.phrases) {
+    for (phrase: Phrase <- parseResult.phrases) {
       if (search.findFirstIn(phrase.text).nonEmpty) {
         if (AbstractFinder.log.isDebugEnabled && AbstractFinder.FOCUS_TYPE.equals(getType)) AbstractFinder.log.debug("Potential match: " + phrase.text)
         val foundValues = searchValuesFromPhrase(phrase, parseResult, value)
         if (combinePhrases) {
           if (foundValues.isEmpty) {
-            var closestPhraseOnRight = parseResult.findClosestPhraseOnRight(phrase)
+            var closestPhraseOnRight: Option[Phrase] = parseResult.findClosestPhraseOnRight(phrase)
             while ( {
-              closestPhraseOnRight != null
-            }) if (AbstractFinder.isVoidPhrase(closestPhraseOnRight)) closestPhraseOnRight = parseResult.findClosestPhraseOnRight(closestPhraseOnRight)
+              closestPhraseOnRight.isDefined
+            }) if (AbstractFinder.isVoidPhrase(closestPhraseOnRight.get)) closestPhraseOnRight = parseResult.findClosestPhraseOnRight(closestPhraseOnRight.get)
             else {
-              val combined = AbstractFinder.combinePhrases(phrase, closestPhraseOnRight)
+              val combined = AbstractFinder.combinePhrases(phrase, closestPhraseOnRight.get)
               if (AbstractFinder.log.isDebugEnabled) {
                 AbstractFinder.log.debug("combined with right: '" + combined + "'")
-                AbstractFinder.log.debug("text on closestPhraseOnRight: '" + closestPhraseOnRight.text + "'")
+                AbstractFinder.log.debug("text on closestPhraseOnRight: '" + closestPhraseOnRight.get.text + "'")
               }
               val resultsFromCombined = searchValuesFromPhrase(combined, parseResult, value)
               addElementsToAnotherListIfNotAlreadyContained(foundValues, resultsFromCombined)
-              closestPhraseOnRight = null
+              closestPhraseOnRight = None
             }
           }
           if (foundValues.isEmpty) {
-            val closestPhraseBelow = parseResult.findClosestPhraseBelow(phrase)
-            if (closestPhraseBelow != null) {
-              val combined = AbstractFinder.combinePhrases(phrase, closestPhraseBelow)
+            val closestPhraseBelow: Option[Phrase] = parseResult.findClosestPhraseBelow(phrase)
+            if (closestPhraseBelow.isDefined) {
+              val combined = AbstractFinder.combinePhrases(phrase, closestPhraseBelow.get)
               if (AbstractFinder.log.isDebugEnabled) AbstractFinder.log.debug("combined with below: " + combined)
               val resultsFromCombined = searchValuesFromPhrase(combined, parseResult, value)
               if (TOTAL.equals(getType) && resultsFromCombined.isEmpty) {
-                val closestPhraseBelowBelow = parseResult.findClosestPhraseBelow(closestPhraseBelow)
-                if (closestPhraseBelowBelow != null) {
-                  val combinedCombined = AbstractFinder.combinePhrases(combined, closestPhraseBelowBelow)
+                val closestPhraseBelowBelow: Option[Phrase] = parseResult.findClosestPhraseBelow(closestPhraseBelow.get)
+                if (closestPhraseBelowBelow.isDefined) {
+                  val combinedCombined = AbstractFinder.combinePhrases(combined, closestPhraseBelowBelow.get)
                   if (AbstractFinder.log.isDebugEnabled) AbstractFinder.log.debug("combinedCombined: " + combinedCombined)
                   val resultsFromCombinedCombined = searchValuesFromPhrase(combinedCombined, parseResult, value)
                   if (resultsFromCombinedCombined.isEmpty) if (AbstractFinder.log.isDebugEnabled) AbstractFinder.log.debug("empty")
@@ -144,7 +150,7 @@ abstract class AbstractFinder(var searchPattern: Regex, var valuePattern: Regex,
 
   def getType: PaymentFieldType
 
-  def getSearchPattern: Regex = searchPattern
+  def getSearchPattern: Regex = searchPattern.get
 
-  def getValuePattern: Regex = valuePattern
+  def getValuePattern: Regex = valuePattern.get
 }

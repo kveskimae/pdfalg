@@ -25,10 +25,10 @@ class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN
 
   override def findCandidates(parseResult: ParseResult): Seq[Candidate]  = {
     val ret: ListBuffer[Candidate] = collection.mutable.ListBuffer.empty[Candidate]
-    val linesContainingIBANStart: mutable.Buffer[String] = searchPattern.findAllIn(parseResult.text).toBuffer
+    val linesContainingIBANStart: mutable.Buffer[String] = getSearchPattern.findAllIn(parseResult.text).toBuffer
     val linesContainingIBANWithoutSpaces: ListBuffer[String] = ListBuffer.empty[String]
     for (oneLineContainingIBANStart <- linesContainingIBANStart) {
-      val foundAccountNrValues = valuePattern.findAllIn(oneLineContainingIBANStart)
+      val foundAccountNrValues = getValuePattern.findAllIn(oneLineContainingIBANStart)
       if (!foundAccountNrValues.isEmpty) linesContainingIBANWithoutSpaces += oneLineContainingIBANStart
       for (accountNrValue <- foundAccountNrValues) {
         if (isValueAllowed(accountNrValue)) {
