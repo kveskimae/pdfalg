@@ -2,7 +2,7 @@ package org.pdfextractor.algorithm.parser
 
 import java.io.InputStream
 
-import exception.AppBadInputException
+import org.pdfextractor.algorithm.exception.AppBadInputException
 import org.scalatest._
 
 class PDFFileParserTest  extends FlatSpec with Matchers {

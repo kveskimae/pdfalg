@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.pdfbox.pdmodel.graphics.state.PDTextState
 import org.apache.pdfbox.pdmodel.{PDDocument, PDPage}
 import org.apache.pdfbox.text.{PDFTextStripper, TextPosition}
-import posorder.GridConstants
+import org.pdfextractor.algorithm.candidate.posorder.GridConstants
 
 import scala.collection.LinearSeq
 import scala.collection.immutable.List
