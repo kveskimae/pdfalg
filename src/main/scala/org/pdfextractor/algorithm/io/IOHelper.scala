@@ -94,7 +94,7 @@ package object io {
     val location: String = url.getFile
     val file: File = new File(location)
 
-    if (file == null) throw new IllegalArgumentException("No folder was found at '" + location + "'")
+    if (Option(file).isEmpty) throw new IllegalArgumentException("No folder was found at '" + location + "'")
 
     checkFileExistsAndIsReadable(file, true)
 

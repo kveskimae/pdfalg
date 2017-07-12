@@ -113,12 +113,12 @@ abstract class AbstractFinder(var searchPattern: Option[Regex], var valuePattern
   protected def addOneElementToListIfNotAlreadyContained(oldList: collection.mutable.ListBuffer[Candidate], newValue: Candidate): Unit = {
     if (!oldList.contains(newValue)) oldList += newValue
     else {
-      var toBeReplaced: Candidate = null
+      var toBeReplaced: Option[Candidate] = None
       for (oldValue <- oldList) {
-        if (oldValue.value.equals(newValue.value)) toBeReplaced = oldValue
+        if (oldValue.value.equals(newValue.value)) toBeReplaced = Some(oldValue)
       }
-      if (toBeReplaced != null && toBeReplaced.compareTo(newValue) > 0) {
-        oldList -= toBeReplaced
+      if (toBeReplaced.isDefined && toBeReplaced.get.compareTo(newValue) > 0) {
+        oldList -= toBeReplaced.get
         oldList += newValue
       }
     }

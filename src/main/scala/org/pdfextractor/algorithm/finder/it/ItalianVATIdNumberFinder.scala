@@ -20,13 +20,14 @@ class ItalianVATIdNumberFinder extends AbstractFinder(PATTERN_ITALIAN_VATIN_AS_R
       val foundValues: Regex.MatchIterator = getValuePattern.findAllIn(line)
       for (value <- foundValues) {
         if (isValueAllowed(value)) {
-          val candidate: Candidate = buildCandidate(parseResult, null, value)
+          val candidate: Candidate = buildCandidate(parseResult, None, value)
           addOneElementToListIfNotAlreadyContained(ret, candidate)
         }
       }
     }
     ret
   }
+  protected def buildCandidate(parseResult: ParseResult, phrase: Option[Phrase], value: Any, params: Any*): Candidate = buildCandidate(parseResult, phrase.orNull, value, params)
 
   protected override def buildCandidate(parseResult: ParseResult,
                                         phrase: Phrase,
@@ -36,7 +37,7 @@ class ItalianVATIdNumberFinder extends AbstractFinder(PATTERN_ITALIAN_VATIN_AS_R
   }
 
   override def isValueAllowed(value: Any): Boolean = {
-    value.asInstanceOf[String] != null && value.asInstanceOf[String].length == 11 && value.asInstanceOf[String].matches("""\d*""")
+    Option(value).isDefined && value.isInstanceOf[String] && value.asInstanceOf[String].length == 11 && value.asInstanceOf[String].matches("""\d*""")
   }
 
   override def parseValue(raw: String): Any = raw

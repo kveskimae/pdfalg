@@ -36,7 +36,6 @@ package object candidate {
           case ISSUE_DATE =>
             return 0
           case VATIN =>
-            if (first.value == null) return 1
             return first.value.asInstanceOf[String].compareTo(other.value.asInstanceOf[String])
           case _ =>
         }

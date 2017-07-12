@@ -42,9 +42,9 @@ class EstonianReferenceNumberFinderTest extends AbstractFinderTest {
 
     val firstCandidate = candidates.head
 
-    assert(firstCandidate.value != null)
-    assert(firstCandidate.x != null)
-    assert(firstCandidate.y != null)
+    assert(Option(firstCandidate.value).isDefined)
+    assert(Option(firstCandidate.x).isDefined)
+    assert(Option(firstCandidate.y).isDefined)
     assert(firstCandidate.value == "8583082")
     assert(425 == firstCandidate.x)
     assert(94 == firstCandidate.y)

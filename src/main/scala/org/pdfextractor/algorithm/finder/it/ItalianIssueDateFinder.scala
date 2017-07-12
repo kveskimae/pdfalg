@@ -58,15 +58,15 @@ class ItalianIssueDateFinder extends AbstractFinder(PATTERN_ITALIAN_DATE_AS_REGE
   def isValueAllowed(value: Any): Boolean = value.asInstanceOf[Date].before(new Date)
 
   def parseValue(raw: String): Any = {
-    if (raw == null) return null
     var replaced = raw.replaceAll("-", "/")
     replaced = replaced.replaceAll("""\s""", "/")
     replaced = replaced.replaceAll("""\.""", "/")
     try {
-      var df: SimpleDateFormat = null
-      if (raw.length == 10) df = new SimpleDateFormat("dd/MM/yyyy")
-      else if (raw.length == 8) df = new SimpleDateFormat("dd/MM/yy")
-      else throw new IllegalArgumentException("Unsupported date format: '" + raw + "'")
+      val df: SimpleDateFormat = {
+        if (raw.length == 10) new SimpleDateFormat("dd/MM/yyyy")
+        else if (raw.length == 8) new SimpleDateFormat("dd/MM/yy")
+        else throw new IllegalArgumentException("Unsupported date format: '" + raw + "'")
+      }
       val ret = df.parse(replaced)
       ret
     } catch {

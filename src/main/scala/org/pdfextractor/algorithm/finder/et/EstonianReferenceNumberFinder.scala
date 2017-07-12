@@ -80,7 +80,7 @@ class EstonianReferenceNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_REFE
   }
 
   private def isCorrectFormat(value: BigInteger): Boolean = {
-    value != null &&
+    Option(value).isDefined &&
     value.signum > 0 && // must be positive
     value.toString.length >= 2 && // must have 2 - 20 digits
     value.toString.length <= 20

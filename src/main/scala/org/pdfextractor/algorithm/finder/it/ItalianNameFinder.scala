@@ -39,7 +39,7 @@ class ItalianNameFinder extends AbstractFinder(None, None, false) {
   }
 
   def parseValue(raw: String): Any = {
-    if (raw == null) return null
+    if (Option(raw).isEmpty) None
     var ret = raw
     ret = StringUtils.normalizeSpace(ret)
     val bits = ret.split(",")

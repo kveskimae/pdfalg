@@ -50,27 +50,27 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, tru
 				totalAsNumberMatcher.hasNext
 			}) {
 				val totalAsString = totalAsNumberMatcher.next()
-				val candidate: Candidate = findCandidateValue(totalAsString, phrase, parseResult)
-				if (candidate != null) ret += candidate
+				val candidate: Option[Candidate] = findCandidateValue(totalAsString, phrase, parseResult)
+				if (candidate.isDefined) ret += candidate.get
 			}
 		}
 		else {
 			val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findAllIn(phrase.text)
-			var biggest: Candidate = null
+			var biggest: Option[Candidate] = None
 			while ( {
 				totalAsNumberMatcher.hasNext
 			}) {
 				val totalAsString = totalAsNumberMatcher.next()
-				val candidate = findCandidateValue(totalAsString, phrase, parseResult)
-				if (biggest == null) biggest = candidate
-				else if (candidate != null && candidate.value.asInstanceOf[Double] > biggest.value.asInstanceOf[Double]) biggest = candidate
+				val candidate: Option[Candidate] = findCandidateValue(totalAsString, phrase, parseResult)
+				if (biggest.isEmpty) biggest = candidate
+				else if (Option(candidate).isDefined && candidate.get.value.asInstanceOf[Double] > biggest.get.value.asInstanceOf[Double]) biggest = candidate
 			}
-			if (biggest != null) ret += biggest
+			if (biggest.isDefined) ret += biggest.get
 		}
 		ret
 	}
 
-	private def findCandidateValue(totalAsString: String, phrase: Phrase, parseResult: ParseResult): Candidate = {
+	private def findCandidateValue(totalAsString: String, phrase: Phrase, parseResult: ParseResult): Option[Candidate] = {
 		val dotCount = EstonianTotalFinder.countDotsAndCommas(totalAsString)
 		val `type` = phraseTypesStore.findType(SupportedLocales.ITALY, getType, phrase.text)
 		if (dotCount < 2) {
@@ -78,7 +78,7 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, tru
 			val totalAsDouble: Double = replaced.toDouble
 			val doubleNumber = dotCount > 0
 			val candidate = buildCandidate(parseResult, phrase, totalAsDouble, doubleNumber, `type`)
-			candidate
+			Some(candidate)
 		}
 		else try {
       var totalAsDouble = .0
@@ -86,10 +86,10 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, tru
       else totalAsDouble = decimalFormatWithCommaAsThousandsSeparator.parse(totalAsString).doubleValue
       val doubleNumber = isDouble(totalAsDouble)
       val candidate = buildCandidate(parseResult, phrase, totalAsDouble, doubleNumber, `type`)
-      candidate
+      Some(candidate)
     } catch {
       case ignored: ParseException =>
-        null
+        None
     }
 	}
 

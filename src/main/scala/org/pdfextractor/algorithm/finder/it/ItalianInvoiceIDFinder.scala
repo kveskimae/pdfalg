@@ -15,10 +15,10 @@ import scala.util.matching.Regex
 @Service
 class ItalianInvoiceIDFinder extends AbstractFinder {
 
-  private[it] var PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX: Regex = null
-  private[it] var PATTERN_ITALIAN_INVOICE_ID_START_BARE_AS_REGEX: Regex = null
-  private[it] var PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX: Regex = null
-  private[it] var PATTERN_ITALIAN_INVOICE_ID_LINE_BARE_AS_REGEX: Regex = null
+  private[it] var PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX: Regex = _
+  private[it] var PATTERN_ITALIAN_INVOICE_ID_START_BARE_AS_REGEX: Regex = _
+  private[it] var PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX: Regex = _
+  private[it] var PATTERN_ITALIAN_INVOICE_ID_LINE_BARE_AS_REGEX: Regex = _
 
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
@@ -61,10 +61,11 @@ class ItalianInvoiceIDFinder extends AbstractFinder {
   }
 
   override def parseValue(raw: String, regex: Regex): Any = {
-    var ret: String = null
-    if (PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX.findFirstIn(raw).nonEmpty) ret =PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX.replaceFirstIn(raw, "")
-    else if (PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX.findFirstIn(raw).nonEmpty) ret =PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX.replaceFirstIn(raw, "")
-    else throw new IllegalArgumentException("No invoice id start was found: '" + raw + "'")
+    var ret: String = {
+      if (PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX.findFirstIn(raw).nonEmpty) PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX.replaceFirstIn(raw, "")
+      else if (PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX.findFirstIn(raw).nonEmpty) PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX.replaceFirstIn(raw, "")
+      else throw new IllegalArgumentException("No invoice id start was found: '" + raw + "'")
+    }
     ret = StringUtils.normalizeSpace(ret)
     ret
   }

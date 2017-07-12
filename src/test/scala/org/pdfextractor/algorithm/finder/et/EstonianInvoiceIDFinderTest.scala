@@ -41,9 +41,9 @@ class EstonianInvoiceIDFinderTest extends AbstractFinderTest {
 
     val firstCandidate = candidates.head
 
-    assert(firstCandidate.value != null)
-    assert(firstCandidate.x != null)
-    assert(firstCandidate.y != null)
+    assert(Option(firstCandidate.value).isDefined)
+    assert(Option(firstCandidate.x).isDefined)
+    assert(Option(firstCandidate.y).isDefined)
     assert(firstCandidate.value == "Arve number A-123456")
     assert(330 == firstCandidate.x)
     assert(94 == firstCandidate.y)

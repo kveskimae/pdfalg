@@ -10,7 +10,7 @@ class IOHelperTest  extends FlatSpec with Matchers {
 
   "An IOHelper" should "find " in {
     val locationsMap: scala.collection.Map[PaymentFieldType, Seq[Point]] = getMapFromFile("locations.json");
-    assert(locationsMap != null)
+    assert(Option(locationsMap).isDefined)
     assert(locationsMap.size > 0)
     assert(locationsMap.get(TOTAL).nonEmpty)
     assert(locationsMap(TOTAL).size > 0)

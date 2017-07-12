@@ -13,12 +13,7 @@ import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-
-object EstonianAccountNumberFinder {
-
-  val MAGIC_NUMBER = new BigInteger("97")
-
-}
+import org.pdfextractor.algorithm.finder._
 
 @Service
 class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN_START_WITH_REST_OF_LINE_AS_REGEX, PATTERN_ESTONIAN_IBAN_AS_REGEX, false) {
@@ -32,7 +27,7 @@ class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN
       if (!foundAccountNrValues.isEmpty) linesContainingIBANWithoutSpaces += oneLineContainingIBANStart
       for (accountNrValue <- foundAccountNrValues) {
         if (isValueAllowed(accountNrValue)) {
-          val candidate = buildCandidate(parseResult, null, accountNrValue)
+          val candidate = buildCandidate(parseResult, None, accountNrValue)
           addOneElementToListIfNotAlreadyContained(ret, candidate)
         }
       }
@@ -58,7 +53,7 @@ class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN
         if (builtIBANMatcher.nonEmpty) {
           val accountNr = builtIBANMatcher.get
           if (isValueAllowed(accountNr)) {
-            val candidate = buildCandidate(parseResult, null, accountNr)
+            val candidate = buildCandidate(parseResult, None, accountNr)
             addOneElementToListIfNotAlreadyContained(ret, candidate)
           }
         }
@@ -67,12 +62,14 @@ class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN
     ret
   }
 
-  override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*) = new Candidate(value, 1, 1, false, 1, 1, SupportedLocales.ESTONIA, IBAN, Map.empty)
+  override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = new Candidate(value, 1, 1, false, 1, 1, SupportedLocales.ESTONIA, IBAN, Map.empty)
+
+  protected def buildCandidate(parseResult: ParseResult, phrase: Option[Phrase], value: Any, params: Any*): Candidate = buildCandidate(parseResult, phrase.orNull, value, params)
 
   override def isValueAllowed(raw: Any): Boolean = {
     val value = raw.asInstanceOf[String]
 
-    if (value == null) return false
+    if (Option(value).isEmpty) return false
     if (value.length != 20) return false
 
     // Move the four initial characters to the end of the string.
@@ -85,7 +82,7 @@ class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN
     // Interpret the string as a decimal integer and compute the remainder of that number on division by 97.
     val ibanNumber = new BigInteger(numericAccountNumber.toString)
 
-    ibanNumber.mod(EstonianAccountNumberFinder.MAGIC_NUMBER).intValue == 1
+    ibanNumber.mod(MAGIC_NUMBER).intValue == 1
   }
 
   def parseValue(raw: String): Any = raw

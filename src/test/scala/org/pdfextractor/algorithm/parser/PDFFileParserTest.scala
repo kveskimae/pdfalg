@@ -23,7 +23,7 @@ class PDFFileParserTest  extends FlatSpec with Matchers {
   "A PDFFileParser" should "extract text" in {
     val contentStream: InputStream = Thread.currentThread.getContextClassLoader.getResourceAsStream("parser_example_invoices/pdf-sample.pdf")
     val parsed: ParseResult = PDFFileParser.parse(contentStream)
-    parsed.text should not be (null)
+    assert(Option(parsed.text).isDefined)
     assert(parsed.text.startsWith("Adobe Acrobat PDF Files"))
   }
 

@@ -22,9 +22,9 @@ class EstonianTotalFinderTest extends AbstractFinderTest {
 
     val firstCandidate = candidates.head
 
-    assert(firstCandidate.value != null)
-    assert(firstCandidate.x != null)
-    assert(firstCandidate.y != null)
+    assert(Option(firstCandidate.value).isDefined)
+    assert(Option(firstCandidate.x).isDefined)
+    assert(Option(firstCandidate.y).isDefined)
     assert(firstCandidate.value == 16.87d)
     assert(35 == firstCandidate.x)
     assert(414 == firstCandidate.y)

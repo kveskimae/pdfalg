@@ -22,6 +22,8 @@ class Candidate(@BeanProperty val value: Any,
                 val paymentFieldType: PaymentFieldType,
                 val properties: Map[PropertyType, Any]) extends Comparable[Candidate] {
 
+  require(Option(value).isDefined)
+
   override def compareTo(other: Candidate): Int = compare(this, other)
 
   override def equals(other: Any): Boolean = {

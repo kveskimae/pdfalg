@@ -26,11 +26,11 @@ class FinderResult {
 
   override def toString: String = ReflectionToStringBuilder.toString(this, ToStringStyle.MULTI_LINE_STYLE)
 
-  def getValue[T >: Null](fieldType: PaymentFieldType): T = {
+  def getValue[T >: Null](fieldType: PaymentFieldType): Option[T] = {
     if (getCandidates(fieldType).isEmpty) {
-      null
+      None
     } else {
-      getCandidates(fieldType).head.asInstanceOf[T]
+      Some(getCandidates(fieldType).head.asInstanceOf[T])
     }
   }
 
