@@ -8,11 +8,11 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.pdfbox.pdmodel.graphics.state.PDTextState
 import org.apache.pdfbox.pdmodel.{PDDocument, PDPage}
 import org.apache.pdfbox.text.{PDFTextStripper, TextPosition}
-import org.pdfextractor.algorithm.candidate.posorder.GridConstants
 
 import scala.collection.LinearSeq
 import scala.collection.immutable.List
 import scala.collection.mutable.ListBuffer
+import org.pdfextractor.algorithm.candidate.posorder._
 
 package object parser {
 
@@ -85,9 +85,9 @@ package object parser {
     private def setNextCharacterToStartNewWord() = {
       nextCharacterStartsNewWord = true
       if (x < 0) x = 0
-      else if (x > GridConstants.A4_WIDTH_PX - 1) x = GridConstants.A4_WIDTH_PX - 1
+      else if (x > A4WidthPx - 1) x = A4WidthPx - 1
       if (y < 0) y = 0
-      else if (y > GridConstants.A4_HEIGHT_PX - 1) y = GridConstants.A4_HEIGHT_PX - 1
+      else if (y > A4HeightPx - 1) y = A4HeightPx - 1
       addToPhrases()
     }
 

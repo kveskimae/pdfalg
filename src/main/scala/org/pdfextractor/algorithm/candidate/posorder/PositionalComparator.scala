@@ -23,7 +23,7 @@ object PositionalComparator extends Ordering[Candidate] {
       {
         val locations: TraversableOnce[Point] = locationsAsOption.get
 
-        val node: Node = new Node(HORIZONTAL, 0, GridConstants.A4_WIDTH_PX, 0, GridConstants.A4_HEIGHT_PX)
+        val node: Node = new Node(Horizontal, 0, A4WidthPx, 0, A4HeightPx)
 
         node.addLocations(locations)
 

@@ -7,7 +7,7 @@ import org.pdfextractor.algorithm.candidate.Candidate
 import scala.collection.mutable.ArrayBuffer
 
 
-class Node(val cutDirection: CutDirectionType,
+class Node(val cutDirection: CutDirection,
            val minX: Int,
            val maxX: Int,
            val minY: Int,
@@ -29,23 +29,23 @@ class Node(val cutDirection: CutDirectionType,
   }
 
   def split(): Unit = {
-    if (locations.size <= GridConstants.MIN_NUMBER_OF_DATA_POINTS_IN_CELL) return
-    if ((maxX - minX) < 2 * GridConstants.MIN_CELL_LENGTH_PX) return
-    if ((maxY - minY) < 2 * GridConstants.MIN_CELL_LENGTH_PX) return
+    if (locations.size <= CellMinPoints) return
+    if ((maxX - minX) < 2 * CellMinLengthPx) return
+    if ((maxY - minY) < 2 * CellMinLengthPx) return
     var cutline = 0
     cutDirection match {
-      case VERTICAL =>
+      case Vertical =>
         cutline = (minX + maxX) / 2
-        smallerValues = Option(new Node(HORIZONTAL, minX, cutline - 1, minY, maxY))
-        biggerValues = Option(new Node(HORIZONTAL, cutline, maxX, minY, maxY))
+        smallerValues = Option(new Node(Horizontal, minX, cutline - 1, minY, maxY))
+        biggerValues = Option(new Node(Horizontal, cutline, maxX, minY, maxY))
         for (point <- locations) {
           if (point.getX < cutline) smallerValues.get.addLocation(point)
           else biggerValues.get.addLocation(point)
         }
-      case HORIZONTAL =>
+      case Horizontal =>
         cutline = (minY + maxY) / 2
-        smallerValues = Option(new Node(VERTICAL, minX, maxX, minY, cutline - 1))
-    smallerValues = Option(new Node(VERTICAL, minX, maxX, cutline, maxY))
+        smallerValues = Option(new Node(Vertical, minX, maxX, minY, cutline - 1))
+    smallerValues = Option(new Node(Vertical, minX, maxX, cutline, maxY))
         for (point <- locations) {
           if (point.getY < cutline) smallerValues.get.addLocation(point)
           else biggerValues.get.addLocation(point)
@@ -83,12 +83,12 @@ class Node(val cutDirection: CutDirectionType,
   @SuppressWarnings(Array("rawtypes")) def getMaxDepthForLocation(location: Candidate): Int = {
     checkLocationArgument(location)
     cutDirection match {
-      case HORIZONTAL =>
+      case Horizontal =>
         if (location.y < (minY + maxY) / 2) if (smallerValues.isDefined) smallerValues.get.getMaxDepthForLocation(location) + 1
         else 0
         else if (biggerValues.isDefined) biggerValues.get.getMaxDepthForLocation(location) + 1
         else 0
-      case VERTICAL =>
+      case Vertical =>
         if (location.x < (minX + maxX) / 2) if (smallerValues.isDefined) smallerValues.get.getMaxDepthForLocation(location) + 1
         else 0
         else if (biggerValues.isDefined) biggerValues.get.getMaxDepthForLocation(location) + 1
@@ -102,12 +102,12 @@ class Node(val cutDirection: CutDirectionType,
     checkLocationArgument(location)
     if (depth < 0) throw new IllegalArgumentException("Depth must be non-negative")
     cutDirection match {
-      case HORIZONTAL =>
+      case Horizontal =>
         if (location.y < (minY + maxY) / 2) if (smallerValues.isDefined) smallerValues.get.getDataPointsAtLevelForLocation(location, depth)
         else getNumberOfLocations
         else if (biggerValues.isDefined) biggerValues.get.getDataPointsAtLevelForLocation(location, depth)
         else getNumberOfLocations
-      case VERTICAL =>
+      case Vertical =>
         if (location.x < (minX + maxX) / 2) if (smallerValues.isDefined) smallerValues.get.getDataPointsAtLevelForLocation(location, depth)
         else getNumberOfLocations
         else if (biggerValues.isDefined) biggerValues.get.getDataPointsAtLevelForLocation(location, depth)

@@ -8,13 +8,14 @@ import scala.collection.mutable
 
 class FinderResult {
 
-  private val candidatesBuilder: mutable.MapBuilder[PaymentFieldType, mutable.Set[Candidate], Map[PaymentFieldType, mutable.Set[Candidate]]] = new scala.collection.mutable.MapBuilder[PaymentFieldType, mutable.Set[Candidate], Map[PaymentFieldType, mutable.Set[Candidate]]](Map.empty)
+  type CandidatesMapBuilder = mutable.MapBuilder[PaymentFieldType, mutable.Set[Candidate], Map[PaymentFieldType, mutable.Set[Candidate]]]
+
+  private val candidatesBuilder: CandidatesMapBuilder = new scala.collection.mutable.MapBuilder[PaymentFieldType, mutable.Set[Candidate], Map[PaymentFieldType, mutable.Set[Candidate]]](Map.empty)
 
   type Field2Candidates = Tuple2[PaymentFieldType, mutable.Set[Candidate]]
 
   PaymentFieldType.values.foreach(fieldType => {
-    val mapElem: Field2Candidates = Tuple2(fieldType, mutable.Set.empty)
-    candidatesBuilder += mapElem
+    candidatesBuilder += Tuple2(fieldType, mutable.Set.empty)
   })
 
   val candidatesMap: Map[PaymentFieldType, mutable.Set[Candidate]] = candidatesBuilder.result()
