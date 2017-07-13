@@ -41,57 +41,48 @@ class FinderFactory {
 
   @Autowired var italianVATIdNumberFinder: ItalianVATIdNumberFinder = _
 
-  var finders: Map[Locale, Map[PaymentFieldType, AbstractFinder]] = Map.empty
-
-  @org.springframework.context.event.EventListener(Array(classOf[ContextRefreshedEvent]))
-  def refreshed(): Unit = {
-    if (finders.isEmpty) {
-      val estonianFinders: Map[PaymentFieldType, AbstractFinder] =
-        Map(
-          INVOICE_ID -> estonianInvoiceIDFinder,
-          IBAN -> estonianAccountNumberFinder,
-          NAME -> estonianNameFinder,
-          REFERENCE_NUMBER -> estonianReferenceNumberFinder,
-          TOTAL -> estonianTotalFinder
-        )
-
-      val italianFinders: Map[PaymentFieldType, AbstractFinder] =
-        Map(
-          INVOICE_ID -> italianInvoiceIDFinder,
-          NAME -> italianNameFinder,
-          TOTAL -> italianTotalFinder,
-          TOTAL_BEFORE_TAXES -> italianTotalBeforeTaxesFinder,
-          ISSUE_DATE -> italianIssueDateFinder,
-          VATIN -> italianVATIdNumberFinder
-        )
-
-      finders = Map(SupportedLocales.ESTONIA -> estonianFinders, SupportedLocales.ITALY -> italianFinders)
-    }
+  def makeEstonianFinder(paymentFieldType: PaymentFieldType): Option[AbstractFinder] = paymentFieldType match {
+    case INVOICE_ID => Some(estonianInvoiceIDFinder)
+    case IBAN => Some(estonianAccountNumberFinder)
+    case NAME => Some(estonianNameFinder)
+    case REFERENCE_NUMBER => Some(estonianReferenceNumberFinder)
+    case TOTAL => Some(estonianTotalFinder)
+    case _ => None
   }
 
-  private def makeFinder(lang: Locale, paymentFieldType: PaymentFieldType): AbstractFinder = {
-    val langFinders: Option[Map[PaymentFieldType, AbstractFinder]] = finders.get(lang)
-    if (langFinders.isEmpty) throw new IllegalArgumentException("Locale is not supported: " + lang)
-    val ret: Option[AbstractFinder] = langFinders.get.get(paymentFieldType)
-    if (ret.isEmpty) throw new IllegalArgumentException("Locale " + lang + " does not support payment field type " + paymentFieldType)
-    ret.get
+  def makeItalianFinder(paymentFieldType: PaymentFieldType): Option[AbstractFinder] = paymentFieldType match {
+    case INVOICE_ID => Some(italianInvoiceIDFinder)
+    case NAME => Some(italianNameFinder)
+    case TOTAL => Some(italianTotalFinder)
+    case TOTAL_BEFORE_TAXES => Some(italianTotalBeforeTaxesFinder)
+    case ISSUE_DATE => Some(italianIssueDateFinder)
+    case VATIN => Some(italianVATIdNumberFinder)
+    case _ => None
+  }
+
+  private def makeFinder(lang: Locale, paymentFieldType: PaymentFieldType): Option[AbstractFinder] = {
+    lang.getLanguage match {
+      case SupportedLocales.ESTONIAN_LANG_CODE => makeEstonianFinder(paymentFieldType)
+      case SupportedLocales.ITALIAN_LANG_CODE => makeItalianFinder(paymentFieldType)
+      case _ => None
+    }
   }
 
   private def findCandidates(parseResult: ParseResult, lang: Locale, fieldTypes: PaymentFieldType*) = {
     val ret = new FinderResult
-    for (fieldType <- fieldTypes) {
-      val abstractFinder: AbstractFinder = makeFinder(lang, fieldType)
-      val candidates = abstractFinder.findCandidates(parseResult)
-      val foundCandidates = ret.getCandidates(fieldType)
-      foundCandidates ++= candidates
-    }
+    fieldTypes.foreach(fieldType => {
+      val abstractFinder: Option[AbstractFinder] = makeFinder(lang, fieldType)
+      abstractFinder match {
+        case Some(finder) => ret.getCandidates(fieldType) ++= finder.findCandidates(parseResult)
+        case None =>
+      }
+    })
     ret
   }
 
   def extractEstonian(pdfContentStream: InputStream): FinderResult = {
     val parseResult = PDFFileParser.parse(pdfContentStream)
-    val finderResult = findCandidates(parseResult, SupportedLocales.ESTONIA, IBAN, INVOICE_ID, NAME, REFERENCE_NUMBER, TOTAL)
-    finderResult
+    findCandidates(parseResult, SupportedLocales.ESTONIA, IBAN, INVOICE_ID, NAME, REFERENCE_NUMBER, TOTAL)
   }
 
   def extractItalian(pdfContentStream: InputStream): FinderResult = {

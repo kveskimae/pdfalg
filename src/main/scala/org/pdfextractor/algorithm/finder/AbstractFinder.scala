@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesStore
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable
 import scala.util.matching.Regex
 
 abstract class AbstractFinder(var searchPattern: Option[Regex], var valuePattern: Option[Regex], val combinePhrases: Boolean = true, val combineFuzzy: Boolean = false) {
@@ -33,7 +33,7 @@ abstract class AbstractFinder(var searchPattern: Option[Regex], var valuePattern
     for (phrase: Phrase <- parseResult.phrases) {
       if (search.findFirstIn(phrase.text).nonEmpty) {
         if (log.isDebugEnabled && FOCUS_TYPE.equals(getType)) log.debug("Potential match: " + phrase.text)
-        val foundValues = searchValuesFromPhrase(phrase, parseResult, value)
+        val foundValues: mutable.Buffer[Candidate] = searchValuesFromPhrase(phrase, parseResult, value)
         if (combinePhrases) {
           if (foundValues.isEmpty) {
             var closestPhraseOnRight: Option[Phrase] = parseResult.findClosestPhraseOnRight(phrase)
@@ -74,13 +74,15 @@ abstract class AbstractFinder(var searchPattern: Option[Regex], var valuePattern
             }
           }
           if (combineFuzzy && foundValues.isEmpty) {
-            val closestPhrasesBelowOrRight = parseResult.findClosestPhrasesBelowOrRight(phrase)
-            for (closest <- closestPhrasesBelowOrRight) {
-              val combined = combinePhrases1(phrase, closest)
-              if (log.isDebugEnabled) log.debug("combined with beloworright: " + combined)
-              val resultsFromCombined = searchValuesFromPhrase(combined, parseResult, value)
-              addElementsToAnotherListIfNotAlreadyContained(foundValues, resultsFromCombined)
-            }
+            parseResult.
+              findClosestPhrasesBelowOrRight(phrase).
+              map(closest => combinePhrases1(phrase, closest)).
+              map(combined => searchValuesFromPhrase(combined, parseResult, value)).
+              foreach(
+                candidate => {
+                  addElementsToAnotherListIfNotAlreadyContained(foundValues, candidate)
+                }
+              )
           }
         }
         addElementsToAnotherListIfNotAlreadyContained(ret, foundValues)
@@ -89,28 +91,20 @@ abstract class AbstractFinder(var searchPattern: Option[Regex], var valuePattern
     ret.toList.sorted
   }
 
-  protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {
-    val ret = scala.collection.mutable.ListBuffer.empty[Candidate]
-    val potentialValues: Regex.MatchIterator = valuePattern2.findAllIn(phrase.text)
-    // if (log.isDebugEnabled && FOCUS_TYPE.equals(getType)) log.debug("Searching values from phrase: " + phrase.text)
-    for (potentialValue <- potentialValues) {
-      val value = parseValue(potentialValue, valuePattern2)
-      if (log.isDebugEnabled && FOCUS_TYPE.equals(getType)) log.debug("Potential value: " + value)
-      if (isValueAllowed(value)) {
-        if (log.isDebugEnabled && FOCUS_TYPE.equals(getType)) log.debug("Allowed value: " + value)
-        ret += buildCandidate(parseResult, phrase, value)
-      }
-    }
-    ret
+  protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): mutable.Buffer[Candidate] = {
+    valuePattern2.
+      findAllIn(phrase.text).
+      map((potentialValue: String) => parseValue(potentialValue, valuePattern2)).
+      filter(isValueAllowed(_)).
+      map((value: Any) => buildCandidate(parseResult, phrase, value)).
+      toBuffer
   }
 
-  protected def addElementsToAnotherListIfNotAlreadyContained(oldList: collection.mutable.ListBuffer[Candidate], newValues: Seq[Candidate]): Unit = {
-    for (newValue <- newValues) {
-      addOneElementToListIfNotAlreadyContained(oldList, newValue)
-    }
+  protected def addElementsToAnotherListIfNotAlreadyContained(oldList: mutable.Buffer[Candidate], newValues: Seq[Candidate]): Unit = {
+    newValues.foreach(addOneElementToListIfNotAlreadyContained(oldList, _))
   }
 
-  protected def addOneElementToListIfNotAlreadyContained(oldList: collection.mutable.ListBuffer[Candidate], newValue: Candidate): Unit = {
+  protected def addOneElementToListIfNotAlreadyContained(oldList: mutable.Buffer[Candidate], newValue: Candidate): Unit = {
     if (!oldList.contains(newValue)) oldList += newValue
     else {
       var toBeReplaced: Option[Candidate] = None

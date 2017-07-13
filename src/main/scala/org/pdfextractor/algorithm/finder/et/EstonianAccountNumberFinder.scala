@@ -67,22 +67,23 @@ class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN
   protected def buildCandidate(parseResult: ParseResult, phrase: Option[Phrase], value: Any, params: Any*): Candidate = buildCandidate(parseResult, phrase.orNull, value, params)
 
   override def isValueAllowed(raw: Any): Boolean = {
-    val value = raw.asInstanceOf[String]
+    Option(raw).isDefined &&
+    raw.isInstanceOf[String] &&
+    raw.asInstanceOf[String].length == 20 && {
+      val value = raw.asInstanceOf[String]
 
-    if (Option(value).isEmpty) return false
-    if (value.length != 20) return false
+      // Move the four initial characters to the end of the string.
+      val swapped = value.substring(4) + value.substring(0, 4)
 
-    // Move the four initial characters to the end of the string.
-    val swapped = value.substring(4) + value.substring(0, 4)
+      // Replace each letter in the string with two digits, thereby expanding the string, where A = 10, B = 11, ..., Z = 35.
+      val numericAccountNumber = new StringBuilder
+      swapped.foreach(c => numericAccountNumber.append(Character.getNumericValue(c)))
 
-    // Replace each letter in the string with two digits, thereby expanding the string, where A = 10, B = 11, ..., Z = 35.
-    val numericAccountNumber = new StringBuilder
-    swapped.foreach(c => numericAccountNumber.append(Character.getNumericValue(c)))
+      // Interpret the string as a decimal integer and compute the remainder of that number on division by 97.
+      val ibanNumber = new BigInteger(numericAccountNumber.toString)
 
-    // Interpret the string as a decimal integer and compute the remainder of that number on division by 97.
-    val ibanNumber = new BigInteger(numericAccountNumber.toString)
-
-    ibanNumber.mod(MAGIC_NUMBER).intValue == 1
+      ibanNumber.mod(MAGIC_NUMBER).intValue == 1
+    }
   }
 
   def parseValue(raw: String): Any = raw

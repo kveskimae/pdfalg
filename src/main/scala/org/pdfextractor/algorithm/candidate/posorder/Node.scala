@@ -4,6 +4,7 @@ import java.awt._
 
 import org.pdfextractor.algorithm.candidate.Candidate
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 
@@ -12,10 +13,10 @@ class Node(val cutDirection: CutDirection,
            val maxX: Int,
            val minY: Int,
            val maxY: Int,
-           var smallerValues: Option[Node] = Option.empty,
-           var biggerValues: Option[Node] = Option.empty) {
+           var smallerValues: Option[Node] = None,
+           var biggerValues: Option[Node] = None) {
 
-  var locations: ArrayBuffer[Point] = ArrayBuffer.empty
+  var locations: mutable.Buffer[Point] = ArrayBuffer.empty
 
   def getNumberOfLocations: Int = locations.size
 
@@ -23,38 +24,48 @@ class Node(val cutDirection: CutDirection,
     locations += point
   }
 
-  def addLocations(paramLocations: TraversableOnce[_ <: Point]): Unit = {
+  def addLocations(paramLocations: TraversableOnce[Point]): Unit = {
     locations ++= paramLocations
-    split()
+    trySplit()
   }
 
-  def split(): Unit = {
-    if (locations.size <= CellMinPoints) return
-    if ((maxX - minX) < 2 * CellMinLengthPx) return
-    if ((maxY - minY) < 2 * CellMinLengthPx) return
-    var cutline = 0
+  def trySplit(): Unit = {
+    if (isSplit()) {
+      doSplit()
+      smallerValues.get.trySplit
+      biggerValues.get.trySplit
+    }
+  }
+
+  def isSplit(): Boolean = {
+    locations.size > CellMinPoints &&
+      (maxX - minX) >= 2 * CellMinLengthPx &&
+      (maxY - minY) >= 2 * CellMinLengthPx
+  }
+
+  def doSplit() = {
     cutDirection match {
       case Vertical =>
-        cutline = (minX + maxX) / 2
-        smallerValues = Option(new Node(Horizontal, minX, cutline - 1, minY, maxY))
-        biggerValues = Option(new Node(Horizontal, cutline, maxX, minY, maxY))
-        for (point <- locations) {
-          if (point.getX < cutline) smallerValues.get.addLocation(point)
-          else biggerValues.get.addLocation(point)
-        }
+        val cutLine = (minX + maxX) / 2
+        smallerValues = Some(new Node(Horizontal, minX, cutLine - 1, minY, maxY))
+        biggerValues = Some(new Node(Horizontal, cutLine, maxX, minY, maxY))
+        locations.foreach(
+          point => {
+            if (point.getX < cutLine) smallerValues.get.addLocation(point)
+            else biggerValues.get.addLocation(point)
+          }
+        )
       case Horizontal =>
-        cutline = (minY + maxY) / 2
-        smallerValues = Option(new Node(Vertical, minX, maxX, minY, cutline - 1))
-    smallerValues = Option(new Node(Vertical, minX, maxX, cutline, maxY))
+        val cutLine = (minY + maxY) / 2
+        smallerValues = Some(new Node(Vertical, minX, maxX, minY, cutLine - 1))
+        smallerValues = Some(new Node(Vertical, minX, maxX, cutLine, maxY))
         for (point <- locations) {
-          if (point.getY < cutline) smallerValues.get.addLocation(point)
+          if (point.getY < cutLine) smallerValues.get.addLocation(point)
           else biggerValues.get.addLocation(point)
         }
       case _ =>
         throw new IllegalStateException("Unknown cut direction: " + cutDirection)
     }
-    smallerValues.get.split
-    biggerValues.get.split
   }
 
   override def toString: String = {
@@ -80,45 +91,45 @@ class Node(val cutDirection: CutDirection,
     sb.toString
   }
 
-  @SuppressWarnings(Array("rawtypes")) def getMaxDepthForLocation(location: Candidate): Int = {
-    checkLocationArgument(location)
+  def isInSmallValues(candidate: Candidate): Boolean = {
+    require(candidate.x <= maxX && candidate.y <= maxY, "Location must be contained inside grid: " + candidate)
+
     cutDirection match {
-      case Horizontal =>
-        if (location.y < (minY + maxY) / 2) if (smallerValues.isDefined) smallerValues.get.getMaxDepthForLocation(location) + 1
-        else 0
-        else if (biggerValues.isDefined) biggerValues.get.getMaxDepthForLocation(location) + 1
-        else 0
-      case Vertical =>
-        if (location.x < (minX + maxX) / 2) if (smallerValues.isDefined) smallerValues.get.getMaxDepthForLocation(location) + 1
-        else 0
-        else if (biggerValues.isDefined) biggerValues.get.getMaxDepthForLocation(location) + 1
-        else 0
+      case Horizontal => candidate.y < (minY + maxY) / 2
+      case Vertical => candidate.x < (minX + maxX) / 2
       case _ =>
         throw new IllegalStateException("Unknown cut direction: " + cutDirection)
+    }
+  }
+
+  def getMaxDepthForLocation(location: Candidate): Int = {
+    if (isInSmallValues(location)) {
+      smallerValues match {
+        case Some(_) => smallerValues.get.getMaxDepthForLocation(location) + 1
+        case None => 0
+      }
+    } else {
+      biggerValues match {
+        case Some(_) =>  biggerValues.get.getMaxDepthForLocation(location) + 1
+        case None => 0
+      }
     }
   }
 
   def getDataPointsAtLevelForLocation(location: Candidate, depth: Int): Int = {
-    checkLocationArgument(location)
-    if (depth < 0) throw new IllegalArgumentException("Depth must be non-negative")
-    cutDirection match {
-      case Horizontal =>
-        if (location.y < (minY + maxY) / 2) if (smallerValues.isDefined) smallerValues.get.getDataPointsAtLevelForLocation(location, depth)
-        else getNumberOfLocations
-        else if (biggerValues.isDefined) biggerValues.get.getDataPointsAtLevelForLocation(location, depth)
-        else getNumberOfLocations
-      case Vertical =>
-        if (location.x < (minX + maxX) / 2) if (smallerValues.isDefined) smallerValues.get.getDataPointsAtLevelForLocation(location, depth)
-        else getNumberOfLocations
-        else if (biggerValues.isDefined) biggerValues.get.getDataPointsAtLevelForLocation(location, depth)
-        else getNumberOfLocations
-      case _ =>
-        throw new IllegalStateException("Unknown cut direction: " + cutDirection)
-    }
-  }
+    require(depth > 0)
 
-  def checkLocationArgument(location: Candidate) = {
-    if (location.x > maxX || location.y > maxY) throw new IllegalArgumentException("Location must be contained inside grid: " + location)
+    if (isInSmallValues(location)) {
+      smallerValues match {
+        case Some(_) => smallerValues.get.getDataPointsAtLevelForLocation(location, depth)
+        case None => getNumberOfLocations
+      }
+    } else {
+      biggerValues match {
+        case Some(_) => biggerValues.get.getDataPointsAtLevelForLocation(location, depth)
+        case None => getNumberOfLocations
+      }
+    }
   }
 
 }

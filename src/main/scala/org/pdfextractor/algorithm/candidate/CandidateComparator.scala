@@ -110,23 +110,19 @@ package object candidate {
   }
 
   private def calculateItalianNamePhraseTypeComparisonPart(candidate: Candidate) = {
-    var ret = 0.0
-    val `type`: PhraseType = candidate.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
-    ret += `type`.getComparisonPart * PHRASE_TYPE_FRACTION
-    ret
+    val phraseType: PhraseType = candidate.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
+    phraseType.getComparisonPart * PHRASE_TYPE_FRACTION
   }
 
   private def calculateItalianTotalPhraseTypeComparisonPart(candidate: Candidate) = {
-    var ret = 0.0
-    val `type`: PhraseType = candidate.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
-    ret += `type`.getComparisonPart * PHRASE_TYPE_FRACTION
-    ret
+    val phraseType: PhraseType = candidate.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
+    phraseType.getComparisonPart * PHRASE_TYPE_FRACTION
   }
 
   private def calculateEstonianNameComparisonSum(candidate: Candidate) = {
     var ret = 0.0
-    val `type`: PhraseType = candidate.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
-    ret += `type`.getComparisonPart * PHRASE_TYPE_FRACTION
+    val phraseType: PhraseType = candidate.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
+    ret += phraseType.getComparisonPart * PHRASE_TYPE_FRACTION
     if (candidate.bold) ret += -0.3
     val isPank1 = candidate.properties.get(ESTONIAN_IS_PANK_PRESENT).asInstanceOf[Boolean]
     if (!isPank1) ret += PANK_FRACTION
@@ -134,12 +130,8 @@ package object candidate {
   }
 
   private def calculateEstonianTotalPhraseTypeComparisonPart(first: Candidate) = {
-    var ret = 0.0
-    val phraseTypeOption: Option[Any] = first.properties.get(PHRASE_TYPE)
-    if (phraseTypeOption.isEmpty) throw new IllegalStateException("Expecting phrase type to be present")
-    val `type`: PhraseType = phraseTypeOption.get.asInstanceOf[PhraseType]
-    ret += `type`.getComparisonPart * PHRASE_TYPE_FRACTION
-    ret
+    val phraseType: PhraseType = first.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
+    phraseType.getComparisonPart * PHRASE_TYPE_FRACTION
   }
 
   private def calculateTotalComparisonSum(candidate: Candidate) = {

@@ -12,7 +12,7 @@ import scala.beans.BeanProperty
 *
 * Also rearranges more likely candidates to the start of the collection.
 */
-class Candidate(@BeanProperty val value: Any,
+case class Candidate(@BeanProperty val value: Any,
                 val x: Integer,
                 val y: Integer,
                 val bold: Boolean,
@@ -27,15 +27,8 @@ class Candidate(@BeanProperty val value: Any,
   override def compareTo(other: Candidate): Int = compare(this, other)
 
   override def equals(other: Any): Boolean = {
-    if (other.isInstanceOf[Candidate]) {
-      val otherAsAbstractCandidate = other.asInstanceOf[Candidate]
-      if (otherAsAbstractCandidate.value.equals(this.value)) return true
-    }
-    false
+    other.isInstanceOf[Candidate] &&
+      other.asInstanceOf[Candidate].value.equals(this.value)
   }
-
-  override def hashCode: Int = HashCodeBuilder.reflectionHashCode(this.value)
-
-  override def toString: String = ReflectionToStringBuilder.toString(this, ToStringStyle.MULTI_LINE_STYLE)
 
 }
