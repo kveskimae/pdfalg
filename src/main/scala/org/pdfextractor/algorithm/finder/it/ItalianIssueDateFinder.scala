@@ -3,7 +3,7 @@ package org.pdfextractor.algorithm.finder.it
 import java.text.{ParseException, SimpleDateFormat}
 import java.util.Date
 
-import org.pdfextractor.algorithm.candidate.{Candidate, PHRASE_TYPE, PropertyType}
+import org.pdfextractor.algorithm.candidate.{Candidate, MetaPhraseType, CandidateMetadata}
 import org.pdfextractor.algorithm.finder._
 import org.pdfextractor.algorithm.finder.it.ItalianRegexPatterns._
 import org.pdfextractor.db.domain.PhraseType
@@ -17,7 +17,7 @@ class ItalianIssueDateFinder extends AbstractFinder(PATTERN_ITALIAN_DATE_AS_REGE
 
   protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
     val `type`: PhraseType = findType(parseResult, phrase)
-    val properties: Map[PropertyType, Any] = Map(PHRASE_TYPE -> `type`)
+    val properties: Map[CandidateMetadata, Any] = Map(MetaPhraseType -> `type`)
     val ret = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ITALY, ISSUE_DATE, properties)
     ret
   }

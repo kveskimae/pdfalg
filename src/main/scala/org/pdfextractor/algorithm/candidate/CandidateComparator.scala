@@ -6,52 +6,51 @@ import org.pdfextractor.db.domain.dictionary.SupportedLocales
 
 package object candidate {
 
-  val HEIGHT_FRACTION = 0.3
-  val PAGE_FRACTION = 0.3
-  val BOLD_FRACTION = 0.5
-  val LOCATION_FRACTION = 0.5
-  val PHRASE_TYPE_FRACTION = 0.5
-  val PANK_FRACTION = 0.5
-  val EURO_SIGN_FRACTION = 0.2
-  val DOUBLE_NUMBER_FRACTION = 0.3
-  val BELOW_FRACTION = 0.8
-  val BIGGER_SUM_FRACTION = 0.8
-  val NORMAL_TOTAL_LINE = 1.5
+  val HeightFraction = 0.3
+  val PageFraction = 0.3
+  val BoldFraction = 0.5
+  val LocationFraction = 0.5
+  val PhraseTypeFraction = 0.5
+  val PankFraction = 0.5
+  val EuroSignFraction = 0.2
+  val DoubleFraction = 0.3
+  val BelowFraction = 0.8
+  val BiggerSumFraction = 0.8
+  val NormalLineFraction = 1.5
 
-  // Assumes that payment field types match for the parameter candidates
-  def compare(first: Candidate, other: Candidate): Int = {
+  implicit def candidate2PhraseType(candidate: Candidate): PhraseType = candidate.properties.get(MetaPhraseType).get.asInstanceOf[PhraseType]
+
+  def tryFastResulting(first: Candidate, other: Candidate): Option[Int] = {
     first.locale.getLanguage match {
       case SupportedLocales.ESTONIAN_LANG_CODE =>
         first.paymentFieldType match {
-          case REFERENCE_NUMBER =>
-            // TODO
-            return 0
-            // return PositionalComparator.getInstance.compare(first, other)
-          case IBAN =>
-            return first.value.asInstanceOf[String].compareTo(other.value.asInstanceOf[String])
-          case _ =>
+          case REFERENCE_NUMBER => Some(0)
+          case IBAN => Some(first.value.asInstanceOf[String].compareTo(other.value.asInstanceOf[String]))
+          case _ => None
         }
       case SupportedLocales.ITALIAN_LANG_CODE =>
         first.paymentFieldType match {
-          case ISSUE_DATE =>
-            return 0
-          case VATIN =>
-            return first.value.asInstanceOf[String].compareTo(other.value.asInstanceOf[String])
-          case _ =>
+          case ISSUE_DATE => Some(0)
+          case VATIN => Some(first.value.asInstanceOf[String].compareTo(other.value.asInstanceOf[String]))
+          case _ => None
         }
+      case _ => None
     }
+  }
+
+  def calcCompareResult(first: Candidate, other: Candidate): Int = {
     var thisLikelyhood = 0.0
     var otherLikelyhood = 0.0
-    thisLikelyhood += first.height * HEIGHT_FRACTION
-    otherLikelyhood += other.height * HEIGHT_FRACTION
-    if (first.bold) thisLikelyhood += BOLD_FRACTION
-    if (other.bold) otherLikelyhood += BOLD_FRACTION
+    thisLikelyhood += first.height * HeightFraction
+    otherLikelyhood += other.height * HeightFraction
+    if (first.bold) thisLikelyhood += BoldFraction
+    if (other.bold) otherLikelyhood += BoldFraction
     first.locale.getLanguage match {
       case SupportedLocales.ESTONIAN_LANG_CODE =>
         first.paymentFieldType match {
           case TOTAL =>
-            thisLikelyhood += calculateEstonianTotalPhraseTypeComparisonPart(first)
-            otherLikelyhood += calculateEstonianTotalPhraseTypeComparisonPart(other)
+            thisLikelyhood += calcPhraseTypePart(first)
+            otherLikelyhood += calcPhraseTypePart(other)
           case NAME =>
             thisLikelyhood += calculateEstonianNameComparisonSum(first)
             otherLikelyhood += calculateEstonianNameComparisonSum(other)
@@ -59,93 +58,102 @@ package object candidate {
         }
       case SupportedLocales.ITALIAN_LANG_CODE =>
         first.paymentFieldType match {
-          case TOTAL =>
-          case TOTAL_BEFORE_TAXES =>
-            thisLikelyhood += calculateItalianTotalPhraseTypeComparisonPart(first)
-            otherLikelyhood += calculateItalianTotalPhraseTypeComparisonPart(other)
-          case NAME =>
-            thisLikelyhood += calculateItalianNamePhraseTypeComparisonPart(first)
-            otherLikelyhood += calculateItalianNamePhraseTypeComparisonPart(other)
+          case TOTAL | TOTAL_BEFORE_TAXES | NAME =>
+            thisLikelyhood += calcPhraseTypePart(first)
+            otherLikelyhood += calcPhraseTypePart(other)
           case _ =>
         }
     }
     first.paymentFieldType match {
-      case TOTAL =>
-      case TOTAL_BEFORE_TAXES =>
+      case TOTAL | TOTAL_BEFORE_TAXES =>
         thisLikelyhood += calculateTotalComparisonSum(first)
         otherLikelyhood += calculateTotalComparisonSum(other)
-        if ((first.y - other.y) > 10) thisLikelyhood += BELOW_FRACTION
-        else if ((other.y - first.y) > 10) otherLikelyhood += BELOW_FRACTION
-        if (first.value.asInstanceOf[Double] > other.value.asInstanceOf[Double]) thisLikelyhood += BIGGER_SUM_FRACTION
-        else if (other.value.asInstanceOf[Double] > first.value.asInstanceOf[Double]) otherLikelyhood += BIGGER_SUM_FRACTION
+
+        if ((first.y - other.y) > 10) thisLikelyhood += BelowFraction
+        else if ((other.y - first.y) > 10) otherLikelyhood += BelowFraction
+        if (first.value.asInstanceOf[Double] > other.value.asInstanceOf[Double]) thisLikelyhood += BiggerSumFraction
+        else if (other.value.asInstanceOf[Double] > first.value.asInstanceOf[Double]) otherLikelyhood += BiggerSumFraction
+
       // TODO needs to fall through
-      case NAME =>
-      case INVOICE_ID =>
-        if (first.pageNo < other.pageNo) thisLikelyhood += PAGE_FRACTION
-        else if (other.pageNo < first.pageNo) otherLikelyhood += PAGE_FRACTION
-        else {
-          var locationDiff = 0
-          if (isItalianNameCandidate(first)) locationDiff = first.y - other.y
-          else if (isItalianInvoiceIdCandidate(first)) locationDiff = first.y - other.y
-          // TODO else locationDiff = PositionalComparator.getInstance.compare(first, other)
-          if (isItalianInvoiceIdCandidate(first)) { // Just prefer the one above
-            if (locationDiff > 0) otherLikelyhood += 8 * LOCATION_FRACTION
-            else if (locationDiff < 0) thisLikelyhood += 8 * LOCATION_FRACTION
-          }
-          else if (locationDiff > 0) {
-            otherLikelyhood += LOCATION_FRACTION
-            if (isEstonianNameCandidate(other)) otherLikelyhood += 0.1
-          }
-          else if (locationDiff < 0) {
-            thisLikelyhood += LOCATION_FRACTION
-            if (isEstonianNameCandidate(first)) thisLikelyhood += 0.1
+      case NAME | INVOICE_ID =>
+
+        (first.pageNo - other.pageNo) match {
+          case diff if (diff < 0) => thisLikelyhood += PageFraction
+          case diff if (diff > 0) => otherLikelyhood += PageFraction
+          case _ => {
+            var locationDiff = 0
+            if (isItalianNameCandidate(first)) locationDiff = first.y - other.y
+            else if (isItalianInvoiceIdCandidate(first)) locationDiff = first.y - other.y
+            // TODO else locationDiff = PositionalComparator.getInstance.compare(first, other)
+            if (isItalianInvoiceIdCandidate(first)) { // Just prefer the one above
+              if (locationDiff > 0) otherLikelyhood += 8 * LocationFraction
+              else if (locationDiff < 0) thisLikelyhood += 8 * LocationFraction
+            }
+            else if (locationDiff > 0) {
+              otherLikelyhood += LocationFraction
+              if (isEstonianNameCandidate(other)) otherLikelyhood += 0.1
+            }
+            else if (locationDiff < 0) {
+              thisLikelyhood += LocationFraction
+              if (isEstonianNameCandidate(first)) thisLikelyhood += 0.1
+            }
           }
         }
       case _ =>
     }
-    var ret = 0
-    if (thisLikelyhood > otherLikelyhood) ret = -1
-    else if (thisLikelyhood < otherLikelyhood) ret = 1
-    ret
+
+    (thisLikelyhood - otherLikelyhood) match {
+      case diff if diff > 0 => -1
+      case diff if diff < 0 => 1
+      case _ => 0
+    }
   }
 
-  private def calculateItalianNamePhraseTypeComparisonPart(candidate: Candidate) = {
-    val phraseType: PhraseType = candidate.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
-    phraseType.getComparisonPart * PHRASE_TYPE_FRACTION
+  // Assumes that payment field types match for the parameter candidates
+  def compare(first: Candidate, other: Candidate): Int = {
+    val fastResult: Option[Int] = tryFastResulting(first, other)
+
+    fastResult match {
+      case Some(ret) => ret
+      case _ => calcCompareResult(first, other)
+    }
   }
 
-  private def calculateItalianTotalPhraseTypeComparisonPart(candidate: Candidate) = {
-    val phraseType: PhraseType = candidate.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
-    phraseType.getComparisonPart * PHRASE_TYPE_FRACTION
+  private def calcPhraseTypePart(phraseType: PhraseType) = {
+    phraseType.getComparisonPart * PhraseTypeFraction
   }
 
   private def calculateEstonianNameComparisonSum(candidate: Candidate) = {
     var ret = 0.0
-    val phraseType: PhraseType = candidate.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
-    ret += phraseType.getComparisonPart * PHRASE_TYPE_FRACTION
+    val phraseType: PhraseType = candidate.properties.get(MetaPhraseType).get.asInstanceOf[PhraseType]
+    ret += phraseType.getComparisonPart * PhraseTypeFraction
     if (candidate.bold) ret += -0.3
-    val isPank1 = candidate.properties.get(ESTONIAN_IS_PANK_PRESENT).asInstanceOf[Boolean]
-    if (!isPank1) ret += PANK_FRACTION
+    val isPank1 = candidate.properties.get(HasPank).asInstanceOf[Boolean]
+    if (!isPank1) ret += PankFraction
     ret
-  }
-
-  private def calculateEstonianTotalPhraseTypeComparisonPart(first: Candidate) = {
-    val phraseType: PhraseType = first.properties.get(PHRASE_TYPE).get.asInstanceOf[PhraseType]
-    phraseType.getComparisonPart * PHRASE_TYPE_FRACTION
   }
 
   private def calculateTotalComparisonSum(candidate: Candidate) = {
     var ret = 0.0
-    if (candidate.properties.get(NORMAL_LINE).get.asInstanceOf[Boolean]) ret += NORMAL_TOTAL_LINE
-    if (candidate.properties.get(EURO_SIGN_FOUND).get.asInstanceOf[Boolean]) ret += EURO_SIGN_FRACTION
-    if (candidate.properties.get(DOUBLE_NUMBER).get.asInstanceOf[Boolean]) ret += DOUBLE_NUMBER_FRACTION
+    if (candidate.properties.get(IsNormalLine).get.asInstanceOf[Boolean]) ret += NormalLineFraction
+    if (candidate.properties.get(HasEuroSign).get.asInstanceOf[Boolean]) ret += EuroSignFraction
+    if (candidate.properties.get(IsDouble).get.asInstanceOf[Boolean]) ret += DoubleFraction
     ret
   }
 
-  private def isItalianInvoiceIdCandidate(candidate: Candidate) = SupportedLocales.ITALY.getLanguage.equals(candidate.locale.getLanguage) && (candidate.paymentFieldType match {case INVOICE_ID => true; case _ => false})
+  private def isItalianInvoiceIdCandidate(candidate: Candidate) = {
+    SupportedLocales.ITALY.getLanguage == candidate.locale.getLanguage &&
+      candidate.paymentFieldType == INVOICE_ID
+  }
 
-  private def isItalianNameCandidate(candidate: Candidate) = SupportedLocales.ITALY.getLanguage.equals(candidate.locale.getLanguage) && (candidate.paymentFieldType match {case NAME => true; case _ => false})
+  private def isItalianNameCandidate(candidate: Candidate) = {
+    SupportedLocales.ITALY.getLanguage == candidate.locale.getLanguage &&
+      candidate.paymentFieldType == NAME
+  }
 
-  private def isEstonianNameCandidate(candidate: Candidate) = SupportedLocales.ESTONIA.getLanguage.equals(candidate.locale.getLanguage) && (candidate.paymentFieldType match {case NAME => true; case _ => false})
+  private def isEstonianNameCandidate(candidate: Candidate) = {
+    SupportedLocales.ESTONIA.getLanguage == candidate.locale.getLanguage &&
+      candidate.paymentFieldType == NAME
+  }
 
 }

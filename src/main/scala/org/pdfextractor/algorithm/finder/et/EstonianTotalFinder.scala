@@ -70,7 +70,7 @@ class EstonianTotalFinder extends AbstractFinder {
     val `type` = params(1).asInstanceOf[PhraseType]
     val euroSignFound = EstonianTotalFinder.isEuroPresent(phrase.text)
     val normalTotalLine = EstonianTotalFinder.isNormalTotalLine(phrase.text)
-    val properties: Map[PropertyType, Any] = Map(DOUBLE_NUMBER -> doubleNumber, PHRASE_TYPE -> `type`, EURO_SIGN_FOUND -> euroSignFound, NORMAL_LINE -> normalTotalLine)
+    val properties: Map[CandidateMetadata, Any] = Map(IsDouble -> doubleNumber, MetaPhraseType -> `type`, HasEuroSign -> euroSignFound, IsNormalLine -> normalTotalLine)
     val ret = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, TOTAL, properties)
     ret
   }

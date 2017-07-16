@@ -1,6 +1,6 @@
 package org.pdfextractor.algorithm.finder.it
 
-import org.pdfextractor.algorithm.candidate.{Candidate, PHRASE_TYPE, PropertyType}
+import org.pdfextractor.algorithm.candidate.{Candidate, MetaPhraseType, CandidateMetadata}
 import org.pdfextractor.algorithm.finder._
 import org.pdfextractor.algorithm.finder.it.ItalianRegexPatterns._
 import org.apache.commons.lang3.StringUtils
@@ -28,7 +28,7 @@ class ItalianNameFinder extends AbstractFinder(None, None, false) {
 
   protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
     val `type` = phraseTypesStore.findType(SupportedLocales.ITALY, NAME, phrase.text)
-    val properties: Map[PropertyType, Any] = Map(PHRASE_TYPE -> `type`)
+    val properties: Map[CandidateMetadata, Any] = Map(MetaPhraseType -> `type`)
     val ret = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ITALY, NAME, properties)
     ret
   }

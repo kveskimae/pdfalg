@@ -1,6 +1,6 @@
 package org.pdfextractor.algorithm.finder.et
 
-import org.pdfextractor.algorithm.candidate.{DOUBLE_NUMBER, EURO_SIGN_FOUND}
+import org.pdfextractor.algorithm.candidate.{IsDouble, HasEuroSign}
 import org.pdfextractor.algorithm.finder.{AbstractFinderTest, AbstractInvoiceFileReader}
 import org.pdfextractor.algorithm.io._
 import org.slf4j.{Logger, LoggerFactory}
@@ -28,8 +28,8 @@ class EstonianTotalFinderTest extends AbstractFinderTest {
     assert(firstCandidate.value == 16.87d)
     assert(35 == firstCandidate.x)
     assert(414 == firstCandidate.y)
-    assert(firstCandidate.properties.get(DOUBLE_NUMBER).get.asInstanceOf[Boolean])
-    assert(!firstCandidate.properties.get(EURO_SIGN_FOUND).get.asInstanceOf[Boolean])
+    assert(firstCandidate.properties.get(IsDouble).get.asInstanceOf[Boolean])
+    assert(!firstCandidate.properties.get(HasEuroSign).get.asInstanceOf[Boolean])
   }
 
 }

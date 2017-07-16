@@ -20,7 +20,7 @@ case class Candidate(@BeanProperty val value: Any,
                 val pageNo: Integer,
                 val locale: Locale,
                 val paymentFieldType: PaymentFieldType,
-                val properties: Map[PropertyType, Any]) extends Comparable[Candidate] {
+                val properties: Map[CandidateMetadata, Any]) extends Comparable[Candidate] {
 
   require(Option(value).isDefined)
 
