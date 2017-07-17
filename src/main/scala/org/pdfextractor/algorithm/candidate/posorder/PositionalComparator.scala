@@ -10,10 +10,12 @@ import scala.collection._
 
 object PositionalComparator extends Ordering[Candidate] {
 
+  type field2Points = mutable.HashMap[PaymentFieldType, Seq[Point]]
+
   val nodes: mutable.HashMap[PaymentFieldType, Node] = mutable.HashMap.empty
 
   try {
-    val map: mutable.HashMap[PaymentFieldType, Seq[Point]] = mutable.HashMap.empty[PaymentFieldType, Seq[Point]] // TODO!! IOHelper.getMapFromFile("locations.json");
+    val map: field2Points = mutable.HashMap.empty // TODO!! IOHelper.getMapFromFile("locations.json");
 
     map.keySet.foreach((key: PaymentFieldType) => {
       map.get(key) match {

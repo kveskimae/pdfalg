@@ -14,107 +14,63 @@ import scala.collection.{Map, mutable}
 
 package object io {
 
-  def getMapFromFile(fileName: String): Map[PaymentFieldType, Seq[Point]] = {
+  type rawField2Pts = (String, Seq[Map2[String, BigInt]])
 
-    val jsonAsMap: Map[Any, Any] = getAsMap(fileName)
+  type field2Pts = (PaymentFieldType, Seq[Point])
 
-    val retBuilder: mutable.MapBuilder[PaymentFieldType, Seq[Point], Map[PaymentFieldType, Seq[Point]]] = new scala.collection.mutable.MapBuilder[PaymentFieldType, Seq[Point], Map[PaymentFieldType, Seq[Point]]](Map.empty)
+  type field2PtsMap = Map[PaymentFieldType, Seq[Point]]
 
-    for (jsonAsMapEntry <- jsonAsMap) {
-
-      val retEntry: Tuple2[PaymentFieldType, Seq[Point]] = extractEntry(jsonAsMapEntry)
-
-      retBuilder += retEntry
-    }
-
-    retBuilder.result()
+  def getMapFromFile(fileName: String): field2PtsMap = {
+    getAsMap(fileName).map(jsonAsMapEntry => {
+      extractEntry(jsonAsMapEntry)
+    })
   }
 
-  private def extractPoints(field2PointsTuple: (String, Seq[Map2[String, BigInt]])): scala.Seq[_root_.java.awt.Point] = {
-
-    val pointsBuilder = ArrayBuffer[Point]()
-
-    val pointsXY: Seq[Map2[String, BigInt]] = field2PointsTuple._2
-
-    for ( pointXY: Map2[String, BigInt] <- pointsXY ) {
-
-      val x: Int = pointXY.get("x").get.intValue()
-
-      val y: Int = pointXY.get("y").get.intValue()
-
-      val p: Point = new Point(x, y)
-
-      pointsBuilder += p
-    }
-
-    val points = pointsBuilder.toArray
-
-    points
+  private def extractPoints(field2PointsTuple: rawField2Pts): Seq[Point] = {
+    field2PointsTuple._2.
+      map(pt => {
+        val x = pt.get("x").get.intValue()
+        val y = pt.get("y").get.intValue()
+        new Point(x, y)
+      })
   }
 
-  private def extractEntry(jsonAsMapEntry: (Any, Any)): (PaymentFieldType, scala.Seq[_root_.java.awt.Point]) = {
+  private def extractEntry(jsonAsMapEntry: (Any, Any)): field2Pts = {
+    val field2PointsTuple: rawField2Pts = jsonAsMapEntry.asInstanceOf[rawField2Pts]
 
-    val field2PointsTuple: Tuple2[String, Seq[Map2[String, BigInt]]] = jsonAsMapEntry.asInstanceOf[Tuple2[String, Seq[Map2[String, BigInt]]]]
-
-    val fieldAsString: String = field2PointsTuple._1
-
-    val fieldType: PaymentFieldType = PaymentFieldType.valueOf(fieldAsString)
-
+    val fieldType: PaymentFieldType = PaymentFieldType.valueOf(field2PointsTuple._1)
     val points: Seq[Point] = extractPoints(field2PointsTuple)
 
-    val retEntry: Tuple2[PaymentFieldType, Seq[Point]] = (fieldType, points)
-
-    retEntry
+    (fieldType, points)
   }
 
-  private def getAsMap(fileName: String): _root_.scala.collection.Map[Any, Any] = {
-
+  private def getAsMap(fileName: String): Map[Any, Any] = {
     val jsonAsString = getStringFromFile(fileName)
-
     val jsonAsJValue: JValue = JsonParser.parse(jsonAsString)
-
     val jsonAsMap: Map[Any, Any] = jsonAsJValue.values.asInstanceOf[Map[Any, Any]]
-
     jsonAsMap
   }
 
   def getStringFromFile(fileName: String): String = {
-    val inputStream = getInputStreamFromFile(fileName)
-    val ret = IOUtils.toString(inputStream)
-    ret
+    IOUtils.toString(getInputStreamFromFile(fileName))
   }
 
   def getInputStreamFromFile(fileName: String): InputStream = {
-    val inputStream: InputStream = Thread.currentThread.getContextClassLoader.getResourceAsStream(fileName)
-    inputStream
+    Thread.currentThread.getContextClassLoader.getResourceAsStream(fileName)
   }
 
   def getFolderAsFile(location2: String): File = {
     val url: java.net.URL = Thread.currentThread.getContextClassLoader.getResource(location2)
     val location: String = url.getFile
     val file: File = new File(location)
-
-    if (Option(file).isEmpty) throw new IllegalArgumentException("No folder was found at '" + location + "'")
-
-    checkFileExistsAndIsReadable(file, true)
-
+    checkFile(file, true)
     file
   }
 
-  def checkFileExistsAndIsReadable(file: File, checkIsDirectory: Boolean): Unit = {
-    if (!file.exists) {
-      throw new RuntimeException("Location '" + file + "' does not exist")
-    }
-
-    if (!file.canRead) {
-      throw new RuntimeException("Location '" + file + "' is not readable for application")
-    }
-
-    if (checkIsDirectory) {
-      if (!file.isDirectory) {
-        throw new RuntimeException("Location '" + file + "' is not a folder")
-      }
-    }
+  def checkFile(file: File, checkIsDirectory: Boolean): Unit = {
+    require(file.exists, "Location '" + file + "' does not exist")
+    require(file.canRead, "Location '" + file + "' is not readable for application")
+    require(!checkIsDirectory || file.isDirectory, "Location '" + file + "' is not a folder")
   }
 
 }

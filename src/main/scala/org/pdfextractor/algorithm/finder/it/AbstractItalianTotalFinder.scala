@@ -94,12 +94,9 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, tru
 	}
 
 	def isDotThousandsSeparator(totalAsString: String): Boolean = {
-		if (totalAsString.contains(",") && totalAsString.contains(".")) {
-			val firstCommaIdx = totalAsString.indexOf(',')
-			val firstDotIdx = totalAsString.indexOf('.')
-			return firstDotIdx < firstCommaIdx
-		}
-		false
+		totalAsString.contains(",") &&
+			totalAsString.contains(".") &&
+			(totalAsString.indexOf('.') < totalAsString.indexOf(','))
 	}
 
 	def isDouble(number: Double): Boolean = (number % 1) != 0

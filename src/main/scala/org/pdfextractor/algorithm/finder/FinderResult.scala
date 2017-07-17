@@ -8,17 +8,12 @@ import scala.collection.mutable
 
 class FinderResult {
 
-  type CandidatesMapBuilder = mutable.MapBuilder[PaymentFieldType, mutable.Set[Candidate], Map[PaymentFieldType, mutable.Set[Candidate]]]
-
-  private val candidatesBuilder: CandidatesMapBuilder = new scala.collection.mutable.MapBuilder[PaymentFieldType, mutable.Set[Candidate], Map[PaymentFieldType, mutable.Set[Candidate]]](Map.empty)
-
-  type Field2Candidates = Tuple2[PaymentFieldType, mutable.Set[Candidate]]
-
-  PaymentFieldType.values.foreach(fieldType => {
-    candidatesBuilder += Tuple2(fieldType, mutable.Set.empty)
-  })
-
-  val candidatesMap: Map[PaymentFieldType, mutable.Set[Candidate]] = candidatesBuilder.result()
+  val candidatesMap: Map[PaymentFieldType, mutable.Set[Candidate]] =
+    PaymentFieldType.values.
+      zip(
+        List.fill(PaymentFieldType.values.size)(mutable.Set.empty[Candidate])
+      ).
+      toMap
 
   def getCandidates(fieldType: PaymentFieldType): mutable.Set[Candidate] = {
     candidatesMap(fieldType)
@@ -27,15 +22,13 @@ class FinderResult {
   override def toString: String = ReflectionToStringBuilder.toString(this, ToStringStyle.MULTI_LINE_STYLE)
 
   def getValue[T >: Null](fieldType: PaymentFieldType): Option[T] = {
-    if (getCandidates(fieldType).isEmpty) {
-      None
-    } else {
+    if (getCandidates(fieldType).nonEmpty) {
       Some(getCandidates(fieldType).head.asInstanceOf[T])
+    } else {
+      None
     }
   }
 
-  def hasValuesForType(fieldType: PaymentFieldType): Boolean = {
-    !getCandidates(fieldType).isEmpty
-  }
+  def hasValuesForType(fieldType: PaymentFieldType): Boolean = getCandidates(fieldType).nonEmpty
 
 }

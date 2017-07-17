@@ -9,7 +9,7 @@ import org.apache.pdfbox.pdmodel.graphics.state.PDTextState
 import org.apache.pdfbox.pdmodel.{PDDocument, PDPage}
 import org.apache.pdfbox.text.{PDFTextStripper, TextPosition}
 
-import scala.collection.LinearSeq
+import scala.collection.{LinearSeq, Traversable, mutable}
 import scala.collection.immutable.List
 import scala.collection.mutable.ListBuffer
 import org.pdfextractor.algorithm.candidate.posorder._
@@ -17,20 +17,18 @@ import org.pdfextractor.algorithm.candidate.posorder._
 package object parser {
 
   // Default space tolerance: 0.5, average character tolerance: 0.3
-  class PageParser() extends PDFTextStripper() {
+  class PageParser(private var nextCharacterStartsNewWord: Boolean = true,
+                   private val alignmentMatcher: AlignmentMatcher = new AlignmentMatcher(0f, 0f, 0f),
+                   private val phrases: mutable.ListBuffer[Phrase] = mutable.ListBuffer.empty,
+                   private var matchesFound: ListBuffer[Phrase] = mutable.ListBuffer.empty,
+                   private val builder: StringBuilder = new StringBuilder,
+                   private var x: Float = 0f,
+                   private var y: Float = 0f,
+                   private var height: Float = 0f,
+                   private var width: Float = 0f,
+                   private var bold: Boolean = false) extends PDFTextStripper {
 
-    private var nextCharacterStartsNewWord = true
-    private val alignmentMatcher = new AlignmentMatcher(0f, 0f, 0f)
-    private val phrases = scala.collection.mutable.ListBuffer.empty[Phrase]
-    var matchesFound: ListBuffer[Phrase] = scala.collection.mutable.ListBuffer.empty[Phrase]
-    private val builder = new StringBuilder
-    private var x = 0f
-    private var y = 0f
-    private var height = 0f
-    private var width = 0f
-    private var bold = false
-
-    setSortByPosition(true) // called inside constructor
+    setSortByPosition(true)
 
     @throws[IOException]
     override protected def endPage(page: PDPage): Unit = { // And add the last phrase too
@@ -76,9 +74,9 @@ package object parser {
       val delta = text.getWidthDirAdj + fontSize + charSpacing
       var maximumXForNextCharacterWithSpaceBetween = text.getXDirAdj + 2 * delta
       maximumXForNextCharacterWithSpaceBetween *= horizontalScaling
-      alignmentMatcher.setMaximumExpectedXCoordinateForNextChacater(text.getXDirAdj + text.getWidthDirAdj + text.getWidthOfSpace) // Space width is just in case
+      alignmentMatcher.maximumXForNextCharacter = text.getXDirAdj + text.getWidthDirAdj + text.getWidthOfSpace // Space width is just in case
 
-      alignmentMatcher.setMaximumXForNextCharacterWithSpaceBetween(maximumXForNextCharacterWithSpaceBetween)
+      alignmentMatcher.maximumXForNextCharacterWithSpaceBetween = maximumXForNextCharacterWithSpaceBetween
       super.processTextPosition(text)
     }
 
@@ -119,8 +117,6 @@ package object parser {
     }
 
     def getPhrases: LinearSeq[Phrase] = phrases.toList
-
-
   }
 
 
@@ -156,62 +152,21 @@ package object parser {
   class ParseResult(val text: String, val phrases: LinearSeq[Phrase]) {
 
     def findPhrasesBelow(phrase: Phrase): LinearSeq[Phrase] = {
-      var matchesFound: ListBuffer[Phrase] = scala.collection.mutable.ListBuffer.empty[Phrase]
-      val minYForTokenBelow = phrase.y + phrase.height
-      for (token <- phrases) {
-        val diff = Math.abs(token.x - phrase.x)
-        if ((phrase.pageNumber.equals(token.pageNumber)) && diff < 10 && token.y >= minYForTokenBelow) matchesFound += token
-      }
-      matchesFound.toList
+      phrases.
+        filter(token =>
+          phrase.pageNumber.equals(token.pageNumber) &&
+          Math.abs(token.x - phrase.x) < 10 &&
+          token.y >= phrase.y + phrase.height
+        )
     }
 
     def findPhrasesAbove(phrase: Phrase): LinearSeq[Phrase] = {
-      var matchesFound: ListBuffer[Phrase] = scala.collection.mutable.ListBuffer.empty[Phrase]
-      val minYForTokenAbove = phrase.y
-      for (token <- phrases) {
-        val diff = Math.abs(token.x - phrase.x)
-        if ((phrase.pageNumber.equals(token.pageNumber)) && diff < 10 && token.y < minYForTokenAbove) matchesFound += token
-      }
-      matchesFound.toList
-    }
-
-    def findLeftmostPhrase(phrases: LinearSeq[Phrase]): Phrase = {
-      if (phrases.isEmpty) throw new IllegalArgumentException("Parameter phrases list did not contain any phrases")
-      val iterator = phrases.iterator
-      var closest = iterator.next
-      while ( {
-        iterator.hasNext
-      }) {
-        val compare = iterator.next
-        if (compare.x < closest.x) closest = compare
-      }
-      closest
-    }
-
-    def findRightmostPhrase(phrases: LinearSeq[Phrase]): Phrase = {
-      if (phrases.isEmpty) throw new IllegalArgumentException("Parameter phrases list did not contain any phrases")
-      val iterator = phrases.iterator
-      var closest = iterator.next
-      while ( {
-        iterator.hasNext
-      }) {
-        val compare = iterator.next
-        if (compare.x > closest.x) closest = compare
-      }
-      closest
-    }
-
-    def findUpmostPhrase(phrases: LinearSeq[Phrase]): Phrase = {
-      if (phrases.isEmpty) throw new IllegalArgumentException("Parameter phrases list did not contain any phrases")
-      val iterator = phrases.iterator
-      var closest = iterator.next
-      while ( {
-        iterator.hasNext
-      }) {
-        val compare = iterator.next
-        if (compare.y < closest.y) closest = compare
-      }
-      closest
+      phrases.
+        filter(token =>
+          phrase.pageNumber.equals(token.pageNumber) &&
+            Math.abs(token.x - phrase.x) < 10 &&
+            token.y < phrase.y
+        )
     }
 
     // TODO
@@ -274,27 +229,26 @@ package object parser {
     }
 
     def findClosestPhraseAbove(phrase: Phrase): Option[Phrase] = {
-      Option(phrase).orElse(throw new NullPointerException)
-      val phrasesAbove = findPhrasesAbove(phrase)
-      if (phrasesAbove.isEmpty) {
-        None
+      require(Option(phrase).isDefined)
+
+      val above = findPhrasesAbove(phrase)
+
+      if (above.nonEmpty) {
+        Some(
+          above.reduceLeft((p1: Phrase, p2: Phrase) => {
+            if (p1.y > p2.y) p1
+            else p2
+          })
+        )
       } else {
-        val iterator = phrasesAbove.iterator
-        var closest = iterator.next
-        while ( {
-          iterator.hasNext
-        }) {
-          val token = iterator.next
-          if (token.y > closest.y) closest = token
-        }
-        Some(closest)
+        None
       }
     }
 
     def findClosestPhraseOnRight(phrase: Phrase): Option[Phrase] = {
       val tokensOnRight = findTokensOnRight(phrase)
       if (!tokensOnRight.isEmpty) {
-        val closestToken = findLeftmostPhrase(tokensOnRight)
+        val closestToken = leftmost(tokensOnRight)
         Some(closestToken)
       } else {
         None
@@ -304,7 +258,7 @@ package object parser {
     def findClosestPhraseOnLeft(phrase: Phrase): Option[Phrase] = {
       val tokensOnLeft = findTokensOnLeft(phrase)
       if (!tokensOnLeft.isEmpty) {
-        val closestToken = findRightmostPhrase(tokensOnLeft)
+        val closestToken = rightmost(tokensOnLeft)
         Option(closestToken)
       } else {
        Option.empty
@@ -312,21 +266,19 @@ package object parser {
     }
 
     def findClosestPhrasesBelowOrRight(phrase: Phrase): LinearSeq[Phrase] = {
-      var matchesFound: ListBuffer[Phrase] = scala.collection.mutable.ListBuffer.empty[Phrase]
-      val minYForTokenBelow = phrase.y + 1
-      for (token <- phrases) {
-        val diff = token.x - phrase.x
-        if ((phrase.pageNumber.equals(token.pageNumber)) && diff > 10 && token.y >= minYForTokenBelow) matchesFound += token
+      val matchesFoundAsList = phrases.
+        filter(token => phrase.pageNumber.equals(token.pageNumber)).
+        filter(token => token.x - phrase.x > 10).
+        filter(token => token.y >= phrase.y + 1)
+
+      if (!matchesFoundAsList.isEmpty) {
+        val leftmostPhrase: Phrase = leftmost(matchesFoundAsList)
+        val uppermostPhrase: Phrase = uppermost(matchesFoundAsList)
+        if (uppermostPhrase != leftmostPhrase) LinearSeq(leftmostPhrase, uppermostPhrase)
+        else LinearSeq(leftmostPhrase)
+      } else {
+        LinearSeq.empty
       }
-      val ret = scala.collection.mutable.ListBuffer.empty[Phrase]
-      if (!matchesFound.isEmpty) {
-        val matchesFoundAsList: List[Phrase] = matchesFound.toList
-        val leftmost: Phrase = findLeftmostPhrase(matchesFoundAsList)
-        ret += leftmost
-        val upmost: Phrase = findUpmostPhrase(matchesFoundAsList)
-        if (upmost != leftmost) ret += upmost
-      }
-      ret.toList
     }
 
   }
@@ -343,15 +295,7 @@ package object parser {
     }
 
     def isHorizontalPositionContinuesPrevious(text: TextPosition): Boolean = {
-      if (text.getXDirAdj.compareTo(maximumXForNextCharacter) <= 0) {
-        true
-      }
-      else if (isSpace(text)) {
-        true
-      }
-      else {
-        false
-      }
+      text.getXDirAdj.compareTo(maximumXForNextCharacter) <= 0 || isSpace(text)
     }
 
     def isSpace(text: TextPosition): Boolean = {
@@ -364,14 +308,6 @@ package object parser {
       this.lastYCoordinate = yCoordinate
     }
 
-    def setMaximumExpectedXCoordinateForNextChacater(maximumXForNextCharacter: Float): Unit = {
-      this.maximumXForNextCharacter = maximumXForNextCharacter
-    }
-
-    def setMaximumXForNextCharacterWithSpaceBetween(maximumXForNextCharacterWithSpaceBetween: Float): Unit = {
-      this.maximumXForNextCharacterWithSpaceBetween = maximumXForNextCharacterWithSpaceBetween
-    }
-
   }
 
   def roundToTens(original: Float): Float = {
@@ -379,10 +315,29 @@ package object parser {
     formatter.format(original).toFloat
   }
 
-  private val Bold = "(?i)BOLD".r // Text style
+  val Bold = "(?i)BOLD".r
 
   def isBoldFont(fontName: String): Boolean = {
     !StringUtils.isBlank(fontName) && Bold.findFirstIn(fontName).nonEmpty
+  }
+
+  def leftmost(phrases: Traversable[Phrase]): Phrase = {
+    findWithReduce(phrases, (p1, p2) => if (p1.x < p2.x) p1 else p2)
+  }
+
+  def rightmost(phrases: Traversable[Phrase]): Phrase = {
+    findWithReduce(phrases, (p1, p2) => if (p1.x > p2.x) p1 else p2)
+  }
+
+  def uppermost(phrases: Traversable[Phrase]): Phrase = {
+    findWithReduce(phrases, (p1, p2) => if (p1.y < p2.y) p1 else p2)
+  }
+
+  private def findWithReduce(phrases: Traversable[Phrase], fn: (Phrase, Phrase) => Phrase): Phrase =
+  {
+    require(phrases.nonEmpty)
+
+    phrases.reduce(fn)
   }
 
 }

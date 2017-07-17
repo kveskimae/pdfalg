@@ -82,7 +82,7 @@ class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN
       // Interpret the string as a decimal integer and compute the remainder of that number on division by 97.
       val ibanNumber = new BigInteger(numericAccountNumber.toString)
 
-      ibanNumber.mod(MAGIC_NUMBER).intValue == 1
+      ibanNumber.mod(MagicNo).intValue == 1
     }
   }
 

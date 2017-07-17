@@ -10,17 +10,16 @@ package object finder {
 
   private[finder] val FOCUS_TYPE = INVOICE_ID // if you have a trouble with particular field type, set it here & let it log
 
+  val MagicNo = new BigInteger("97")
+
   def isVoidPhrase(phrase: Phrase): Boolean = {
-    if (Option(phrase.text).isDefined) return isVoidText(phrase.text)
-    true
+    Option(phrase.text).isEmpty || isVoidText(phrase.text)
   }
 
   def isVoidText(text: String): Boolean = PATTERN_VOID_AS_REGEX.pattern.matcher(text).matches
 
   def combinePhrases1(phrase: Phrase, otherPhrase: Phrase): Phrase = {
-    val ret = new Phrase(otherPhrase.x, otherPhrase.y, otherPhrase.pageNumber, otherPhrase.height, phrase.width, phrase.text + " " + otherPhrase.text, otherPhrase.bold)
-    ret
+    new Phrase(otherPhrase.x, otherPhrase.y, otherPhrase.pageNumber, otherPhrase.height, phrase.width, phrase.text + " " + otherPhrase.text, otherPhrase.bold)
   }
-  val MAGIC_NUMBER = new BigInteger("97")
 
 }
