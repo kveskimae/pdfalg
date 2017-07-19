@@ -5,6 +5,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesStore
+import org.pdfextractor.algorithm.finder._
 
 import scala.collection.LinearSeq
 
@@ -15,8 +16,8 @@ class EstonianNameFinderTest extends AbstractFinderTest {
   @Autowired var estonianNameFinder: EstonianNameFinder = _
 
   "Estonian name finder" should "determine if word 'pank' is present in name" in {
-    assert(EstonianNameFinder.isPankPresent("AS SEB Pank"))
-    assert(!EstonianNameFinder.isPankPresent("Region Invest OÜ"))
+    assert(isPankPresent("AS SEB Pank"))
+    assert(!isPankPresent("Region Invest OÜ"))
   }
 
   "Estonian name finder" should "discard in a middle of a sentence" in {

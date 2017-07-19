@@ -16,7 +16,7 @@ import scala.collection.mutable.ListBuffer
 import org.pdfextractor.algorithm.finder._
 
 @Service
-class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN_START_WITH_REST_OF_LINE_AS_REGEX, PATTERN_ESTONIAN_IBAN_AS_REGEX, false) {
+class EstonianAccountNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_IBAN_START_WITH_REST_OF_LINE_AS_REGEX, PATTERN_ESTONIAN_IBAN_AS_REGEX, false) {
 
   override def findCandidates(parseResult: ParseResult): Seq[Candidate]  = {
     val ret: ListBuffer[Candidate] = collection.mutable.ListBuffer.empty[Candidate]
@@ -33,6 +33,8 @@ class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN
       }
     }
     linesContainingIBANStart --= linesContainingIBANWithoutSpaces
+    println("1 ret = " + ret.toSeq.toString())
+    println("linesContainingIBANStart=" + linesContainingIBANStart)
     for (oneLineContainingIBANStart <- linesContainingIBANStart) {
       val ibanStartingPartMatcher = PATTERN_ESTONIAN_IBAN_START_AS_REGEX.pattern.matcher(oneLineContainingIBANStart)
       while (ibanStartingPartMatcher.find()) {
@@ -59,6 +61,7 @@ class EstonianAccountNumberFinder() extends AbstractFinder(PATTERN_ESTONIAN_IBAN
         }
       }
     }
+    println("2 ret = " + ret.toSeq.toString())
     ret
   }
 

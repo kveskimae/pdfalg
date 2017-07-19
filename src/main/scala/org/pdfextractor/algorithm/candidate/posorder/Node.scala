@@ -49,12 +49,9 @@ class Node(val cutDirection: CutDirection,
         val cutLine = (minX + maxX) / 2
         smallerValues = Some(new Node(Horizontal, minX, cutLine - 1, minY, maxY))
         biggerValues = Some(new Node(Horizontal, cutLine, maxX, minY, maxY))
-        locations.foreach(
-          point => {
-            if (point.getX < cutLine) smallerValues.get.addLocation(point)
-            else biggerValues.get.addLocation(point)
-          }
-        )
+        val split = locations.partition(_.x < cutLine)
+        smallerValues.get.addLocations(split._1)
+        biggerValues.get.addLocations(split._2)
       case Horizontal =>
         val cutLine = (minY + maxY) / 2
         smallerValues = Some(new Node(Vertical, minX, maxX, minY, cutLine - 1))

@@ -23,26 +23,31 @@ class ItalianIssueDateFinder extends AbstractFinder(PATTERN_ITALIAN_DATE_AS_REGE
   }
 
   private def findType(parseResult: ParseResult, phrase: Phrase): PhraseType = {
-    var `type`: Option[PhraseType] = tryParseType(phrase)
-    if (`type`.isDefined) return `type`.get
-    var closestPhraseOnLeft = parseResult.findClosestPhraseOnLeft(phrase)
-    while ( {
-      closestPhraseOnLeft.isDefined
-    }) if (isVoidPhrase(closestPhraseOnLeft.get)) closestPhraseOnLeft = parseResult.findClosestPhraseOnRight(closestPhraseOnLeft.get)
-    else {
-      `type` = tryParseType(closestPhraseOnLeft.get)
-      closestPhraseOnLeft = None
+    tryParseType(phrase) match {
+      case Some(ret) => ret
+      case _ =>
+        var closestPhraseOnLeft = parseResult.findClosestPhraseOnLeft(phrase)
+        var `type`: Option[PhraseType] = None
+        while (closestPhraseOnLeft.isDefined) {
+          if (isVoidPhrase(closestPhraseOnLeft.get)) {
+            closestPhraseOnLeft = parseResult.findClosestPhraseOnRight(closestPhraseOnLeft.get)
+          } else {
+            `type` = tryParseType(closestPhraseOnLeft.get)
+            closestPhraseOnLeft = None
+          }
+        }
+
+        if (`type`.isDefined) return `type`.get
+        var closestPhraseAbove = parseResult.findClosestPhraseAbove(phrase)
+        while ( {
+          closestPhraseAbove.isDefined
+        }) if (isVoidPhrase(closestPhraseAbove.get)) closestPhraseAbove = parseResult.findClosestPhraseAbove(closestPhraseAbove.get)
+        else {
+          `type` = tryParseType(closestPhraseAbove.get)
+          closestPhraseAbove = None
+        }
+        `type`.get
     }
-    if (`type`.isDefined) return `type`.get
-    var closestPhraseAbove = parseResult.findClosestPhraseAbove(phrase)
-    while ( {
-      closestPhraseAbove.isDefined
-    }) if (isVoidPhrase(closestPhraseAbove.get)) closestPhraseAbove = parseResult.findClosestPhraseAbove(closestPhraseAbove.get)
-    else {
-      `type` = tryParseType(closestPhraseAbove.get)
-      closestPhraseAbove = None
-    }
-    `type`.get
   }
 
   private def tryParseType(phrase: Phrase): Option[PhraseType] = {
@@ -58,17 +63,19 @@ class ItalianIssueDateFinder extends AbstractFinder(PATTERN_ITALIAN_DATE_AS_REGE
   def isValueAllowed(value: Any): Boolean = value.asInstanceOf[Date].before(new Date)
 
   def parseValue(raw: String): Any = {
-    var replaced = raw.replaceAll("-", "/")
-    replaced = replaced.replaceAll("""\s""", "/")
-    replaced = replaced.replaceAll("""\.""", "/")
+    val df: SimpleDateFormat = raw.length match {
+      case 8 => new SimpleDateFormat("dd/MM/yy")
+      case 10 => new SimpleDateFormat("dd/MM/yyyy")
+      case _ => throw new IllegalArgumentException("Unsupported date format: '" + raw + "'")
+    }
+
     try {
-      val df: SimpleDateFormat = {
-        if (raw.length == 10) new SimpleDateFormat("dd/MM/yyyy")
-        else if (raw.length == 8) new SimpleDateFormat("dd/MM/yy")
-        else throw new IllegalArgumentException("Unsupported date format: '" + raw + "'")
-      }
-      val ret = df.parse(replaced)
-      ret
+      df.parse(
+        raw.
+          replaceAll("-", "/").
+          replaceAll("""\s""", "/").
+          replaceAll("""\.""", "/")
+      )
     } catch {
       case pe: ParseException =>
         throw new IllegalArgumentException(pe)

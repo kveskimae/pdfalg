@@ -56,13 +56,9 @@ class PhraseTypesStore() {
   }
 
   def findType(locale: Locale, paymentFieldType: PaymentFieldType, s: String): PhraseType = {
-    val phraseTypes: mutable.Seq[PhraseType] = getPhraseTypes(locale, paymentFieldType)
-    for (phraseType <- phraseTypes) {
-      if (phraseType.getPattern.matcher(s).matches) {
-        return phraseType
-      }
-    }
-    throw new IllegalArgumentException("Cannot find a matching phrase: '" + s + "'")
+    getPhraseTypes(locale, paymentFieldType).
+      filter(_.getPattern.matcher(s).matches).
+      head
   }
 
   private def getPhraseTypes(locale: Locale, paymentFieldType: PaymentFieldType): collection.mutable.Seq[PhraseType] = {

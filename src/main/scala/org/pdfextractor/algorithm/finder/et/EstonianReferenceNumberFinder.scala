@@ -31,10 +31,9 @@ class EstonianReferenceNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_REFE
   }
 
   private def calculateCheckDigit(value: BigInteger) = {
-    val digits: Seq[Integer] = findDigitsUntilOneBeforeLastInReverseOrder(value)
-    val productsSum = calculate731Sum(digits)
-    val tensMultiple = findTensMultiple(productsSum)
-    tensMultiple - productsSum
+    val productsSum = calculate731Sum(findDigitsUntilOneBeforeLastInReverseOrder(value))
+
+    findTensMultiple(productsSum) - productsSum
   }
 
   private def checkDigitMatches(value: BigInteger, checkDigit: Int) = {
@@ -62,7 +61,7 @@ class EstonianReferenceNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_REFE
     sum
   }
 
-  private def findDigitsUntilOneBeforeLastInReverseOrder(value: BigInteger): Seq[Integer] = {
+  def findDigitsUntilOneBeforeLastInReverseOrder(value: BigInteger): Seq[Integer] = {
     val ret: ListBuffer[Integer] = ListBuffer.empty[Integer]
     var i = value.toString.length - 2
     while ( {

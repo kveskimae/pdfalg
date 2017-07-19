@@ -5,7 +5,6 @@ import java.util.Locale
 
 import org.pdfextractor.algorithm.candidate._
 import org.pdfextractor.algorithm.finder.AbstractFinder
-import org.pdfextractor.algorithm.finder.et.EstonianTotalFinder
 import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
@@ -15,6 +14,7 @@ import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
 
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
+import org.pdfextractor.algorithm.finder._
 
 @Service
 abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, true, true) {
@@ -71,7 +71,7 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, tru
 	}
 
 	private def findCandidateValue(totalAsString: String, phrase: Phrase, parseResult: ParseResult): Option[Candidate] = {
-		val dotCount = EstonianTotalFinder.countDotsAndCommas(totalAsString)
+		val dotCount = countDotsAndCommas(totalAsString)
 		val `type` = phraseTypesStore.findType(SupportedLocales.ITALY, getType, phrase.text)
 		if (dotCount < 2) {
 			val replaced = totalAsString.replaceAll(",", ".")

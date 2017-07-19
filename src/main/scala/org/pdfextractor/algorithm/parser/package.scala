@@ -10,7 +10,6 @@ import org.apache.pdfbox.pdmodel.{PDDocument, PDPage}
 import org.apache.pdfbox.text.{PDFTextStripper, TextPosition}
 
 import scala.collection.{LinearSeq, Traversable, mutable}
-import scala.collection.immutable.List
 import scala.collection.mutable.ListBuffer
 import org.pdfextractor.algorithm.candidate.posorder._
 
@@ -163,7 +162,7 @@ package object parser {
     def findPhrasesAbove(phrase: Phrase): LinearSeq[Phrase] = {
       phrases.
         filter(token =>
-          phrase.pageNumber.equals(token.pageNumber) &&
+          phrase.pageNumber == token.pageNumber &&
             Math.abs(token.x - phrase.x) < 10 &&
             token.y < phrase.y
         )
@@ -172,16 +171,12 @@ package object parser {
     // TODO
 
     def findPhrasesOnLine(phrase: Phrase): LinearSeq[Phrase] = {
-      var matchesFound: ListBuffer[Phrase] = scala.collection.mutable.ListBuffer.empty[Phrase]
-      for (token <- phrases) {
-        if ((phrase.pageNumber != token.pageNumber) || token.equals(phrase)) {
-
-        } else {
-          val diff = Math.abs(token.y - phrase.y)
-          if (diff < 10) matchesFound += token
-        }
-      }
-      matchesFound.toList
+      phrases.
+        filter(token =>
+          token.pageNumber == phrase.pageNumber &&
+            token != phrase &&
+            Math.abs(token.y - phrase.y) < 10
+        )
     }
 
     def findTokensOnRight(phrase: Phrase): LinearSeq[Phrase] = {

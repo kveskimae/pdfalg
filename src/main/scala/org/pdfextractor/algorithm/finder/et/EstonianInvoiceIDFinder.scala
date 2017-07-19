@@ -14,7 +14,6 @@ import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
 @Service
 class EstonianInvoiceIDFinder extends AbstractFinder {
 
-  // TODO needs to listen context events together with other finders
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
     searchPattern = Some(("(?ism)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, INVOICE_ID)).r)

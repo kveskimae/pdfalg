@@ -14,24 +14,7 @@ import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
 
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
-
-object EstonianTotalFinder {
-
-  def countDotsAndCommas(number: String): Int = {
-    val replaced = number.replaceAll(",", ".")
-    val dotCount = StringUtils.countMatches(replaced, ".")
-    dotCount
-  }
-
-  def isEuroPresent(text: String): Boolean = {
-    PATTERN_EURO_SIGN_AS_REGEX.findFirstIn(text).nonEmpty
-  }
-
-  def isNormalTotalLine(text: String) = {
-    PATTERN_ESTONIAN_ORDINARY_TOTAL_LINE_AS_REGEX.findFirstIn(text).nonEmpty
-  }
-
-}
+import org.pdfextractor.algorithm.finder._
 
 @Service
 class EstonianTotalFinder extends AbstractFinder {
@@ -51,7 +34,7 @@ class EstonianTotalFinder extends AbstractFinder {
         totalAsNumberMatcher.hasNext
       }) {
         var totalAsString = totalAsNumberMatcher.next()
-        val dotCount = EstonianTotalFinder.countDotsAndCommas(totalAsString)
+        val dotCount = countDotsAndCommas(totalAsString)
         if (dotCount < 2) {
           totalAsString = totalAsString.replaceAll(",", ".")
           val doubleNumber = dotCount > 0
@@ -68,8 +51,8 @@ class EstonianTotalFinder extends AbstractFinder {
   override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
     val doubleNumber = params(0).asInstanceOf[Boolean]
     val `type` = params(1).asInstanceOf[PhraseType]
-    val euroSignFound = EstonianTotalFinder.isEuroPresent(phrase.text)
-    val normalTotalLine = EstonianTotalFinder.isNormalTotalLine(phrase.text)
+    val euroSignFound = isEuroPresent(phrase.text)
+    val normalTotalLine = isNormalTotalLine(phrase.text)
     val properties: Map[CandidateMetadata, Any] = Map(IsDouble -> doubleNumber, MetaPhraseType -> `type`, HasEuroSign -> euroSignFound, IsNormalLine -> normalTotalLine)
     val ret = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, TOTAL, properties)
     ret
