@@ -29,10 +29,7 @@ class EstonianNameFinder extends AbstractFinder {
   override def isValueAllowed(value: Any) = true
 
   override  def parseValue(raw: String): Any = {
-    var ret = raw.replaceAll("(Registrikood)(.{0,})", "")
-    ret = ret.split("""[\s]{3,}""")(0)
-    ret = StringUtils.normalizeSpace(ret)
-    ret
+    StringUtils normalizeSpace (raw.replaceAll("(Registrikood)(.{0,})", "").split("""[\s]{3,}""")(0))
   }
 
   override def getType = NAME

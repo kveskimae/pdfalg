@@ -2,8 +2,6 @@ package org.pdfextractor.algorithm.finder.et
 
 import org.pdfextractor.algorithm.candidate._
 import org.pdfextractor.algorithm.finder.AbstractFinder
-import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns._
-import org.apache.commons.lang3.StringUtils
 import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.TOTAL

@@ -7,7 +7,7 @@ import scala.collection.immutable.List
 class RegexUtilsTest extends FlatSpec with Matchers {
 
   "A RegexUtils" should "find a double value" in {
-    val doubleValues: List[String] = searchForDoubleValues("Totale 1,191.62 €")
+    val doubleValues: Seq[String] = searchForDoubleValues("Totale 1,191.62 €")
 
     assert(1 == doubleValues.size)
     assert(doubleValues.contains("1,191.62"))
@@ -38,7 +38,7 @@ class RegexUtilsTest extends FlatSpec with Matchers {
   }
 
   "A RegexUtils" should "not find a double value from a date formatted with slashes" in {
-    val found: List[String] = searchForDoubleValues("19/05/2016")
+    val found: Seq[String] = searchForDoubleValues("19/05/2016")
 
     assert(found.size == 0)
   }

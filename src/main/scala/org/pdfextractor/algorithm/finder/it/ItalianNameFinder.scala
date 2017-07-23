@@ -11,12 +11,6 @@ import org.springframework.stereotype.Service
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
 
-object ItalianNameFinder {
-  val MINIMUM_NUMBER_OF_CHARACTERS: Integer = 3
-
-  private val PATTERN_MINIMUM_CHARACTERS_AS_REGEX2 = ("^(?ims).*" + ItNameLetter + "{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}.*$").r
-}
-
 @Service
 class ItalianNameFinder extends AbstractFinder(None, None, false) {
 

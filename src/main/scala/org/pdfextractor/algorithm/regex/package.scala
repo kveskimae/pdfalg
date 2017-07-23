@@ -1,11 +1,9 @@
 package org.pdfextractor.algorithm
 
-import java.util
-
 import org.apache.commons.lang3.StringUtils
 
-import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
+import scala.util.matching.Regex.Match
 
 package object regex {
 
@@ -43,41 +41,29 @@ package object regex {
 
   val EurR = (raw"^(?ism)(.*)$Eur(.*)$$").r
 
-  def searchForEstonianDoubleValuesAfterText(searchString: String): util.List[Double] = {
-    val ret = new util.ArrayList[Double]
-    val foundDoubles: Iterator[String] = searchForDoubleValues(searchString).iterator
-    for (totalAsString: String <- foundDoubles) {
-      val totalAsStringReplaced = totalAsString.replaceAll(",", ".")
-      val dotCount = StringUtils.countMatches(totalAsStringReplaced, ".")
-      if (dotCount < 2) {
-        val totalAsDouble: Double = totalAsStringReplaced.toDouble
-        ret.add(totalAsDouble)
-      }
-    }
-    ret
+  def searchForEstonianDoubleValuesAfterText(searchString: String): Seq[Double] = {
+    searchForDoubleValues(searchString).
+      map(_.replaceAll(",", ".")).
+      filter(StringUtils.countMatches(_, ".") < 2).
+      map(_.toDouble)
   }
 
-  def searchForDoubleValues(searchString: String): List[String] = {
-    var ret: ListBuffer[String] = scala.collection.mutable.ListBuffer.empty[String]
-    val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(searchString)
-    while ( {
-      totalAsNumberMatcher.hasNext
-    }) {
-      val totalAsString = totalAsNumberMatcher.next
-      val endIdx = totalAsNumberMatcher.end
-      val startIdx = totalAsNumberMatcher.start - 1
-      var include = true
-      if (endIdx < searchString.length) {
-        val charAtEnd = searchString.charAt(endIdx)
-        if (charAtEnd == '/' || charAtEnd == '-') include = false
-      }
-      if (startIdx >= 0) {
-        val charAtStart = searchString.charAt(startIdx)
-        if (charAtStart == '/') include = false
-      }
-      if (include) ret += totalAsString
+
+  def searchForDoubleValues(searchString: String): Seq[String] = {
+    val excludeDates: (Match) => Boolean = (matched: Match) => {
+      val endIdx = matched.end
+      val startIdx = matched.start - 1
+
+      (endIdx >= searchString.length || (searchString.charAt(endIdx) != '/' && searchString.charAt(endIdx) != '-')) &&
+        (startIdx < 0 || searchString.charAt(startIdx) != '/')
     }
-    ret.toList
+
+    DigitsAndCommasR.
+      findAllIn(searchString).
+      matchData.
+      filter(excludeDates).
+      map(_.matched).
+      toSeq
   }
 
 }
