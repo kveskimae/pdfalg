@@ -14,27 +14,27 @@ class RegexUtilsTest extends FlatSpec with Matchers {
   }
 
   "A RegexUtils" should "not find a number in a comma" in {
-    assert(PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findFirstIn(",").isEmpty)
+    assert(DigitsAndCommasR.findFirstIn(",").isEmpty)
   }
 
   "A RegexUtils" should "not find a number in a dot" in {
-    assert(PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findFirstIn(".").isEmpty)
+    assert(DigitsAndCommasR.findFirstIn(".").isEmpty)
   }
 
   "A RegexUtils" should "regard a single digit as a number" in {
-    assert(PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findFirstIn("1").nonEmpty)
+    assert(DigitsAndCommasR.findFirstIn("1").nonEmpty)
   }
 
   "A RegexUtils" should "regard several digits as a number" in {
-    assert(PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findFirstIn("123").nonEmpty)
+    assert(DigitsAndCommasR.findFirstIn("123").nonEmpty)
   }
 
   "A RegexUtils" should "regard several digits with a dot as a number" in {
-    assert(PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findFirstIn("123.456").nonEmpty)
+    assert(DigitsAndCommasR.findFirstIn("123.456").nonEmpty)
   }
 
   "A RegexUtils" should "regard several digits with several dots as a number" in {
-    assert(PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findFirstIn("123.456.789").nonEmpty)
+    assert(DigitsAndCommasR.findFirstIn("123.456.789").nonEmpty)
   }
 
   "A RegexUtils" should "not find a double value from a date formatted with slashes" in {

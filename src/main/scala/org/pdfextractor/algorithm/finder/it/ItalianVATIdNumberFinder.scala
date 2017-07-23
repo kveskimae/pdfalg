@@ -11,7 +11,7 @@ import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
 @Service
-class ItalianVATIdNumberFinder extends AbstractFinder(PATTERN_ITALIAN_VATIN_AS_REGEX, PATTERN_ITALIAN_VATIN_VALUE_AS_REGEX, true, true) {
+class ItalianVATIdNumberFinder extends AbstractFinder(ItVatinR, ItVatinValueR, true, true) {
 
   protected override def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {
     val ret: ListBuffer[Candidate] = ListBuffer.empty

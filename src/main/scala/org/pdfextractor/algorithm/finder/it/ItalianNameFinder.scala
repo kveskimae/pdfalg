@@ -14,7 +14,7 @@ import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
 object ItalianNameFinder {
   val MINIMUM_NUMBER_OF_CHARACTERS: Integer = 3
 
-  private val PATTERN_MINIMUM_CHARACTERS_AS_REGEX2 = ("^(?ims).*" + ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND + "{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}.*$").r
+  private val PATTERN_MINIMUM_CHARACTERS_AS_REGEX2 = ("^(?ims).*" + ItNameLetter + "{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}.*$").r
 }
 
 @Service
@@ -34,17 +34,14 @@ class ItalianNameFinder extends AbstractFinder(None, None, false) {
   }
 
   def isValueAllowed(value: Any): Boolean = {
-    val ret = !isVoidText(value.asInstanceOf[String]) && PATTERN_ITALIAN_NAME_FORBIDDEN_AS_REGEX.findFirstIn(value.asInstanceOf[String]).isEmpty && PATTERN_MINIMUM_CHARACTERS_AS_REGEX.findFirstIn(value.asInstanceOf[String]).nonEmpty
-    ret
+    !isVoidText(value.asInstanceOf[String]) &&
+      ItNameForbiddenWordsR.findFirstIn(value.asInstanceOf[String]).isEmpty &&
+      ItNameMinR.findFirstIn(value.asInstanceOf[String]).nonEmpty
   }
 
   def parseValue(raw: String): Any = {
     if (Option(raw).isEmpty) None
-    var ret = raw
-    ret = StringUtils.normalizeSpace(ret)
-    val bits = ret.split(",")
-    ret = bits(0)
-    ret
+    else StringUtils.normalizeSpace(raw).split(",")(0)
   }
 
   def getType = NAME

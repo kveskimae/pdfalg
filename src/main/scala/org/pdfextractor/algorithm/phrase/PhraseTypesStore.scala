@@ -94,7 +94,7 @@ class PhraseTypesStore() {
             while ( {
               it.hasNext
             }) {
-              ret.append(it.next.getKeyPhrase).append("(-saateleht)?").append(OPTIONAL_WHITESPACE).append("(nr|number)")
+              ret.append(it.next.getKeyPhrase).append("(-saateleht)?").append(OptionalWhitespace).append("(nr|number)")
               if (it.hasNext) {
                 ret.append('|')
               }
@@ -109,9 +109,9 @@ class PhraseTypesStore() {
               ret.append("""([\s]{0,})""")
               ret.append(abbrevation)
               ret.append("""([\s]{1,})""")
-              ret.append(ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
+              ret.append(EstNameLetter).append("{4,}")
               ret.append('|')
-              ret.append(ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
+              ret.append(EstNameLetter).append("{4,}")
               ret.append("""([\s]{1,})""")
               ret.append(abbrevation)
               ret.append("""([\s]{0,})""")
@@ -147,12 +147,12 @@ class PhraseTypesStore() {
               val kp: String = it.next.getKeyPhrase
               if (!("Invoice Number".equalsIgnoreCase(kp))) {
                 // TODO Add properties metadata option for PhraseType!
-                ret.append(kp).append(OPTIONAL_WHITESPACE).append(ITALIAN_INVOICE_ID_WORDS)
+                ret.append(kp).append(OptionalWhitespace).append(ItInvoiceIDWord)
                 ret.append('|')
-                ret.append(ITALIAN_INVOICE_ID_WORDS).append(OPTIONAL_WHITESPACE).append(kp)
+                ret.append(ItInvoiceIDWord).append(OptionalWhitespace).append(kp)
               }
               else {
-                ret.append(kp).append(OPTIONAL_WHITESPACE)
+                ret.append(kp).append(OptionalWhitespace)
               }
               if (it.hasNext) {
                 ret.append('|')
@@ -169,10 +169,10 @@ class PhraseTypesStore() {
               ret.append("""([\s]{0,})""")
               ret.append(abbrevation)
               ret.append("""([\s]{1,})""")
-              ret.append(ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}")
+              ret.append(ItNameLetter).append("{" + ItNameMinNoLetters + ",}")
               ret.append("""([,][\s].*)?""")
               ret.append('|')
-              ret.append(ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{" + MINIMUM_NUMBER_OF_CHARACTERS + ",}")
+              ret.append(ItNameLetter).append("{" + ItNameMinNoLetters + ",}")
               ret.append("""([\s]{1,})""")
               ret.append(abbrevation)
               ret.append("""([\s]{0,})""")
@@ -221,11 +221,11 @@ class PhraseTypesStore() {
               ret.append("""([\s]{0,})(Saaja[:]?)?([\s]{0,})""")
               ret.append(abbrevation)
               ret.append("""([\s]{1,})""")
-              ret.append(ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
+              ret.append(EstNameLetter).append("{4,}")
               ret.append("""([\s]{3,}.*|[,].*)?""")
               ret.append('|')
               ret.append("""([\s]{0,})(Saaja[:]?)?([\s]{0,})""")
-              ret.append(ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
+              ret.append(EstNameLetter).append("{4,}")
               ret.append("""([\s]{1,})""")
               ret.append(abbrevation)
               ret.append("""([\s]{0,})""")
@@ -250,9 +250,9 @@ class PhraseTypesStore() {
               val abbreviation: String = it.next.getKeyPhrase
               ret.append(abbreviation)
               ret.append("""([\s]{1,})""")
-              ret.append(ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
+              ret.append(ItNameLetter).append("{4,}")
               ret.append('|')
-              ret.append(ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND).append("{4,}")
+              ret.append(ItNameLetter).append("{4,}")
               ret.append("""([\s]{1,})""")
               ret.append(abbreviation)
               if (it.hasNext) {

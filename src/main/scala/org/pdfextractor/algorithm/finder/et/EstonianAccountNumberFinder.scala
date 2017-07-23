@@ -16,7 +16,7 @@ import scala.collection.mutable.ListBuffer
 import org.pdfextractor.algorithm.finder._
 
 @Service
-class EstonianAccountNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_IBAN_START_WITH_REST_OF_LINE_AS_REGEX, PATTERN_ESTONIAN_IBAN_AS_REGEX, false) {
+class EstonianAccountNumberFinder extends AbstractFinder(EstIBANStartWithRestOfLineR, EstIBANCorrectR, false) {
 
   override def findCandidates(parseResult: ParseResult): Seq[Candidate]  = {
     val ret: ListBuffer[Candidate] = collection.mutable.ListBuffer.empty[Candidate]
@@ -36,14 +36,14 @@ class EstonianAccountNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_IBAN_S
     println("1 ret = " + ret.toSeq.toString())
     println("linesContainingIBANStart=" + linesContainingIBANStart)
     for (oneLineContainingIBANStart <- linesContainingIBANStart) {
-      val ibanStartingPartMatcher = PATTERN_ESTONIAN_IBAN_START_AS_REGEX.pattern.matcher(oneLineContainingIBANStart)
+      val ibanStartingPartMatcher = EstIBANStartR.pattern.matcher(oneLineContainingIBANStart)
       while (ibanStartingPartMatcher.find()) {
         val accountNumberValueBuilder = new StringBuilder
         val remainingPartStartIdx = ibanStartingPartMatcher.end
         val ibanStart = ibanStartingPartMatcher.group()
         accountNumberValueBuilder.append(ibanStart)
         val remainingPartAfterIBANStart = oneLineContainingIBANStart.substring(remainingPartStartIdx)
-        val numbersMatcher = PATTERN_INTEGER_NUMBER.findAllIn(remainingPartAfterIBANStart)
+        val numbersMatcher = DigitsR.findAllIn(remainingPartAfterIBANStart)
         while ( {
           numbersMatcher.hasNext
         }) {
@@ -51,7 +51,7 @@ class EstonianAccountNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_IBAN_S
           accountNumberValueBuilder.append(nextNumberPart)
         }
         val builtAccountNr = accountNumberValueBuilder.toString
-        val builtIBANMatcher = PATTERN_ESTONIAN_IBAN_AS_REGEX.findFirstIn(builtAccountNr)
+        val builtIBANMatcher = EstIBANCorrectR.findFirstIn(builtAccountNr)
         if (builtIBANMatcher.nonEmpty) {
           val accountNr = builtIBANMatcher.get
           if (isValueAllowed(accountNr)) {

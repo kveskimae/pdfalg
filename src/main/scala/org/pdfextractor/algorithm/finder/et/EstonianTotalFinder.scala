@@ -22,14 +22,14 @@ class EstonianTotalFinder extends AbstractFinder {
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
     searchPattern = Some(("^(?ism)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, TOTAL) + "(.*)$").r)
-    valuePattern = Some(PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX)
+    valuePattern = Some(DigitsAndCommasR)
   }
 
   override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {
     val ret = scala.collection.mutable.ListBuffer.empty[Candidate]
     val doubleValues = searchForEstonianDoubleValuesAfterText(phrase.text)
     if (doubleValues.size == 1) {
-      val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findAllIn(phrase.text)
+      val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
       while ( {
         totalAsNumberMatcher.hasNext
       }) {

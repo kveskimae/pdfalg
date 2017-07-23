@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 
 @Service
-class ItalianIssueDateFinder extends AbstractFinder(PATTERN_ITALIAN_DATE_AS_REGEX, PATTERN_ITALIAN_DATE_AS_REGEX, false) {
+class ItalianIssueDateFinder extends AbstractFinder(ItDateR, ItDateR, false) {
 
   protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
     val `type`: PhraseType = findType(parseResult, phrase)

@@ -9,43 +9,39 @@ import scala.util.matching.Regex
 
 package object regex {
 
-  val ESTONIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND = """[\-\w\sÕõüÜÄäÖöÜüžŽšŠ&]"""
+  val EstNameLetter = """[\-\w\sÕõüÜÄäÖöÜüžŽšŠ&]"""
 
-  val ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND = """[\-\w\s&]"""
+  val VoidLetter = """[\s:.€]"""
 
-  val ITALIAN_INVOICE_ID_WORDS = """(numero|codice|id|n[or]{0,1}[.]{0,1})"""
+  val OptionalWhitespace = """\s{0,}"""
 
-  val MINIMUM_NUMBER_OF_CHARACTERS = 3
+  val ItInvoiceIDWord = """(numero|codice|id|n[or]{0,1}[.]{0,1})"""
 
-  val PATTERN_MINIMUM_CHARACTERS_AS_REGEX = (raw"^(?ism).*$ITALIAN_ALPHANUMERIC_LETTER_OR_SPACE_OR_AMPERSAND{$MINIMUM_NUMBER_OF_CHARACTERS,}.*$$").r
+  val ItNameLetter = """[\-\w\s&]"""
 
-  val VOID_CHARACTER = """[\s:.€]"""
+  val ItNameMinNoLetters = 3
 
-  val DIGITS_WITH_COMMAS_AND_DOTS = """(\d{1,}[.,\d]{0,})"""
-
-  val EUR = "(eur|€|eurot|euro|in eur)"
-
-  val OPTIONAL_WHITESPACE = """\s{0,}"""
+  val ItNameMinR = (raw"^(?ism).*$ItNameLetter{$ItNameMinNoLetters,}.*$$").r
 
   // Phrases only containing void characters are ignored when searching right
   // or bottom neighbor phrase
-  val PATTERN_VOID_AS_REGEX: Regex = (raw"""^(?ism)$VOID_CHARACTER{0,}$$""").r
+  val IgnoredR: Regex = (raw"""^(?ism)$VoidLetter{0,}$$""").r
 
   // Numbers
 
-  val PATTERN_INTEGER_NUMBER = """(\d+)""".r
+  val DigitsR = """(\d+)""".r
 
-  val PATTERN_INTEGER_NUMBER_AS_REGEX: Regex = """(\d+)""".r
+  val DigitsAndCommas = """(\d{1,}[.,\d]{0,})"""
 
-  val PATTERN_AT_LEAST_2_INTEGER_NUMBERS_AS_REGEX = """([\d]{2,})""".r
+  val DigitsAndCommasR = DigitsAndCommas.r
 
-  val PATTERN_AT_LEAST_3_INTEGER_NUMBERS_AS_REGEX = """([\d]{3,})""".r
-
-  val PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX = DIGITS_WITH_COMMAS_AND_DOTS.r
+  val TwoOrMoreDigitsR = """([\d]{2,})""".r
 
   // Total
 
-  val PATTERN_EURO_SIGN_AS_REGEX = (raw"^(?ism)(.*)$EUR(.*)$$").r
+  val Eur = "(eur|€|eurot|euro|in eur)"
+
+  val EurR = (raw"^(?ism)(.*)$Eur(.*)$$").r
 
   def searchForEstonianDoubleValuesAfterText(searchString: String): util.List[Double] = {
     val ret = new util.ArrayList[Double]
@@ -63,7 +59,7 @@ package object regex {
 
   def searchForDoubleValues(searchString: String): List[String] = {
     var ret: ListBuffer[String] = scala.collection.mutable.ListBuffer.empty[String]
-    val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findAllIn(searchString)
+    val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(searchString)
     while ( {
       totalAsNumberMatcher.hasNext
     }) {

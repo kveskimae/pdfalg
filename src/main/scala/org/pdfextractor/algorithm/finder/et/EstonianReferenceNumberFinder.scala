@@ -13,7 +13,7 @@ import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import scala.collection.mutable.ListBuffer
 
 @Service
-class EstonianReferenceNumberFinder extends AbstractFinder(PATTERN_ESTONIAN_REFERENCE_NUMBER_LINE_AS_REGEX, PATTERN_ESTONIAN_REFERENCE_NUMBER_DIGITS_AS_REGEX) {
+class EstonianReferenceNumberFinder extends AbstractFinder(EstRefNoLineR, EstRefNoR) {
 
   override def parseValue(raw: String): Any = raw
 

@@ -25,7 +25,7 @@ class EstonianInvoiceIDFinder extends AbstractFinder {
   }
 
   override def isValueAllowed(value: Any): Boolean = {
-    PATTERN_ESTONIAN_IBAN_AS_REGEX.findFirstIn(value.asInstanceOf[String]).isEmpty && PATTERN_AT_LEAST_2_INTEGER_NUMBERS_AS_REGEX.findFirstIn(value.asInstanceOf[String]).nonEmpty
+    EstIBANCorrectR.findFirstIn(value.asInstanceOf[String]).isEmpty && TwoOrMoreDigitsR.findFirstIn(value.asInstanceOf[String]).nonEmpty
   }
 
   override def parseValue(raw: String): Any = StringUtils.normalizeSpace(raw)

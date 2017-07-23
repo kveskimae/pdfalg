@@ -3,9 +3,9 @@ package org.pdfextractor.algorithm
 import java.math.BigInteger
 
 import org.apache.commons.lang3.StringUtils
-import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns.{PATTERN_ESTONIAN_ORDINARY_TOTAL_LINE_AS_REGEX, PATTERN_ESTONIAN_PANK_AS_REGEX}
+import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns.{EstTotalR, EstPankR}
 import org.pdfextractor.algorithm.parser.Phrase
-import org.pdfextractor.algorithm.regex.{PATTERN_EURO_SIGN_AS_REGEX, PATTERN_VOID_AS_REGEX}
+import org.pdfextractor.algorithm.regex.{EurR, IgnoredR}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
 
 package object finder {
@@ -18,14 +18,14 @@ package object finder {
     Option(phrase.text).isEmpty || isVoidText(phrase.text)
   }
 
-  def isVoidText(text: String): Boolean = PATTERN_VOID_AS_REGEX.pattern.matcher(text).matches
+  def isVoidText(text: String): Boolean = IgnoredR.pattern.matcher(text).matches
 
   def combinePhrases1(phrase: Phrase, otherPhrase: Phrase): Phrase = {
     new Phrase(otherPhrase.x, otherPhrase.y, otherPhrase.pageNumber, otherPhrase.height, phrase.width, phrase.text + " " + otherPhrase.text, otherPhrase.bold)
   }
 
   def isPankPresent(text: String): Boolean = {
-    PATTERN_ESTONIAN_PANK_AS_REGEX.findFirstIn(text).nonEmpty
+    EstPankR.findFirstIn(text).nonEmpty
   }
 
   def countDotsAndCommas(number: String): Int = {
@@ -35,11 +35,11 @@ package object finder {
   }
 
   def isEuroPresent(text: String): Boolean = {
-    PATTERN_EURO_SIGN_AS_REGEX.findFirstIn(text).nonEmpty
+    EurR.findFirstIn(text).nonEmpty
   }
 
   def isNormalTotalLine(text: String) = {
-    PATTERN_ESTONIAN_ORDINARY_TOTAL_LINE_AS_REGEX.findFirstIn(text).nonEmpty
+    EstTotalR.findFirstIn(text).nonEmpty
   }
 
 }

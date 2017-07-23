@@ -25,9 +25,9 @@ class ItalianInvoiceIDFinder extends AbstractFinder {
     searchPattern = Some(("^(?ims)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, INVOICE_ID) + "(.*)$").r)
     valuePattern = Some(("(?i)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, INVOICE_ID) + """([\s]{0,})([:]{0,1})([\s]{0,})(\w{1,}[^\s]{0,})""").r)
     PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX = ("(?i)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, INVOICE_ID) + """([\s]{0,})([:]{0,1})([\s]{0,})""").r
-    PATTERN_ITALIAN_INVOICE_ID_START_BARE_AS_REGEX = ("^(?is)(?i)" + ITALIAN_INVOICE_ID_WORDS + "(.*)$").r
-    PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX = ("(?i)" + ITALIAN_INVOICE_ID_WORDS + """([\s]{0,})([:]{0,1})([\s]{0,})""").r
-    PATTERN_ITALIAN_INVOICE_ID_LINE_BARE_AS_REGEX = ("(?i)" + ITALIAN_INVOICE_ID_WORDS + """([\s]{0,})([:]{0,1})([\s]{0,})(\w{1,}[^\s]{0,})""").r
+    PATTERN_ITALIAN_INVOICE_ID_START_BARE_AS_REGEX = ("^(?is)(?i)" + ItInvoiceIDWord + "(.*)$").r
+    PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX = ("(?i)" + ItInvoiceIDWord + """([\s]{0,})([:]{0,1})([\s]{0,})""").r
+    PATTERN_ITALIAN_INVOICE_ID_LINE_BARE_AS_REGEX = ("(?i)" + ItInvoiceIDWord + """([\s]{0,})([:]{0,1})([\s]{0,})(\w{1,}[^\s]{0,})""").r
   }
 
   override def findCandidates(parseResult: ParseResult): Seq[Candidate] = {
@@ -44,7 +44,7 @@ class ItalianInvoiceIDFinder extends AbstractFinder {
   }
 
   override def isValueAllowed(value: Any): Boolean = {
-    PATTERN_INTEGER_NUMBER_AS_REGEX.findFirstIn(value.asInstanceOf[String]).nonEmpty
+    DigitsR.findFirstIn(value.asInstanceOf[String]).nonEmpty
   }
 
   override def parseValue(raw: String): Any = {

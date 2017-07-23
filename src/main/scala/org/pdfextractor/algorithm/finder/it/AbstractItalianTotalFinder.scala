@@ -33,19 +33,19 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, tru
 	// Even if dot is used as radix character (decimal separator), pattern is always defined with comma as separator
 	val decimalFormatWithDotAsThousandsSeparator: DecimalFormat = new DecimalFormat("###,###.##", otherSymbolsForDotAsThousandsSeparator)
 	
-	private[it] val PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX = ("""^(?ims).{0,30}:([\s]{0,})""" + EUR + """?([\s]{0,})""" + DIGITS_WITH_COMMAS_AND_DOTS + """([\s]{0,})""" + EUR + """?([\s]{0,})$""").r
+	private[it] val PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX = ("""^(?ims).{0,30}:([\s]{0,})""" + Eur + """?([\s]{0,})""" + DigitsAndCommas + """([\s]{0,})""" + Eur + """?([\s]{0,})$""").r
 
 	@org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
 	def refreshed(): Unit = {
 		searchPattern = Some(("^(?ims)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, getType) + "(.*)$").r)
-		valuePattern = Some(PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX)
+		valuePattern = Some(DigitsAndCommasR)
 	}
 
 	override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {
 		val ret: ListBuffer[Candidate] = ListBuffer.empty
 		val doubleValues = searchForDoubleValues(phrase.text)
 		if (doubleValues.size == 1) {
-			val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findAllIn(phrase.text)
+			val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
 			while ( {
 				totalAsNumberMatcher.hasNext
 			}) {
@@ -55,7 +55,7 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, tru
 			}
 		}
 		else {
-			val totalAsNumberMatcher = PATTERN_DIGITS_WITH_COMMAS_AND_DOTS_AS_REGEX.findAllIn(phrase.text)
+			val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
 			var biggest: Option[Candidate] = None
 			while ( {
 				totalAsNumberMatcher.hasNext
@@ -102,7 +102,7 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, tru
 	def isDouble(number: Double): Boolean = (number % 1) != 0
 
 	def isEuroPresent(text: String): Boolean = {
-		PATTERN_EURO_SIGN_AS_REGEX.findFirstIn(text).nonEmpty
+		EurR.findFirstIn(text).nonEmpty
 	}
 
 	private def isNormalTotalLine(text: String): Boolean = {
