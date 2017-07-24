@@ -12,8 +12,6 @@ package object finder {
 
   private[finder] val FOCUS_TYPE = INVOICE_ID // if you have a trouble with particular field type, set it here & let it log
 
-  val MagicNo = new BigInteger("97")
-
   def isVoidPhrase(phrase: Phrase): Boolean = {
     Option(phrase.text).isEmpty || isVoidText(phrase.text)
   }

@@ -14,6 +14,8 @@ import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
 import org.pdfextractor.algorithm.finder._
 
+import scala.collection.mutable
+
 @Service
 class EstonianTotalFinder extends AbstractFinder {
 
@@ -23,37 +25,42 @@ class EstonianTotalFinder extends AbstractFinder {
     valuePattern = Some(DigitsAndCommasR)
   }
 
-  override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {
-    val ret = scala.collection.mutable.ListBuffer.empty[Candidate]
-    val doubleValues = searchForEstonianDoubleValuesAfterText(phrase.text)
-    if (doubleValues.size == 1) {
-      val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
-      while ( {
-        totalAsNumberMatcher.hasNext
-      }) {
-        var totalAsString = totalAsNumberMatcher.next()
-        val dotCount = countDotsAndCommas(totalAsString)
-        if (dotCount < 2) {
-          totalAsString = totalAsString.replaceAll(",", ".")
-          val doubleNumber = dotCount > 0
-          val totalAsDouble = parseValue(totalAsString).asInstanceOf[Double]
-          val `type` = phraseTypesStore.findType(SupportedLocales.ESTONIA, TOTAL, phrase.text)
-          val candidate = buildCandidate(parseResult, phrase, totalAsDouble, doubleNumber, `type`)
-          ret += candidate
-        }
+  override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): mutable.Buffer[Candidate] = {
+    searchForEstonianDoubleValuesAfterText(phrase.text).size match {
+      case 1 => {
+        DigitsAndCommasR.
+          findAllIn(phrase.text).
+          filter(countDotsAndCommas(_) < 2).
+          map(_.replaceAll(",", ".")).
+          map((totalAsString: String) => {
+            val doubleNumber = countDotsAndCommas(totalAsString) > 0
+            val totalAsDouble = parseValue(totalAsString).asInstanceOf[Double]
+            val phraseType = phraseTypesStore.findType(SupportedLocales.ESTONIA, TOTAL, phrase.text)
+
+            buildCandidate(parseResult, phrase, totalAsDouble, doubleNumber, phraseType)
+          }).
+          toBuffer
       }
+      case _ => ListBuffer.empty
     }
-    ret
+  }
+
+  def buildProperties(phrase: Phrase, params: Seq[Any]): Map[CandidateMetadata, Any] = {
+    val doubleNumber = params(0).asInstanceOf[Boolean]
+    val phraseType = params(1).asInstanceOf[PhraseType]
+    val euroSignFound = isEuroPresent(phrase.text)
+    val normalTotalLine = isNormalTotalLine(phrase.text)
+
+    Map(
+      IsDouble -> doubleNumber,
+      MetaPhraseType -> phraseType,
+      HasEuroSign -> euroSignFound,
+      IsNormalLine -> normalTotalLine
+    )
   }
 
   override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
-    val doubleNumber = params(0).asInstanceOf[Boolean]
-    val `type` = params(1).asInstanceOf[PhraseType]
-    val euroSignFound = isEuroPresent(phrase.text)
-    val normalTotalLine = isNormalTotalLine(phrase.text)
-    val properties: Map[CandidateMetadata, Any] = Map(IsDouble -> doubleNumber, MetaPhraseType -> `type`, HasEuroSign -> euroSignFound, IsNormalLine -> normalTotalLine)
-    val ret = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, TOTAL, properties)
-    ret
+    new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, TOTAL, buildProperties(phrase, params))
   }
 
   override def isValueAllowed(value: Any) = true

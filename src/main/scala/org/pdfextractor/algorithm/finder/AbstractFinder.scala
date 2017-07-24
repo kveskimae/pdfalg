@@ -94,9 +94,9 @@ abstract class AbstractFinder(var searchPattern: Option[Regex], var valuePattern
   protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): mutable.Buffer[Candidate] = {
     valuePattern2.
       findAllIn(phrase.text).
-      map((potentialValue: String) => parseValue(potentialValue, valuePattern2)).
+      map(parseValue(_, valuePattern2)).
       filter(isValueAllowed(_)).
-      map((value: Any) => buildCandidate(parseResult, phrase, value)).
+      map(buildCandidate(parseResult, phrase, _)).
       toBuffer
   }
 

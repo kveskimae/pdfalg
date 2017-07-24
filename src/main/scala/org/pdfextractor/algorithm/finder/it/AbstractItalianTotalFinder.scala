@@ -16,6 +16,8 @@ import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
 import org.pdfextractor.algorithm.finder._
 
+import scala.collection.mutable
+
 @Service
 abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, true, true) {
 	// TODO What about thread safety?
@@ -41,7 +43,7 @@ abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, tru
 		valuePattern = Some(DigitsAndCommasR)
 	}
 
-	override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): ListBuffer[Candidate] = {
+	override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): mutable.Buffer[Candidate] = {
 		val ret: ListBuffer[Candidate] = ListBuffer.empty
 		val doubleValues = searchForDoubleValues(phrase.text)
 		if (doubleValues.size == 1) {

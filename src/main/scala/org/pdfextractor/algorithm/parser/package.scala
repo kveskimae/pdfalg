@@ -180,29 +180,11 @@ package object parser {
     }
 
     def findTokensOnRight(phrase: Phrase): LinearSeq[Phrase] = {
-      val tokensOnLine = findPhrasesOnLine(phrase)
-      val ret = scala.collection.mutable.ListBuffer.empty[Phrase]
-      val iterator = tokensOnLine.iterator
-      while ( {
-        iterator.hasNext
-      }) {
-        val tokenOnLine = iterator.next
-        if (tokenOnLine.x > phrase.x) ret += tokenOnLine
-      }
-      ret.toList
+      findPhrasesOnLine(phrase).filter(_.x > phrase.x)
     }
 
     def findTokensOnLeft(phrase: Phrase): LinearSeq[Phrase] = {
-      val tokensOnLine = findPhrasesOnLine(phrase)
-      val ret = scala.collection.mutable.ListBuffer.empty[Phrase]
-      val iterator = tokensOnLine.iterator
-      while ( {
-        iterator.hasNext
-      }) {
-        val tokenOnLine = iterator.next
-        if (tokenOnLine.x < phrase.x) ret += tokenOnLine
-      }
-      ret.toList
+      findPhrasesOnLine(phrase).filter(_.x < phrase.x)
     }
 
     def findClosestPhraseBelow(phrase: Phrase): Option[Phrase] = {

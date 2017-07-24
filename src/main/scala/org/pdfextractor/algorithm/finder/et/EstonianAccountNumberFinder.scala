@@ -13,10 +13,11 @@ import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import org.pdfextractor.algorithm.finder._
 
 @Service
 class EstonianAccountNumberFinder extends AbstractFinder(EstIBANStartWithRestOfLineR, EstIBANCorrectR, false) {
+
+  val MagicNo = new BigInteger("97")
 
   override def findCandidates(parseResult: ParseResult): Seq[Candidate]  = {
     val ret: ListBuffer[Candidate] = collection.mutable.ListBuffer.empty[Candidate]
@@ -69,24 +70,20 @@ class EstonianAccountNumberFinder extends AbstractFinder(EstIBANStartWithRestOfL
 
   protected def buildCandidate(parseResult: ParseResult, phrase: Option[Phrase], value: Any, params: Any*): Candidate = buildCandidate(parseResult, phrase.orNull, value, params)
 
+  private def isMagicModulusOne(value: String): Boolean = {
+    val swapped: String =
+      (value.substring(4) + value.substring(0, 4)). // Move the four initial characters to the end of the string.
+      map(Character.getNumericValue(_)).map(_.toString). // Replace each letter in the string with two digits, thereby expanding the string, where A = 10, B = 11, ..., Z = 35.
+      mkString
+
+    new BigInteger(swapped).mod(MagicNo).intValue == 1 // Interpret the string as integer and compute the remainder of that number on division by 97.
+  }
+
   override def isValueAllowed(raw: Any): Boolean = {
     Option(raw).isDefined &&
     raw.isInstanceOf[String] &&
-    raw.asInstanceOf[String].length == 20 && {
-      val value = raw.asInstanceOf[String]
-
-      // Move the four initial characters to the end of the string.
-      val swapped = value.substring(4) + value.substring(0, 4)
-
-      // Replace each letter in the string with two digits, thereby expanding the string, where A = 10, B = 11, ..., Z = 35.
-      val numericAccountNumber = new StringBuilder
-      swapped.foreach(c => numericAccountNumber.append(Character.getNumericValue(c)))
-
-      // Interpret the string as a decimal integer and compute the remainder of that number on division by 97.
-      val ibanNumber = new BigInteger(numericAccountNumber.toString)
-
-      ibanNumber.mod(MagicNo).intValue == 1
-    }
+    raw.asInstanceOf[String].length == 20 &&
+    isMagicModulusOne(raw.asInstanceOf[String])
   }
 
   def parseValue(raw: String): Any = raw

@@ -19,11 +19,14 @@ class EstonianNameFinder extends AbstractFinder {
     valuePattern = Some(("(?m)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, NAME)).r)
   }
 
-  override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
+  private def buildProperties(phrase: Phrase): Map[CandidateMetadata, Any] = {
     val phraseType = phraseTypesStore.findType(SupportedLocales.ESTONIA, NAME, phrase.text)
     val pankPresent = isPankPresent(phrase.text)
-    val properties: Map[CandidateMetadata, Any] = Map(MetaPhraseType -> phraseType, HasPank -> pankPresent)
-    new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, NAME, properties)
+    Map(MetaPhraseType -> phraseType, HasPank -> pankPresent)
+  }
+
+  override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
+    new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, NAME, buildProperties(phrase))
   }
 
   override def isValueAllowed(value: Any) = true
