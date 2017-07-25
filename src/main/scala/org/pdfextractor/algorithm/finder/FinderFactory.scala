@@ -87,7 +87,6 @@ class FinderFactory {
 
   def extractItalian(pdfContentStream: InputStream): FinderResult = {
     val parseResult = PDFFileParser.parse(pdfContentStream)
-    val finderResult = findCandidates(parseResult, SupportedLocales.ITALY, NAME, TOTAL, INVOICE_ID, ISSUE_DATE, VATIN, TOTAL_BEFORE_TAXES)
-    finderResult
+    findCandidates(parseResult, SupportedLocales.ITALY, NAME, TOTAL, INVOICE_ID, ISSUE_DATE, VATIN, TOTAL_BEFORE_TAXES)
   }
 }

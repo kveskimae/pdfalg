@@ -26,22 +26,23 @@ class EstonianTotalFinder extends AbstractFinder {
   }
 
   override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): mutable.Buffer[Candidate] = {
-    searchForEstonianDoubleValuesAfterText(phrase.text).size match {
-      case 1 => {
-        DigitsAndCommasR.
-          findAllIn(phrase.text).
-          filter(countDotsAndCommas(_) < 2).
-          map(_.replaceAll(",", ".")).
-          map((totalAsString: String) => {
-            val doubleNumber = countDotsAndCommas(totalAsString) > 0
-            val totalAsDouble = parseValue(totalAsString).asInstanceOf[Double]
-            val phraseType = phraseTypesStore.findType(SupportedLocales.ESTONIA, TOTAL, phrase.text)
+    if (searchForEstonianDoubleValuesAfterText(phrase.text).size == 1) {
+      def totalString2Candidate: String => Candidate = (totalAsString: String) => {
+        val doubleNumber = countDotsAndCommas(totalAsString) > 0
+        val totalAsDouble = parseValue(totalAsString).asInstanceOf[Double]
+        val phraseType = phraseTypesStore.findType(SupportedLocales.ESTONIA, TOTAL, phrase.text)
 
-            buildCandidate(parseResult, phrase, totalAsDouble, doubleNumber, phraseType)
-          }).
-          toBuffer
+        buildCandidate(parseResult, phrase, totalAsDouble, doubleNumber, phraseType)
       }
-      case _ => ListBuffer.empty
+
+      DigitsAndCommasR.
+        findAllIn(phrase.text).
+        filter(countDotsAndCommas(_) < 2).
+        map(_.replaceAll(",", ".")).
+        map(totalString2Candidate).
+        toBuffer
+    } else {
+      ListBuffer.empty
     }
   }
 

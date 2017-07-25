@@ -1,9 +1,7 @@
 package org.pdfextractor.algorithm
 
-import java.math.BigInteger
-
 import org.apache.commons.lang3.StringUtils
-import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns.{EstTotalR, EstPankR}
+import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns.{EstPankR, EstTotalR}
 import org.pdfextractor.algorithm.parser.Phrase
 import org.pdfextractor.algorithm.regex.{EurR, IgnoredR}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
@@ -38,6 +36,36 @@ package object finder {
 
   def isNormalTotalLine(text: String) = {
     EstTotalR.findFirstIn(text).nonEmpty
+  }
+
+  def findTensMultiple(acc: Int): Int = {
+    if (acc % 10 == 0) acc else findTensMultiple(acc + 1)
+  }
+
+  def calculate731Sum(digits: Seq[Int]) = {
+    def shiftMultliplier(previous: Int): Int = {
+      if (previous == 7) 3
+      else if (previous == 3) 1
+      else if (previous == 1) 7
+      else throw new IllegalArgumentException("Illegal multiplier: " + previous)
+    }
+
+    var nextMultiplier = 7
+
+    digits.fold(0)(
+      (acc: Int, digit: Int) => {
+        val multiplier = nextMultiplier
+        nextMultiplier = shiftMultliplier(nextMultiplier)
+        acc + digit * multiplier
+      }
+    )
+  }
+
+  def digitsToPenultimateInReverse(value: BigInt): Seq[Int] = {
+    (0 to (value.toString.length - 2)).
+      reverse.
+      map(String.valueOf(value.toString.charAt(_))).
+      map(_.toInt)
   }
 
 }

@@ -7,6 +7,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import org.pdfextractor.algorithm.parser.{PDFFileParser, ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesStore
+import org.pdfextractor.algorithm.finder._
 
 import scala.collection.LinearSeq
 
@@ -15,6 +16,36 @@ class EstonianReferenceNumberFinderTest extends AbstractFinderTest {
   val log: Logger = LoggerFactory.getLogger(classOf[PhraseTypesStore])
 
   @Autowired var estonianReferenceNumberFinder: EstonianReferenceNumberFinder = _
+
+  "Tens multiple finder"  should "arrive at correct results" in {
+    assert(findTensMultiple(46) == 50)
+    assert(findTensMultiple(9) == 10)
+    assert(findTensMultiple(21) == 30)
+    assert(findTensMultiple(7) == 10)
+    assert(findTensMultiple(140) == 140)
+    assert(findTensMultiple(49) == 50)
+    assert(findTensMultiple(63) == 70)
+  }
+
+  "731 sum calculator"  should "arrive at correct results" in {
+    assert(calculate731Sum(List(1)) == 7)
+    assert(calculate731Sum(List(2)) == 14)
+    assert(calculate731Sum(List(3)) == 21)
+    assert(calculate731Sum(List(5)) == 35)
+    assert(calculate731Sum(List(6)) == 42)
+    assert(calculate731Sum(List(7)) == 49)
+    assert(calculate731Sum(List(8)) == 56)
+    assert(calculate731Sum(List(9)) == 63)
+    assert(calculate731Sum(List(1, 0, 2)) == 9)
+    assert(calculate731Sum(List(4, 3, 2, 1)) == 46)
+    assert(calculate731Sum(List(5, 4, 9, 6, 4, 3, 1, 6, 2)) == 140)
+  }
+
+  "Digits in rev order finder"  should "arrive at correct results" in {
+    assert(digitsToPenultimateInReverse(BigInt(12345)) == Seq(4, 3, 2, 1))
+    assert(digitsToPenultimateInReverse(BigInt(31)) == Seq(3))
+    assert(digitsToPenultimateInReverse(BigInt(2613469450L)) == Seq(5, 4, 9, 6, 4, 3, 1, 6, 2))
+  }
 
   "Estonian ref number finder" should "find from phrases" in {
     val invoiceAsString = getStringFromFile("EestiEnergia.txt")
