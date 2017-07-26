@@ -22,7 +22,7 @@ Following is a description how to avoid adding Java source files to compilation 
 ````
 <dependency>
     <groupId>org.pdfextractor</groupId>
-    <artifactId>pdf-extractor-core_2.12</artifactId>
+    <artifactId>pdf-extractor-algorithm_2.12</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ````
