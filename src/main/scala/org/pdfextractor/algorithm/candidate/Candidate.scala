@@ -1,34 +1,39 @@
 package org.pdfextractor.algorithm.candidate
 
-import java.util.Locale
+import java.util.{Locale, Objects}
 
-import org.apache.commons.lang3.builder.{HashCodeBuilder, ReflectionToStringBuilder, ToStringStyle}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
 import scala.beans.BeanProperty
 
-/*
-* Note: Natural orderings in subclass implementations of Comparable are not consistent with equals.
-*
-* Also rearranges more likely candidates to the start of the collection.
-*/
-case class Candidate(@BeanProperty val value: Any,
-                val x: Integer,
-                val y: Integer,
-                val bold: Boolean,
-                val height: Integer,
-                val pageNo: Integer,
-                val locale: Locale,
-                val paymentFieldType: PaymentFieldType,
-                val properties: Map[CandidateMetadata, Any]) extends Comparable[Candidate] {
+/**
+  * Natural orderings are not consistent with <i>equals</i>.
+  * <br />
+  * Arranges sorted collection of candidates by likelyhood
+  */
+case class Candidate(@BeanProperty // for dependent RESTful API in Java
+                     value: Any,
+                     x: Integer,
+                     y: Integer,
+                     bold: Boolean,
+                     height: Integer,
+                     pageNo: Integer,
+                     locale: Locale,
+                     paymentFieldType: PaymentFieldType,
+                     properties: Map[CandidateMetadata, Any])
+    extends Comparable[Candidate] {
 
-  require(Option(value).isDefined)
+  Objects.requireNonNull(value)
 
   override def compareTo(other: Candidate): Int = compare(this, other)
 
   override def equals(other: Any): Boolean = {
-    other.isInstanceOf[Candidate] &&
-      other.asInstanceOf[Candidate].value.equals(this.value)
+    other match {
+      case that: Candidate => this.value == that.value
+      case _               => false
+    }
   }
+
+  override def hashCode(): Int = value.hashCode()
 
 }
