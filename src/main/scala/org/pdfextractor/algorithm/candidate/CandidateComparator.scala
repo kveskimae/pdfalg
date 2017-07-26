@@ -155,18 +155,27 @@ package object candidate {
   }
 
   private def isItalianInvoiceIdCandidate(candidate: Candidate) = {
-    SupportedLocales.ITALY.getLanguage == candidate.locale.getLanguage &&
-    candidate.paymentFieldType == INVOICE_ID
+    candidate.locale.getLanguage match {
+      case SupportedLocales.ITALIAN_LANG_CODE =>
+        candidate.paymentFieldType == INVOICE_ID
+      case _ => false
+    }
   }
 
   private def isItalianNameCandidate(candidate: Candidate) = {
-    SupportedLocales.ITALY.getLanguage == candidate.locale.getLanguage &&
-    candidate.paymentFieldType == NAME
+    candidate.locale.getLanguage match {
+      case SupportedLocales.ITALIAN_LANG_CODE =>
+        candidate.paymentFieldType == NAME
+      case _ => false
+    }
   }
 
   private def isEstonianNameCandidate(candidate: Candidate) = {
-    SupportedLocales.ESTONIA.getLanguage == candidate.locale.getLanguage &&
-    candidate.paymentFieldType == NAME
+    candidate.locale.getLanguage match {
+      case SupportedLocales.ESTONIAN_LANG_CODE =>
+        candidate.paymentFieldType == NAME
+      case _ => false
+    }
   }
 
 }

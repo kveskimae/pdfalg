@@ -71,9 +71,10 @@ package object finder {
   }
 
   def digitsToPenultimateInReverse(value: BigInt): Seq[Int] = {
-    (0 to (value.toString.length - 2)).reverse
-      .map(String.valueOf(value.toString.charAt(_)))
-      .map(_.toInt)
+    (0 to (value.toString.length - 2)).
+      reverse.
+      map(value.toString.charAt(_)).
+      map(_.asDigit)
   }
 
 }
