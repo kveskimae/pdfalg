@@ -17,15 +17,19 @@ package object parser {
 
   // Default space tolerance: 0.5, average character tolerance: 0.3
   class PageParser(private var nextCharacterStartsNewWord: Boolean = true,
-                   private val alignmentMatcher: AlignmentMatcher = new AlignmentMatcher(0f, 0f, 0f),
-                   private val phrases: mutable.ListBuffer[Phrase] = mutable.ListBuffer.empty,
-                   private var matchesFound: ListBuffer[Phrase] = mutable.ListBuffer.empty,
+                   private val alignmentMatcher: AlignmentMatcher =
+                     new AlignmentMatcher(0f, 0f, 0f),
+                   private val phrases: mutable.ListBuffer[Phrase] =
+                     mutable.ListBuffer.empty,
+                   private var matchesFound: ListBuffer[Phrase] =
+                     mutable.ListBuffer.empty,
                    private val builder: StringBuilder = new StringBuilder,
                    private var x: Float = 0f,
                    private var y: Float = 0f,
                    private var height: Float = 0f,
                    private var width: Float = 0f,
-                   private var bold: Boolean = false) extends PDFTextStripper {
+                   private var bold: Boolean = false)
+      extends PDFTextStripper {
 
     setSortByPosition(true)
 
@@ -47,8 +51,10 @@ package object parser {
 
       textCharacter = textCharacter.replaceAll("\u00b0", "o") // degree symbol
 
-      val isVerticallyAligned = alignmentMatcher.isVerticalPositionMatchesPrevious(text)
-      val isHorizontallyContinued = alignmentMatcher.isHorizontalPositionContinuesPrevious(text)
+      val isVerticallyAligned =
+        alignmentMatcher.isVerticalPositionMatchesPrevious(text)
+      val isHorizontallyContinued =
+        alignmentMatcher.isHorizontalPositionContinuesPrevious(text)
       alignmentMatcher.setLastVerticalPosition(text)
       if (!isVerticallyAligned || !isHorizontallyContinued) {
         setNextCharacterToStartNewWord()
@@ -60,8 +66,7 @@ package object parser {
       if (nextCharacterStartsNewWord) {
         nextCharacterStartsNewWord = false
         startNewWord(text, textCharacter)
-      }
-      else if (isVerticallyAligned) {
+      } else if (isVerticallyAligned) {
         nextCharacterStartsNewWord = false
         builder.append(textCharacter)
         width = roundToTens(text.getXDirAdj) + text.getWidth - x
@@ -75,7 +80,8 @@ package object parser {
       maximumXForNextCharacterWithSpaceBetween *= horizontalScaling
       alignmentMatcher.maximumXForNextCharacter = text.getXDirAdj + text.getWidthDirAdj + text.getWidthOfSpace // Space width is just in case
 
-      alignmentMatcher.maximumXForNextCharacterWithSpaceBetween = maximumXForNextCharacterWithSpaceBetween
+      alignmentMatcher.maximumXForNextCharacterWithSpaceBetween =
+        maximumXForNextCharacterWithSpaceBetween
       super.processTextPosition(text)
     }
 
@@ -92,14 +98,13 @@ package object parser {
       val builderResult: String = builder.toString
       if (!builderResult.isEmpty) {
         val phrase: Phrase =
-          new Phrase(
-            Math.round(x),
-            Math.round(y),
-            getCurrentPageNo,
-            Math.round(height),
-            Math.round(width),
-            builderResult,
-            bold)
+          new Phrase(Math.round(x),
+                     Math.round(y),
+                     getCurrentPageNo,
+                     Math.round(height),
+                     Math.round(width),
+                     builderResult,
+                     bold)
 
         phrases += phrase
       }
@@ -118,7 +123,6 @@ package object parser {
     def getPhrases: LinearSeq[Phrase] = phrases.toList
   }
 
-
   object PDFFileParser {
 
     def parse(pdfContentStream: InputStream): ParseResult = {
@@ -133,9 +137,12 @@ package object parser {
       val ret: ParseResult = try {
         val processor: PageParser = new PageParser()
         val text: String = processor.getText(document)
-        val phrases: LinearSeq[Phrase]  = processor.getPhrases
+        val phrases: LinearSeq[Phrase] = processor.getPhrases
         new ParseResult(text, phrases)
-      } catch {case e: IOException => throw new AppServerFaultException("Parsing PDF file failed") }
+      } catch {
+        case e: IOException =>
+          throw new AppServerFaultException("Parsing PDF file failed")
+      }
 
       try {
         document.close
@@ -151,32 +158,29 @@ package object parser {
   class ParseResult(val text: String, val phrases: LinearSeq[Phrase]) {
 
     def findPhrasesBelow(phrase: Phrase): LinearSeq[Phrase] = {
-      phrases.
-        filter(token =>
+      phrases.filter(
+        token =>
           phrase.pageNumber.equals(token.pageNumber) &&
-          Math.abs(token.x - phrase.x) < 10 &&
-          token.y >= phrase.y + phrase.height
-        )
+            Math.abs(token.x - phrase.x) < 10 &&
+            token.y >= phrase.y + phrase.height)
     }
 
     def findPhrasesAbove(phrase: Phrase): LinearSeq[Phrase] = {
-      phrases.
-        filter(token =>
+      phrases.filter(
+        token =>
           phrase.pageNumber == token.pageNumber &&
             Math.abs(token.x - phrase.x) < 10 &&
-            token.y < phrase.y
-        )
+            token.y < phrase.y)
     }
 
     // TODO
 
     def findPhrasesOnLine(phrase: Phrase): LinearSeq[Phrase] = {
-      phrases.
-        filter(token =>
+      phrases.filter(
+        token =>
           token.pageNumber == phrase.pageNumber &&
             token != phrase &&
-            Math.abs(token.y - phrase.y) < 10
-        )
+            Math.abs(token.y - phrase.y) < 10)
     }
 
     def findTokensOnRight(phrase: Phrase): LinearSeq[Phrase] = {
@@ -195,7 +199,7 @@ package object parser {
       } else {
         val iterator = phrasesBelow.iterator
         var closest = iterator.next
-        while ( {
+        while ({
           iterator.hasNext
         }) {
           val token = iterator.next
@@ -238,20 +242,21 @@ package object parser {
         val closestToken = rightmost(tokensOnLeft)
         Option(closestToken)
       } else {
-       Option.empty
+        Option.empty
       }
     }
 
     def findClosestPhrasesBelowOrRight(phrase: Phrase): LinearSeq[Phrase] = {
-      val matchesFoundAsList = phrases.
-        filter(token => phrase.pageNumber.equals(token.pageNumber)).
-        filter(token => token.x - phrase.x > 10).
-        filter(token => token.y >= phrase.y + 1)
+      val matchesFoundAsList = phrases
+        .filter(token => phrase.pageNumber.equals(token.pageNumber))
+        .filter(token => token.x - phrase.x > 10)
+        .filter(token => token.y >= phrase.y + 1)
 
       if (!matchesFoundAsList.isEmpty) {
         val leftmostPhrase: Phrase = leftmost(matchesFoundAsList)
         val uppermostPhrase: Phrase = uppermost(matchesFoundAsList)
-        if (uppermostPhrase != leftmostPhrase) LinearSeq(leftmostPhrase, uppermostPhrase)
+        if (uppermostPhrase != leftmostPhrase)
+          LinearSeq(leftmostPhrase, uppermostPhrase)
         else LinearSeq(leftmostPhrase)
       } else {
         LinearSeq.empty
@@ -260,7 +265,13 @@ package object parser {
 
   }
 
-  case class Phrase(val x: Int, val y: Int, val pageNumber: Int, val height: Int, val width: Int, val text: String, val bold: Boolean);
+  case class Phrase(val x: Int,
+                    val y: Int,
+                    val pageNumber: Int,
+                    val height: Int,
+                    val width: Int,
+                    val text: String,
+                    val bold: Boolean);
 
   class AlignmentMatcher(var lastYCoordinate: Float,
                          var maximumXForNextCharacter: Float,
@@ -277,7 +288,7 @@ package object parser {
 
     def isSpace(text: TextPosition): Boolean = {
       text.getXDirAdj.compareTo(maximumXForNextCharacter) >= 0 &&
-        text.getXDirAdj.compareTo(maximumXForNextCharacterWithSpaceBetween) <= 0
+      text.getXDirAdj.compareTo(maximumXForNextCharacterWithSpaceBetween) <= 0
     }
 
     def setLastVerticalPosition(text: TextPosition): Unit = {
@@ -310,8 +321,8 @@ package object parser {
     findWithReduce(phrases, (p1, p2) => if (p1.y < p2.y) p1 else p2)
   }
 
-  private def findWithReduce(phrases: Traversable[Phrase], fn: (Phrase, Phrase) => Phrase): Phrase =
-  {
+  private def findWithReduce(phrases: Traversable[Phrase],
+                             fn: (Phrase, Phrase) => Phrase): Phrase = {
     require(phrases.nonEmpty)
 
     phrases.reduce(fn)

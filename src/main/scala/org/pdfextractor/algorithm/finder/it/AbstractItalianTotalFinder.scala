@@ -19,110 +19,155 @@ import org.pdfextractor.algorithm.finder._
 import scala.collection.mutable
 
 @Service
-abstract class AbstractItalianTotalFinder extends AbstractFinder(None, None, true, true) {
-	// TODO What about thread safety?
+abstract class AbstractItalianTotalFinder
+    extends AbstractFinder(None, None, true, true) {
+  // TODO What about thread safety?
 
-	val otherSymbolsForCommaAsThousandsSeparator : DecimalFormatSymbols= new DecimalFormatSymbols(Locale.ITALY)
-	otherSymbolsForCommaAsThousandsSeparator.setDecimalSeparator('.')
-	otherSymbolsForCommaAsThousandsSeparator.setGroupingSeparator(',')
-	
-	val decimalFormatWithCommaAsThousandsSeparator: DecimalFormat  = new DecimalFormat("###,###.##", otherSymbolsForCommaAsThousandsSeparator)
-	
-	val otherSymbolsForDotAsThousandsSeparator: DecimalFormatSymbols= new DecimalFormatSymbols(Locale.ITALY)
-	otherSymbolsForDotAsThousandsSeparator.setDecimalSeparator(',')
-	otherSymbolsForDotAsThousandsSeparator.setGroupingSeparator('.')
-	
-	// Even if dot is used as radix character (decimal separator), pattern is always defined with comma as separator
-	val decimalFormatWithDotAsThousandsSeparator: DecimalFormat = new DecimalFormat("###,###.##", otherSymbolsForDotAsThousandsSeparator)
-	
-	private[it] val PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX = ("""^(?ims).{0,30}:([\s]{0,})""" + Eur + """?([\s]{0,})""" + DigitsAndCommas + """([\s]{0,})""" + Eur + """?([\s]{0,})$""").r
+  val otherSymbolsForCommaAsThousandsSeparator: DecimalFormatSymbols =
+    new DecimalFormatSymbols(Locale.ITALY)
+  otherSymbolsForCommaAsThousandsSeparator.setDecimalSeparator('.')
+  otherSymbolsForCommaAsThousandsSeparator.setGroupingSeparator(',')
 
-	@org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
-	def refreshed(): Unit = {
-		searchPattern = Some(("^(?ims)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, getType) + "(.*)$").r)
-		valuePattern = Some(DigitsAndCommasR)
-	}
+  val decimalFormatWithCommaAsThousandsSeparator: DecimalFormat =
+    new DecimalFormat("###,###.##", otherSymbolsForCommaAsThousandsSeparator)
 
-	override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): mutable.Buffer[Candidate] = {
-		val ret: ListBuffer[Candidate] = ListBuffer.empty
-		val doubleValues = searchForDoubleValues(phrase.text)
-		if (doubleValues.size == 1) {
-			val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
-			while ( {
-				totalAsNumberMatcher.hasNext
-			}) {
-				val totalAsString = totalAsNumberMatcher.next()
-				val candidate: Option[Candidate] = findCandidateValue(totalAsString, phrase, parseResult)
-				if (candidate.isDefined) ret += candidate.get
-			}
-		}
-		else {
-			val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
-			var biggest: Option[Candidate] = None
-			while ( {
-				totalAsNumberMatcher.hasNext
-			}) {
-				val totalAsString = totalAsNumberMatcher.next()
-				val candidate: Option[Candidate] = findCandidateValue(totalAsString, phrase, parseResult)
-				if (biggest.isEmpty) biggest = candidate
-				else if (Option(candidate).isDefined && candidate.get.value.asInstanceOf[Double] > biggest.get.value.asInstanceOf[Double]) biggest = candidate
-			}
-			if (biggest.isDefined) ret += biggest.get
-		}
-		ret
-	}
+  val otherSymbolsForDotAsThousandsSeparator: DecimalFormatSymbols =
+    new DecimalFormatSymbols(Locale.ITALY)
+  otherSymbolsForDotAsThousandsSeparator.setDecimalSeparator(',')
+  otherSymbolsForDotAsThousandsSeparator.setGroupingSeparator('.')
 
-	private def findCandidateValue(totalAsString: String, phrase: Phrase, parseResult: ParseResult): Option[Candidate] = {
-		val dotCount = countDotsAndCommas(totalAsString)
-		val `type` = phraseTypesStore.findType(SupportedLocales.ITALY, getType, phrase.text)
-		if (dotCount < 2) {
-			val replaced = totalAsString.replaceAll(",", ".")
-			val totalAsDouble: Double = replaced.toDouble
-			val doubleNumber = dotCount > 0
-			val candidate = buildCandidate(parseResult, phrase, totalAsDouble, doubleNumber, `type`)
-			Some(candidate)
-		}
-		else try {
-      var totalAsDouble = .0
-      if (isDotThousandsSeparator(totalAsString)) totalAsDouble = decimalFormatWithDotAsThousandsSeparator.parse(totalAsString).doubleValue
-      else totalAsDouble = decimalFormatWithCommaAsThousandsSeparator.parse(totalAsString).doubleValue
-      val doubleNumber = isDouble(totalAsDouble)
-      val candidate = buildCandidate(parseResult, phrase, totalAsDouble, doubleNumber, `type`)
-      Some(candidate)
-    } catch {
-      case ignored: ParseException =>
-        None
+  // Even if dot is used as radix character (decimal separator), pattern is always defined with comma as separator
+  val decimalFormatWithDotAsThousandsSeparator: DecimalFormat =
+    new DecimalFormat("###,###.##", otherSymbolsForDotAsThousandsSeparator)
+
+  private[it] val PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX =
+    ("""^(?ims).{0,30}:([\s]{0,})""" + Eur + """?([\s]{0,})""" + DigitsAndCommas + """([\s]{0,})""" + Eur + """?([\s]{0,})$""").r
+
+  @org.springframework.context.event.EventListener(
+    Array(classOf[PhraseTypesRefreshedEvent]))
+  def refreshed(): Unit = {
+    searchPattern = Some(
+      ("^(?ims)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY,
+                                                        getType) + "(.*)$").r)
+    valuePattern = Some(DigitsAndCommasR)
+  }
+
+  override protected def searchValuesFromPhrase(
+      phrase: Phrase,
+      parseResult: ParseResult,
+      valuePattern2: Regex): mutable.Buffer[Candidate] = {
+    val ret: ListBuffer[Candidate] = ListBuffer.empty
+    val doubleValues = searchForDoubleValues(phrase.text)
+    if (doubleValues.size == 1) {
+      val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
+      while ({
+        totalAsNumberMatcher.hasNext
+      }) {
+        val totalAsString = totalAsNumberMatcher.next()
+        val candidate: Option[Candidate] =
+          findCandidateValue(totalAsString, phrase, parseResult)
+        if (candidate.isDefined) ret += candidate.get
+      }
+    } else {
+      val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
+      var biggest: Option[Candidate] = None
+      while ({
+        totalAsNumberMatcher.hasNext
+      }) {
+        val totalAsString = totalAsNumberMatcher.next()
+        val candidate: Option[Candidate] =
+          findCandidateValue(totalAsString, phrase, parseResult)
+        if (biggest.isEmpty) biggest = candidate
+        else if (Option(candidate).isDefined && candidate.get.value
+                   .asInstanceOf[Double] > biggest.get.value
+                   .asInstanceOf[Double]) biggest = candidate
+      }
+      if (biggest.isDefined) ret += biggest.get
     }
-	}
+    ret
+  }
 
-	def isDotThousandsSeparator(totalAsString: String): Boolean = {
-		totalAsString.contains(",") &&
-			totalAsString.contains(".") &&
-			(totalAsString.indexOf('.') < totalAsString.indexOf(','))
-	}
+  private def findCandidateValue(
+      totalAsString: String,
+      phrase: Phrase,
+      parseResult: ParseResult): Option[Candidate] = {
+    val dotCount = countDotsAndCommas(totalAsString)
+    val `type` =
+      phraseTypesStore.findType(SupportedLocales.ITALY, getType, phrase.text)
+    if (dotCount < 2) {
+      val replaced = totalAsString.replaceAll(",", ".")
+      val totalAsDouble: Double = replaced.toDouble
+      val doubleNumber = dotCount > 0
+      val candidate =
+        buildCandidate(parseResult, phrase, totalAsDouble, doubleNumber, `type`)
+      Some(candidate)
+    } else
+      try {
+        var totalAsDouble = .0
+        if (isDotThousandsSeparator(totalAsString))
+          totalAsDouble = decimalFormatWithDotAsThousandsSeparator
+            .parse(totalAsString)
+            .doubleValue
+        else
+          totalAsDouble = decimalFormatWithCommaAsThousandsSeparator
+            .parse(totalAsString)
+            .doubleValue
+        val doubleNumber = isDouble(totalAsDouble)
+        val candidate = buildCandidate(parseResult,
+                                       phrase,
+                                       totalAsDouble,
+                                       doubleNumber,
+                                       `type`)
+        Some(candidate)
+      } catch {
+        case ignored: ParseException =>
+          None
+      }
+  }
 
-	def isDouble(number: Double): Boolean = (number % 1) != 0
+  def isDotThousandsSeparator(totalAsString: String): Boolean = {
+    totalAsString.contains(",") &&
+    totalAsString.contains(".") &&
+    (totalAsString.indexOf('.') < totalAsString.indexOf(','))
+  }
 
-	def isEuroPresent(text: String): Boolean = {
-		EurR.findFirstIn(text).nonEmpty
-	}
+  def isDouble(number: Double): Boolean = (number % 1) != 0
 
-	private def isNormalTotalLine(text: String): Boolean = {
-		PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX.findFirstIn(text).nonEmpty
-	}
+  def isEuroPresent(text: String): Boolean = {
+    EurR.findFirstIn(text).nonEmpty
+  }
 
-	override def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
-		val doubleNumber = params(0).asInstanceOf[Boolean]
-		val `type` = params(1).asInstanceOf[PhraseType]
-		val euroSignFound = isEuroPresent(phrase.text)
-		val normalTotalLine = isNormalTotalLine(phrase.text)
-		val properties: Map[CandidateMetadata, Any] = Map(IsDouble -> doubleNumber, MetaPhraseType -> `type`, HasEuroSign -> euroSignFound, IsNormalLine -> normalTotalLine)
-		val ret = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ITALY, getType, properties)
-		ret
-	}
+  private def isNormalTotalLine(text: String): Boolean = {
+    PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX.findFirstIn(text).nonEmpty
+  }
 
-	override def isValueAllowed(value: Any) = true
+  override def buildCandidate(parseResult: ParseResult,
+                              phrase: Phrase,
+                              value: Any,
+                              params: Any*): Candidate = {
+    val doubleNumber = params(0).asInstanceOf[Boolean]
+    val `type` = params(1).asInstanceOf[PhraseType]
+    val euroSignFound = isEuroPresent(phrase.text)
+    val normalTotalLine = isNormalTotalLine(phrase.text)
+    val properties: Map[CandidateMetadata, Any] = Map(
+      IsDouble -> doubleNumber,
+      MetaPhraseType -> `type`,
+      HasEuroSign -> euroSignFound,
+      IsNormalLine -> normalTotalLine)
+    val ret = new Candidate(value,
+                            phrase.x,
+                            phrase.y,
+                            phrase.bold,
+                            phrase.height,
+                            phrase.pageNumber,
+                            SupportedLocales.ITALY,
+                            getType,
+                            properties)
+    ret
+  }
 
-	def parseValue(raw: String) = throw new UnsupportedOperationException
+  override def isValueAllowed(value: Any) = true
+
+  def parseValue(raw: String) = throw new UnsupportedOperationException
 
 }

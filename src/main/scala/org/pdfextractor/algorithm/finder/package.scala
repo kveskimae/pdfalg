@@ -1,7 +1,10 @@
 package org.pdfextractor.algorithm
 
 import org.apache.commons.lang3.StringUtils
-import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns.{EstPankR, EstTotalR}
+import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns.{
+  EstPankR,
+  EstTotalR
+}
 import org.pdfextractor.algorithm.parser.Phrase
 import org.pdfextractor.algorithm.regex.{EurR, IgnoredR}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
@@ -17,7 +20,13 @@ package object finder {
   def isVoidText(text: String): Boolean = IgnoredR.pattern.matcher(text).matches
 
   def combinePhrases1(phrase: Phrase, otherPhrase: Phrase): Phrase = {
-    new Phrase(otherPhrase.x, otherPhrase.y, otherPhrase.pageNumber, otherPhrase.height, phrase.width, phrase.text + " " + otherPhrase.text, otherPhrase.bold)
+    new Phrase(otherPhrase.x,
+               otherPhrase.y,
+               otherPhrase.pageNumber,
+               otherPhrase.height,
+               phrase.width,
+               phrase.text + " " + otherPhrase.text,
+               otherPhrase.bold)
   }
 
   def isPankPresent(text: String): Boolean = {
@@ -62,10 +71,9 @@ package object finder {
   }
 
   def digitsToPenultimateInReverse(value: BigInt): Seq[Int] = {
-    (0 to (value.toString.length - 2)).
-      reverse.
-      map(String.valueOf(value.toString.charAt(_))).
-      map(_.toInt)
+    (0 to (value.toString.length - 2)).reverse
+      .map(String.valueOf(value.toString.charAt(_)))
+      .map(_.toInt)
   }
 
 }

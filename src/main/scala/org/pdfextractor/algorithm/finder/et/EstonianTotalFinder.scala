@@ -19,34 +19,48 @@ import scala.collection.mutable
 @Service
 class EstonianTotalFinder extends AbstractFinder {
 
-  @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
+  @org.springframework.context.event.EventListener(
+    Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
-    searchPattern = Some(("^(?ism)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ESTONIA, TOTAL) + "(.*)$").r)
+    searchPattern = Some(
+      ("^(?ism)(.*)" + phraseTypesStore
+        .buildAllPhrases(SupportedLocales.ESTONIA, TOTAL) + "(.*)$").r)
     valuePattern = Some(DigitsAndCommasR)
   }
 
-  override protected def searchValuesFromPhrase(phrase: Phrase, parseResult: ParseResult, valuePattern2: Regex): mutable.Buffer[Candidate] = {
+  override protected def searchValuesFromPhrase(
+      phrase: Phrase,
+      parseResult: ParseResult,
+      valuePattern2: Regex): mutable.Buffer[Candidate] = {
     if (searchForEstonianDoubleValuesAfterText(phrase.text).size == 1) {
-      def totalString2Candidate: String => Candidate = (totalAsString: String) => {
-        val doubleNumber = countDotsAndCommas(totalAsString) > 0
-        val totalAsDouble = parseValue(totalAsString).asInstanceOf[Double]
-        val phraseType = phraseTypesStore.findType(SupportedLocales.ESTONIA, TOTAL, phrase.text)
+      def totalString2Candidate: String => Candidate =
+        (totalAsString: String) => {
+          val doubleNumber = countDotsAndCommas(totalAsString) > 0
+          val totalAsDouble = parseValue(totalAsString).asInstanceOf[Double]
+          val phraseType = phraseTypesStore.findType(SupportedLocales.ESTONIA,
+                                                     TOTAL,
+                                                     phrase.text)
 
-        buildCandidate(parseResult, phrase, totalAsDouble, doubleNumber, phraseType)
-      }
+          buildCandidate(parseResult,
+                         phrase,
+                         totalAsDouble,
+                         doubleNumber,
+                         phraseType)
+        }
 
-      DigitsAndCommasR.
-        findAllIn(phrase.text).
-        filter(countDotsAndCommas(_) < 2).
-        map(_.replaceAll(",", ".")).
-        map(totalString2Candidate).
-        toBuffer
+      DigitsAndCommasR
+        .findAllIn(phrase.text)
+        .filter(countDotsAndCommas(_) < 2)
+        .map(_.replaceAll(",", "."))
+        .map(totalString2Candidate)
+        .toBuffer
     } else {
       ListBuffer.empty
     }
   }
 
-  def buildProperties(phrase: Phrase, params: Seq[Any]): Map[CandidateMetadata, Any] = {
+  def buildProperties(phrase: Phrase,
+                      params: Seq[Any]): Map[CandidateMetadata, Any] = {
     val doubleNumber = params(0).asInstanceOf[Boolean]
     val phraseType = params(1).asInstanceOf[PhraseType]
     val euroSignFound = isEuroPresent(phrase.text)
@@ -60,8 +74,19 @@ class EstonianTotalFinder extends AbstractFinder {
     )
   }
 
-  override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = {
-    new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, TOTAL, buildProperties(phrase, params))
+  override protected def buildCandidate(parseResult: ParseResult,
+                                        phrase: Phrase,
+                                        value: Any,
+                                        params: Any*): Candidate = {
+    new Candidate(value,
+                  phrase.x,
+                  phrase.y,
+                  phrase.bold,
+                  phrase.height,
+                  phrase.pageNumber,
+                  SupportedLocales.ESTONIA,
+                  TOTAL,
+                  buildProperties(phrase, params))
   }
 
   override def isValueAllowed(value: Any) = true

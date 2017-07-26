@@ -15,17 +15,23 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 @Service
-class EstonianAccountNumberFinder extends AbstractFinder(EstIBANStartWithRestOfLineR, EstIBANCorrectR, false) {
+class EstonianAccountNumberFinder
+    extends AbstractFinder(EstIBANStartWithRestOfLineR, EstIBANCorrectR, false) {
 
   val MagicNo = new BigInteger("97")
 
-  override def findCandidates(parseResult: ParseResult): Seq[Candidate]  = {
-    val ret: ListBuffer[Candidate] = collection.mutable.ListBuffer.empty[Candidate]
-    val linesContainingIBANStart: mutable.Buffer[String] = getSearchPattern.findAllIn(parseResult.text).toBuffer
-    val linesContainingIBANWithoutSpaces: ListBuffer[String] = ListBuffer.empty[String]
+  override def findCandidates(parseResult: ParseResult): Seq[Candidate] = {
+    val ret: ListBuffer[Candidate] =
+      collection.mutable.ListBuffer.empty[Candidate]
+    val linesContainingIBANStart: mutable.Buffer[String] =
+      getSearchPattern.findAllIn(parseResult.text).toBuffer
+    val linesContainingIBANWithoutSpaces: ListBuffer[String] =
+      ListBuffer.empty[String]
     for (oneLineContainingIBANStart <- linesContainingIBANStart) {
-      val foundAccountNrValues = getValuePattern.findAllIn(oneLineContainingIBANStart)
-      if (!foundAccountNrValues.isEmpty) linesContainingIBANWithoutSpaces += oneLineContainingIBANStart
+      val foundAccountNrValues =
+        getValuePattern.findAllIn(oneLineContainingIBANStart)
+      if (!foundAccountNrValues.isEmpty)
+        linesContainingIBANWithoutSpaces += oneLineContainingIBANStart
       for (accountNrValue <- foundAccountNrValues) {
         if (isValueAllowed(accountNrValue)) {
           val candidate = buildCandidate(parseResult, None, accountNrValue)
@@ -37,15 +43,17 @@ class EstonianAccountNumberFinder extends AbstractFinder(EstIBANStartWithRestOfL
     println("1 ret = " + ret.toSeq.toString())
     println("linesContainingIBANStart=" + linesContainingIBANStart)
     for (oneLineContainingIBANStart <- linesContainingIBANStart) {
-      val ibanStartingPartMatcher = EstIBANStartR.pattern.matcher(oneLineContainingIBANStart)
+      val ibanStartingPartMatcher =
+        EstIBANStartR.pattern.matcher(oneLineContainingIBANStart)
       while (ibanStartingPartMatcher.find()) {
         val accountNumberValueBuilder = new StringBuilder
         val remainingPartStartIdx = ibanStartingPartMatcher.end
         val ibanStart = ibanStartingPartMatcher.group()
         accountNumberValueBuilder.append(ibanStart)
-        val remainingPartAfterIBANStart = oneLineContainingIBANStart.substring(remainingPartStartIdx)
+        val remainingPartAfterIBANStart =
+          oneLineContainingIBANStart.substring(remainingPartStartIdx)
         val numbersMatcher = DigitsR.findAllIn(remainingPartAfterIBANStart)
-        while ( {
+        while ({
           numbersMatcher.hasNext
         }) {
           val nextNumberPart = numbersMatcher.next()
@@ -66,17 +74,37 @@ class EstonianAccountNumberFinder extends AbstractFinder(EstIBANStartWithRestOfL
     ret
   }
 
-  override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*): Candidate = new Candidate(value, 1, 1, false, 1, 1, SupportedLocales.ESTONIA, IBAN, Map.empty)
+  override protected def buildCandidate(parseResult: ParseResult,
+                                        phrase: Phrase,
+                                        value: Any,
+                                        params: Any*): Candidate =
+    new Candidate(value,
+                  1,
+                  1,
+                  false,
+                  1,
+                  1,
+                  SupportedLocales.ESTONIA,
+                  IBAN,
+                  Map.empty)
 
-  protected def buildCandidate(parseResult: ParseResult, phrase: Option[Phrase], value: Any, params: Any*): Candidate = buildCandidate(parseResult, phrase.orNull, value, params)
+  protected def buildCandidate(parseResult: ParseResult,
+                               phrase: Option[Phrase],
+                               value: Any,
+                               params: Any*): Candidate =
+    buildCandidate(parseResult, phrase.orNull, value, params)
 
   private def isMagicModulusOne(value: String): Boolean = {
     val swapped: String =
       (value.substring(4) + value.substring(0, 4)). // Move the four initial characters to the end of the string.
-      map(Character.getNumericValue(_)).map(_.toString). // Replace each letter in the string with two digits, thereby expanding the string, where A = 10, B = 11, ..., Z = 35.
-      mkString
+      map(Character.getNumericValue(_))
+        .map(_.toString)
+        . // Replace each letter in the string with two digits, thereby expanding the string, where A = 10, B = 11, ..., Z = 35.
+        mkString
 
-    new BigInteger(swapped).mod(MagicNo).intValue == 1 // Interpret the string as integer and compute the remainder of that number on division by 97.
+    new BigInteger(swapped)
+      .mod(MagicNo)
+      .intValue == 1 // Interpret the string as integer and compute the remainder of that number on division by 97.
   }
 
   override def isValueAllowed(raw: Any): Boolean = {

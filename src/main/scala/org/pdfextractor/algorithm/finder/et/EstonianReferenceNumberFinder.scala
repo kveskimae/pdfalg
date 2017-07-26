@@ -14,18 +14,32 @@ import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import scala.collection.mutable.ListBuffer
 
 @Service
-class EstonianReferenceNumberFinder extends AbstractFinder(EstRefNoLineR, EstRefNoR) {
+class EstonianReferenceNumberFinder
+    extends AbstractFinder(EstRefNoLineR, EstRefNoR) {
 
   override def parseValue(raw: String): Any = raw
 
-  override protected def buildCandidate(parseResult: ParseResult, phrase: Phrase, value: Any, params: Any*) = new Candidate(value, phrase.x, phrase.y, phrase.bold, phrase.height, phrase.pageNumber, SupportedLocales.ESTONIA, REFERENCE_NUMBER, Map.empty)
+  override protected def buildCandidate(parseResult: ParseResult,
+                                        phrase: Phrase,
+                                        value: Any,
+                                        params: Any*) =
+    new Candidate(value,
+                  phrase.x,
+                  phrase.y,
+                  phrase.bold,
+                  phrase.height,
+                  phrase.pageNumber,
+                  SupportedLocales.ESTONIA,
+                  REFERENCE_NUMBER,
+                  Map.empty)
 
   override def getType = REFERENCE_NUMBER
 
   override def isValueAllowed(raw: Any): Boolean = {
     try {
       val value = new BigInteger(raw.asInstanceOf[String])
-      isCorrectFormat(value) && checkDigitMatches(value, calculateCheckDigit(value))
+      isCorrectFormat(value) && checkDigitMatches(value,
+                                                  calculateCheckDigit(value))
     } catch {
       case e: Exception => false
     }
@@ -38,7 +52,8 @@ class EstonianReferenceNumberFinder extends AbstractFinder(EstRefNoLineR, EstRef
   }
 
   private def checkDigitMatches(value: BigInteger, checkDigit: Int) = {
-    val lastDigit = Integer.valueOf("" + value.toString.charAt(value.toString.length - 1))
+    val lastDigit =
+      Integer.valueOf("" + value.toString.charAt(value.toString.length - 1))
     lastDigit == checkDigit
   }
 

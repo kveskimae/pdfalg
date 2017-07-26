@@ -41,29 +41,30 @@ package object regex {
 
   val EurR = (raw"^(?ism)(.*)$Eur(.*)$$").r
 
-  def searchForEstonianDoubleValuesAfterText(searchString: String): Seq[Double] = {
-    searchForDoubleValues(searchString).
-      map(_.replaceAll(",", ".")).
-      filter(StringUtils.countMatches(_, ".") < 2).
-      map(_.toDouble)
+  def searchForEstonianDoubleValuesAfterText(
+      searchString: String): Seq[Double] = {
+    searchForDoubleValues(searchString)
+      .map(_.replaceAll(",", "."))
+      .filter(StringUtils.countMatches(_, ".") < 2)
+      .map(_.toDouble)
   }
-
 
   def searchForDoubleValues(searchString: String): Seq[String] = {
     val excludeDates: (Match) => Boolean = (matched: Match) => {
       val endIdx = matched.end
       val startIdx = matched.start - 1
 
-      (endIdx >= searchString.length || (searchString.charAt(endIdx) != '/' && searchString.charAt(endIdx) != '-')) &&
-        (startIdx < 0 || searchString.charAt(startIdx) != '/')
+      (endIdx >= searchString.length || (searchString.charAt(endIdx) != '/' && searchString
+        .charAt(endIdx) != '-')) &&
+      (startIdx < 0 || searchString.charAt(startIdx) != '/')
     }
 
-    DigitsAndCommasR.
-      findAllIn(searchString).
-      matchData.
-      filter(excludeDates).
-      map(_.matched).
-      toSeq
+    DigitsAndCommasR
+      .findAllIn(searchString)
+      .matchData
+      .filter(excludeDates)
+      .map(_.matched)
+      .toSeq
   }
 
 }

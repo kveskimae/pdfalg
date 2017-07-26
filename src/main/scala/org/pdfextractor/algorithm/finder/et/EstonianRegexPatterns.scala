@@ -19,7 +19,8 @@ object EstonianRegexPatterns {
   val EstIBANStartWithRestOfLineR = (raw"""^(?ism)(.*)$EstIBANStart(.*)$$""").r
 
   // Total
-  val EstTotalR = (raw"""^(?ism).{0,30}:([\s]{0,})$Eur?([\s]{0,})$DigitsAndCommas([\s]{0,})$Eur?([\s]{0,})$$""").r
+  val EstTotalR =
+    (raw"""^(?ism).{0,30}:([\s]{0,})$Eur?([\s]{0,})$DigitsAndCommas([\s]{0,})$Eur?([\s]{0,})$$""").r
 
   val EstPankR = ("^(?ism)(.*)(pank)(.*)$").r
 

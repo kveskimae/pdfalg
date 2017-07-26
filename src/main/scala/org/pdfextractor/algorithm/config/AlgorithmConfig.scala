@@ -5,5 +5,7 @@ import org.springframework.context.annotation.{ComponentScan, Configuration}
 import org.pdfextractor.algorithm.phrase.PhrasePackageMarker
 
 @Configuration
-@ComponentScan(basePackageClasses = Array(classOf[FinderPackageMarker], classOf[PhrasePackageMarker]))
+@ComponentScan(
+  basePackageClasses =
+    Array(classOf[FinderPackageMarker], classOf[PhrasePackageMarker]))
 class AlgorithmConfig {}

@@ -7,7 +7,6 @@ import org.pdfextractor.algorithm.candidate.Candidate
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-
 class Node(val cutDirection: CutDirection,
            val minX: Int,
            val maxX: Int,
@@ -39,15 +38,16 @@ class Node(val cutDirection: CutDirection,
 
   def isSplit(): Boolean = {
     locations.size > CellMinPoints &&
-      (maxX - minX) >= 2 * CellMinLengthPx &&
-      (maxY - minY) >= 2 * CellMinLengthPx
+    (maxX - minX) >= 2 * CellMinLengthPx &&
+    (maxY - minY) >= 2 * CellMinLengthPx
   }
 
   def doSplit() = {
     cutDirection match {
       case Vertical =>
         val cutLine = (minX + maxX) / 2
-        smallerValues = Some(new Node(Horizontal, minX, cutLine - 1, minY, maxY))
+        smallerValues = Some(
+          new Node(Horizontal, minX, cutLine - 1, minY, maxY))
         biggerValues = Some(new Node(Horizontal, cutLine, maxX, minY, maxY))
         val split = locations.partition(_.x < cutLine)
         smallerValues.get.addLocations(split._1)
@@ -61,7 +61,8 @@ class Node(val cutDirection: CutDirection,
           else biggerValues.get.addLocation(point)
         }
       case _ =>
-        throw new IllegalStateException("Unknown cut direction: " + cutDirection)
+        throw new IllegalStateException(
+          "Unknown cut direction: " + cutDirection)
     }
   }
 
@@ -74,28 +75,37 @@ class Node(val cutDirection: CutDirection,
   def getStringRepresentation(prefixWhitespace: String): String = {
     val sb = new StringBuilder
     sb.append(prefixWhitespace).append('+').append(cutDirection)
-    sb.append('(').append("x:").append(minX).append(',').append(maxX).append(';')
+    sb.append('(')
+      .append("x:")
+      .append(minX)
+      .append(',')
+      .append(maxX)
+      .append(';')
     sb.append("y:").append(minY).append(',').append(maxY)
     sb.append(')').append(' ').append(getNumberOfLocations)
     if (this.smallerValues.isDefined) {
       sb.append('\n')
-      sb.append(smallerValues.get.getStringRepresentation(prefixWhitespace + "\t"))
+      sb.append(
+        smallerValues.get.getStringRepresentation(prefixWhitespace + "\t"))
     }
     if (this.biggerValues.isDefined) {
       sb.append('\n')
-      sb.append(biggerValues.get.getStringRepresentation(prefixWhitespace + "\t"))
+      sb.append(
+        biggerValues.get.getStringRepresentation(prefixWhitespace + "\t"))
     }
     sb.toString
   }
 
   def isInSmallValues(candidate: Candidate): Boolean = {
-    require(candidate.x <= maxX && candidate.y <= maxY, "Location must be contained inside grid: " + candidate)
+    require(candidate.x <= maxX && candidate.y <= maxY,
+            "Location must be contained inside grid: " + candidate)
 
     cutDirection match {
       case Horizontal => candidate.y < (minY + maxY) / 2
-      case Vertical => candidate.x < (minX + maxX) / 2
+      case Vertical   => candidate.x < (minX + maxX) / 2
       case _ =>
-        throw new IllegalStateException("Unknown cut direction: " + cutDirection)
+        throw new IllegalStateException(
+          "Unknown cut direction: " + cutDirection)
     }
   }
 
@@ -103,12 +113,12 @@ class Node(val cutDirection: CutDirection,
     if (isInSmallValues(location)) {
       smallerValues match {
         case Some(_) => smallerValues.get.getMaxDepthForLocation(location) + 1
-        case None => 0
+        case None    => 0
       }
     } else {
       biggerValues match {
-        case Some(_) =>  biggerValues.get.getMaxDepthForLocation(location) + 1
-        case None => 0
+        case Some(_) => biggerValues.get.getMaxDepthForLocation(location) + 1
+        case None    => 0
       }
     }
   }
@@ -118,12 +128,14 @@ class Node(val cutDirection: CutDirection,
 
     if (isInSmallValues(location)) {
       smallerValues match {
-        case Some(_) => smallerValues.get.getDataPointsAtLevelForLocation(location, depth)
+        case Some(_) =>
+          smallerValues.get.getDataPointsAtLevelForLocation(location, depth)
         case None => getNumberOfLocations
       }
     } else {
       biggerValues match {
-        case Some(_) => biggerValues.get.getDataPointsAtLevelForLocation(location, depth)
+        case Some(_) =>
+          biggerValues.get.getDataPointsAtLevelForLocation(location, depth)
         case None => getNumberOfLocations
       }
     }

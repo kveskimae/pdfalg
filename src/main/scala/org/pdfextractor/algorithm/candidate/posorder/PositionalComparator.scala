@@ -36,8 +36,10 @@ object PositionalComparator extends Ordering[Candidate] {
     require(o1.paymentFieldType == o2.paymentFieldType)
     nodes.get(o1.paymentFieldType) match {
       case Some(node) =>
-        val minDepth = Math.min(node.getMaxDepthForLocation(o1), node.getMaxDepthForLocation(o2))
-        node.getDataPointsAtLevelForLocation(o2, minDepth) - node.getDataPointsAtLevelForLocation(o1, minDepth)
+        val minDepth = Math.min(node.getMaxDepthForLocation(o1),
+                                node.getMaxDepthForLocation(o2))
+        node.getDataPointsAtLevelForLocation(o2, minDepth) - node
+          .getDataPointsAtLevelForLocation(o1, minDepth)
       case None => 0
     }
   }
