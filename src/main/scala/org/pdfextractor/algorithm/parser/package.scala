@@ -265,13 +265,13 @@ package object parser {
 
   }
 
-  case class Phrase(val x: Int,
-                    val y: Int,
-                    val pageNumber: Int,
-                    val height: Int,
-                    val width: Int,
-                    val text: String,
-                    val bold: Boolean);
+  case class Phrase(x: Int,
+                    y: Int,
+                    pageNumber: Int,
+                    height: Int,
+                    width: Int,
+                    text: String,
+                    bold: Boolean)
 
   class AlignmentMatcher(var lastYCoordinate: Float,
                          var maximumXForNextCharacter: Float,
