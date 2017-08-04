@@ -1,11 +1,8 @@
 package org.pdfextractor.algorithm
 
 import org.apache.commons.lang3.StringUtils
-import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns.{
-  EstPankR,
-  EstTotalR
-}
-import org.pdfextractor.algorithm.parser.Phrase
+import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns.{EstPankR, EstTotalR}
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.regex.{EurR, IgnoredR}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
 
@@ -75,6 +72,16 @@ package object finder {
       reverse.
       map(value.toString.charAt(_)).
       map(_.asDigit)
+  }
+
+  def searchRight(cur: Option[Phrase], parseResult: ParseResult): Option[Phrase] = {
+    if (cur.isEmpty) {
+      None
+    } else if (isVoidPhrase(cur.get)) {
+      searchRight(parseResult.findClosestPhraseOnRight(cur.get), parseResult)
+    } else {
+      cur
+    }
   }
 
 }

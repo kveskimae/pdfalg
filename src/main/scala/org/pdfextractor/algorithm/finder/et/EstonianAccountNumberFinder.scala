@@ -40,8 +40,6 @@ class EstonianAccountNumberFinder
       }
     }
     linesContainingIBANStart --= linesContainingIBANWithoutSpaces
-    println("1 ret = " + ret.toSeq.toString())
-    println("linesContainingIBANStart=" + linesContainingIBANStart)
     for (oneLineContainingIBANStart <- linesContainingIBANStart) {
       val ibanStartingPartMatcher =
         EstIBANStartR.pattern.matcher(oneLineContainingIBANStart)
@@ -70,8 +68,23 @@ class EstonianAccountNumberFinder
         }
       }
     }
-    println("2 ret = " + ret.toSeq.toString())
     ret
+  }
+
+  protected def addOneElementToListIfNotAlreadyContained(
+                                                          oldList: mutable.Buffer[Candidate],
+                                                          newValue: Candidate): Unit = {
+    if (!oldList.contains(newValue)) oldList += newValue
+    else {
+      var toBeReplaced: Option[Candidate] = None
+      for (oldValue <- oldList) {
+        if (oldValue.value.equals(newValue.value)) toBeReplaced = Some(oldValue)
+      }
+      if (toBeReplaced.isDefined && toBeReplaced.get.compareTo(newValue) > 0) {
+        oldList -= toBeReplaced.get
+        oldList += newValue
+      }
+    }
   }
 
   override protected def buildCandidate(parseResult: ParseResult,

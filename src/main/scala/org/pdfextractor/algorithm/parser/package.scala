@@ -2,6 +2,7 @@ package org.pdfextractor.algorithm
 
 import java.io.{IOException, InputStream}
 import java.text.DecimalFormat
+import java.util.Objects
 
 import exception.{AppBadInputException, AppServerFaultException}
 import org.apache.commons.lang3.StringUtils
@@ -191,21 +192,16 @@ package object parser {
       findPhrasesOnLine(phrase).filter(_.x < phrase.x)
     }
 
-    def findClosestPhraseBelow(phrase: Phrase): Option[Phrase] = {
-      Option(phrase).orElse(throw new NullPointerException)
-      val phrasesBelow = findPhrasesBelow(phrase)
-      if (phrasesBelow.isEmpty) {
-        None
-      } else {
-        val iterator = phrasesBelow.iterator
-        var closest = iterator.next
-        while ({
-          iterator.hasNext
-        }) {
-          val token = iterator.next
-          if (token.y < closest.y) closest = token
+    def findPhraseBelow(phrase: Phrase): Option[Phrase] = {
+      Objects.requireNonNull(phrase)
+
+      findPhrasesBelow(phrase) match {
+        case below: Seq[Phrase] if below.nonEmpty => {
+          Some(
+            below.reduce((phrase1, phrase2) => if (phrase1.y < phrase2.y) phrase1 else phrase2)
+          )
         }
-        Some(closest)
+        case _ => None
       }
     }
 
@@ -246,7 +242,7 @@ package object parser {
       }
     }
 
-    def findClosestPhrasesBelowOrRight(phrase: Phrase): LinearSeq[Phrase] = {
+    def searchRightOrBelow(phrase: Phrase): LinearSeq[Phrase] = {
       val matchesFoundAsList = phrases
         .filter(token => phrase.pageNumber.equals(token.pageNumber))
         .filter(token => token.x - phrase.x > 10)

@@ -45,78 +45,74 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
     searchWithPattern(parseResult, getSearchPattern, getValuePattern)
   }
 
-  def tryCombiningWithRight(phrase: Phrase,
-                            foundValues: mutable.Buffer[Candidate],
-                            parseResult: ParseResult,
-                            value: Regex) = {
+  def combineAndSearch(first: Phrase,
+                       second: Phrase,
+                       parseResult: ParseResult,
+                       value: Regex): Seq[Candidate] = {
+    val combined = combinePhrases1(first, second)
+    searchValuesFromPhrase(combined, parseResult, value)
+  }
 
-    def searchRecursively(cur: Option[Phrase]): Option[Phrase] = {
-      if (cur.isEmpty) {
-        None
-      } else if (isVoidPhrase(cur.get)) {
-        searchRecursively(parseResult.findClosestPhraseOnRight(cur.get))
-      } else {
-        cur
-      }
-    }
-
-    val closestPhraseOnRight: Option[Phrase] =
-      searchRecursively(parseResult.findClosestPhraseOnRight(phrase))
-
-    if (closestPhraseOnRight.isDefined) {
-      val combined = combinePhrases1(phrase, closestPhraseOnRight.get)
-      val resultsFromCombined =
-        searchValuesFromPhrase(combined, parseResult, value)
-      addElementsToAnotherListIfNotAlreadyContained(foundValues,
-        resultsFromCombined)
+  def searchWithRight(phrase: Phrase,
+                      parseResult: ParseResult,
+                      value: Regex): Seq[Candidate] = {
+    searchRight(parseResult.findClosestPhraseOnRight(phrase), parseResult) match {
+      case Some(right) => combineAndSearch(phrase, right, parseResult, value)
+      case None => Nil
     }
   }
 
-  def tryCombiningWithBelow(phrase: Phrase,
-                            foundValues: mutable.Buffer[Candidate],
-                            parseResult: ParseResult,
-                            value: Regex) = {
-
-    parseResult.findClosestPhraseBelow(phrase) match {
-
-      case Some(closestPhraseBelow) => {
-
-        val combined = combinePhrases1(phrase, closestPhraseBelow)
-
+  def searchWithBelow(phrase: Phrase,
+                      parseResult: ParseResult,
+                      value: Regex): Seq[Candidate] = {
+    parseResult.findPhraseBelow(phrase) match {
+      case Some(phraseBelow) => {
+        val combined = combinePhrases1(phrase, phraseBelow)
         searchValuesFromPhrase(combined, parseResult, value) match {
-
-          case resultsFromCombined if resultsFromCombined.isEmpty && TOTAL == getType => {
-            val closestPhraseBelowBelow: Option[Phrase] = parseResult.findClosestPhraseBelow(closestPhraseBelow)
-            if (closestPhraseBelowBelow.isDefined) {
-              val combinedCombined = combinePhrases1(combined, closestPhraseBelowBelow.get)
-              val resultsFromCombinedCombined = searchValuesFromPhrase(combinedCombined, parseResult, value)
-              if (!resultsFromCombinedCombined.isEmpty) {
-                addElementsToAnotherListIfNotAlreadyContained(foundValues, resultsFromCombinedCombined)
+          case combinedResults if combinedResults.isEmpty && TOTAL == getType => {
+            parseResult.findPhraseBelow(phraseBelow) match {
+              case Some(beneathBelow) => {
+                val combinedWBeneath = combinePhrases1(combined, beneathBelow)
+                searchValuesFromPhrase(combinedWBeneath, parseResult, value)
               }
+              case None => Nil
             }
           }
-
-          case resultsFromCombined => addElementsToAnotherListIfNotAlreadyContained(foundValues, resultsFromCombined)
+          case xs => xs
         }
       }
-
-      case None =>
+      case None => Nil
     }
   }
 
-  def tryCombiningFuzzy(phrase: Phrase,
-                        foundValues: mutable.Buffer[Candidate],
-                        parseResult: ParseResult,
-                        value: Regex) = {
+  def searchFuzzy(phrase: Phrase,
+                  parseResult: ParseResult,
+                  value: Regex): Seq[Candidate] = {
     parseResult
-      .findClosestPhrasesBelowOrRight(phrase)
-      .map(closest => combinePhrases1(phrase, closest))
-      .map(combined => searchValuesFromPhrase(combined, parseResult, value))
-      .foreach(
-        candidate => {
-          addElementsToAnotherListIfNotAlreadyContained(foundValues, candidate)
+      .searchRightOrBelow(phrase)
+      .map(closest => combineAndSearch(phrase, closest, parseResult, value))
+      .flatten
+  }
+
+  def searchWithCombining(phrase: Phrase, parseResult: ParseResult, value: Regex): Seq[Candidate] = {
+    searchValuesFromPhrase(phrase, parseResult, value) match {
+      case ret if ret.nonEmpty => ret
+      case _ => {
+        searchWithRight(phrase, parseResult, value) match {
+          case ret if ret.nonEmpty => ret
+          case _ => {
+            // no success in combining with right, try below
+            searchWithBelow(phrase, parseResult, value) match {
+              case ret if ret.nonEmpty => ret
+              case _ if combineFuzzy =>
+                // no success with below either, loosen search up
+                searchFuzzy(phrase, parseResult, value)
+              case _ => Nil
+            }
+          }
         }
-      )
+      }
+    }
   }
 
   protected def searchWithPattern(parseResult: ParseResult,
@@ -125,66 +121,21 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
     Objects.requireNonNull(parseResult)
 
     parseResult.phrases
-      .filter({ (phrase: Phrase) =>
-        search.findFirstIn(phrase.text).nonEmpty
-      })
-      .map(
-        (phrase: Phrase) => {
-          val foundValues: mutable.Buffer[Candidate] =
-            searchValuesFromPhrase(phrase, parseResult, value)
-
-          if (combinePhrases) {
-            if (foundValues.isEmpty) {
-              // try together with phrase on right
-              tryCombiningWithRight(phrase, foundValues, parseResult, value)
-            }
-            if (foundValues.isEmpty) {
-              // no success in combining with right, try below
-              tryCombiningWithBelow(phrase, foundValues, parseResult, value)
-            }
-            if (foundValues.isEmpty && combineFuzzy) {
-              // no success with below either, loosen search up
-              tryCombiningFuzzy(phrase, foundValues, parseResult, value)
-            }
-          }
-
-          foundValues
-        }
-      ).flatMap(_.iterator).sorted
+      .filter(phrase => search.findFirstIn(phrase.text).nonEmpty)
+      .map(phrase => searchWithCombining(phrase, parseResult, value))
+      .flatten
+      .sorted
   }
 
-  protected def searchValuesFromPhrase(
-                                        phrase: Phrase,
-                                        parseResult: ParseResult,
-                                        valuePattern2: Regex): mutable.Buffer[Candidate] = {
+  protected def searchValuesFromPhrase(phrase: Phrase,
+                                       parseResult: ParseResult,
+                                       valuePattern2: Regex): mutable.Buffer[Candidate] = {
     valuePattern2
       .findAllIn(phrase.text)
       .map(parseValue(_, valuePattern2))
       .filter(isValueAllowed(_))
       .map(buildCandidate(parseResult, phrase, _))
       .toBuffer
-  }
-
-  protected def addElementsToAnotherListIfNotAlreadyContained(
-                                                               oldList: mutable.Buffer[Candidate],
-                                                               newValues: Seq[Candidate]): Unit = {
-    newValues.foreach(addOneElementToListIfNotAlreadyContained(oldList, _))
-  }
-
-  protected def addOneElementToListIfNotAlreadyContained(
-                                                          oldList: mutable.Buffer[Candidate],
-                                                          newValue: Candidate): Unit = {
-    if (!oldList.contains(newValue)) oldList += newValue
-    else {
-      var toBeReplaced: Option[Candidate] = None
-      for (oldValue <- oldList) {
-        if (oldValue.value.equals(newValue.value)) toBeReplaced = Some(oldValue)
-      }
-      if (toBeReplaced.isDefined && toBeReplaced.get.compareTo(newValue) > 0) {
-        oldList -= toBeReplaced.get
-        oldList += newValue
-      }
-    }
   }
 
   protected def buildCandidate(parseResult: ParseResult,
