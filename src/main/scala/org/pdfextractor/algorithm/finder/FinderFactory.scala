@@ -5,15 +5,11 @@ import java.util.Locale
 
 import org.pdfextractor.algorithm.finder.et._
 import org.pdfextractor.algorithm.finder.it._
-import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
-import org.pdfextractor.db.domain.dictionary.{
-  PaymentFieldType,
-  SupportedLocales
-}
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.event.ContextRefreshedEvent
-import org.springframework.stereotype.Service
 import org.pdfextractor.algorithm.parser.{PDFFileParser, ParseResult}
+import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
+import org.pdfextractor.db.domain.dictionary.{PaymentFieldType, SupportedLocales}
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
 
 @Service
 class FinderFactory {
@@ -46,39 +42,27 @@ class FinderFactory {
 
   @Autowired var italianVATIdNumberFinder: ItalianVATIdNumberFinder = _
 
-  def makeEstonianFinder(
-      paymentFieldType: PaymentFieldType): Option[AbstractFinder] =
-    paymentFieldType match {
-      case INVOICE_ID       => Some(estonianInvoiceIDFinder)
-      case IBAN             => Some(estonianAccountNumberFinder)
-      case NAME             => Some(estonianNameFinder)
-      case REFERENCE_NUMBER => Some(estonianReferenceNumberFinder)
-      case TOTAL            => Some(estonianTotalFinder)
-      case _                => None
-    }
+  def extractEstonian(pdfContentStream: InputStream): FinderResult = {
+    val parseResult = PDFFileParser.parse(pdfContentStream)
+    findCandidates(parseResult,
+      SupportedLocales.ESTONIA,
+      IBAN,
+      INVOICE_ID,
+      NAME,
+      REFERENCE_NUMBER,
+      TOTAL)
+  }
 
-  def makeItalianFinder(
-      paymentFieldType: PaymentFieldType): Option[AbstractFinder] =
-    paymentFieldType match {
-      case INVOICE_ID         => Some(italianInvoiceIDFinder)
-      case NAME               => Some(italianNameFinder)
-      case TOTAL              => Some(italianTotalFinder)
-      case TOTAL_BEFORE_TAXES => Some(italianTotalBeforeTaxesFinder)
-      case ISSUE_DATE         => Some(italianIssueDateFinder)
-      case VATIN              => Some(italianVATIdNumberFinder)
-      case _                  => None
-    }
-
-  private def makeFinder(
-      lang: Locale,
-      paymentFieldType: PaymentFieldType): Option[AbstractFinder] = {
-    lang.getLanguage match {
-      case SupportedLocales.ESTONIAN_LANG_CODE =>
-        makeEstonianFinder(paymentFieldType)
-      case SupportedLocales.ITALIAN_LANG_CODE =>
-        makeItalianFinder(paymentFieldType)
-      case _ => None
-    }
+  def extractItalian(pdfContentStream: InputStream): FinderResult = {
+    val parseResult = PDFFileParser.parse(pdfContentStream)
+    findCandidates(parseResult,
+      SupportedLocales.ITALY,
+      NAME,
+      TOTAL,
+      INVOICE_ID,
+      ISSUE_DATE,
+      VATIN,
+      TOTAL_BEFORE_TAXES)
   }
 
   private def findCandidates(parseResult: ParseResult,
@@ -96,26 +80,38 @@ class FinderFactory {
     ret
   }
 
-  def extractEstonian(pdfContentStream: InputStream): FinderResult = {
-    val parseResult = PDFFileParser.parse(pdfContentStream)
-    findCandidates(parseResult,
-                   SupportedLocales.ESTONIA,
-                   IBAN,
-                   INVOICE_ID,
-                   NAME,
-                   REFERENCE_NUMBER,
-                   TOTAL)
+  private def makeFinder(
+                          lang: Locale,
+                          paymentFieldType: PaymentFieldType): Option[AbstractFinder] = {
+    lang.getLanguage match {
+      case SupportedLocales.ESTONIAN_LANG_CODE =>
+        makeEstonianFinder(paymentFieldType)
+      case SupportedLocales.ITALIAN_LANG_CODE =>
+        makeItalianFinder(paymentFieldType)
+      case _ => None
+    }
   }
 
-  def extractItalian(pdfContentStream: InputStream): FinderResult = {
-    val parseResult = PDFFileParser.parse(pdfContentStream)
-    findCandidates(parseResult,
-                   SupportedLocales.ITALY,
-                   NAME,
-                   TOTAL,
-                   INVOICE_ID,
-                   ISSUE_DATE,
-                   VATIN,
-                   TOTAL_BEFORE_TAXES)
-  }
+  def makeEstonianFinder(
+                          paymentFieldType: PaymentFieldType): Option[AbstractFinder] =
+    paymentFieldType match {
+      case INVOICE_ID => Some(estonianInvoiceIDFinder)
+      case IBAN => Some(estonianAccountNumberFinder)
+      case NAME => Some(estonianNameFinder)
+      case REFERENCE_NUMBER => Some(estonianReferenceNumberFinder)
+      case TOTAL => Some(estonianTotalFinder)
+      case _ => None
+    }
+
+  def makeItalianFinder(
+                         paymentFieldType: PaymentFieldType): Option[AbstractFinder] =
+    paymentFieldType match {
+      case INVOICE_ID => Some(italianInvoiceIDFinder)
+      case NAME => Some(italianNameFinder)
+      case TOTAL => Some(italianTotalFinder)
+      case TOTAL_BEFORE_TAXES => Some(italianTotalBeforeTaxesFinder)
+      case ISSUE_DATE => Some(italianIssueDateFinder)
+      case VATIN => Some(italianVATIdNumberFinder)
+      case _ => None
+    }
 }

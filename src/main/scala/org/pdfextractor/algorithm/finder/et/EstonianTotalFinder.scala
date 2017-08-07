@@ -1,20 +1,18 @@
 package org.pdfextractor.algorithm.finder.et
 
 import org.pdfextractor.algorithm.candidate._
-import org.pdfextractor.algorithm.finder.AbstractFinder
+import org.pdfextractor.algorithm.finder.{AbstractFinder, _}
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
+import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
 import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.TOTAL
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
-import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
-import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
-
-import scala.collection.mutable.ListBuffer
-import scala.util.matching.Regex
-import org.pdfextractor.algorithm.finder._
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
+import scala.util.matching.Regex
 
 @Service
 class EstonianTotalFinder extends AbstractFinder {
@@ -28,24 +26,23 @@ class EstonianTotalFinder extends AbstractFinder {
     valuePattern = Some(DigitsAndCommasR)
   }
 
-  override protected def searchValuesFromPhrase(
-      phrase: Phrase,
-      parseResult: ParseResult,
-      valuePattern2: Regex): mutable.Buffer[Candidate] = {
+  override def searchValuesFromPhrase(
+                                       phrase: Phrase,
+                                       parseResult: ParseResult,
+                                       valuePattern2: Regex): mutable.Buffer[Candidate] = {
     if (searchForEstonianDoubleValuesAfterText(phrase.text).size == 1) {
       def totalString2Candidate: String => Candidate =
         (totalAsString: String) => {
           val doubleNumber = countDotsAndCommas(totalAsString) > 0
           val totalAsDouble = parseValue(totalAsString).asInstanceOf[Double]
           val phraseType = phraseTypesStore.findType(SupportedLocales.ESTONIA,
-                                                     TOTAL,
-                                                     phrase.text)
+            TOTAL,
+            phrase.text)
 
-          buildCandidate(parseResult,
-                         phrase,
-                         totalAsDouble,
-                         doubleNumber,
-                         phraseType)
+          buildCandidate(phrase,
+            totalAsDouble,
+            doubleNumber,
+            phraseType)
         }
 
       DigitsAndCommasR
@@ -57,6 +54,20 @@ class EstonianTotalFinder extends AbstractFinder {
     } else {
       ListBuffer.empty
     }
+  }
+
+  override def buildCandidate(phrase: Phrase,
+                              value: Any,
+                              params: Any*): Candidate = {
+    new Candidate(value,
+      phrase.x,
+      phrase.y,
+      phrase.bold,
+      phrase.height,
+      phrase.pageNumber,
+      SupportedLocales.ESTONIA,
+      TOTAL,
+      buildProperties(phrase, params))
   }
 
   def buildProperties(phrase: Phrase,
@@ -74,24 +85,9 @@ class EstonianTotalFinder extends AbstractFinder {
     )
   }
 
-  override protected def buildCandidate(parseResult: ParseResult,
-                                        phrase: Phrase,
-                                        value: Any,
-                                        params: Any*): Candidate = {
-    new Candidate(value,
-                  phrase.x,
-                  phrase.y,
-                  phrase.bold,
-                  phrase.height,
-                  phrase.pageNumber,
-                  SupportedLocales.ESTONIA,
-                  TOTAL,
-                  buildProperties(phrase, params))
-  }
+  override def parseValue(raw: String): Any = raw.replace(',', '.').toDouble
 
   override def isValueAllowed(value: Any) = true
-
-  override def parseValue(raw: String): Any = raw.replace(',', '.').toDouble
 
   override def getType = TOTAL
 

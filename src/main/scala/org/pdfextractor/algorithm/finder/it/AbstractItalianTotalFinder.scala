@@ -4,23 +4,21 @@ import java.text.{DecimalFormat, DecimalFormatSymbols, ParseException}
 import java.util.Locale
 
 import org.pdfextractor.algorithm.candidate._
-import org.pdfextractor.algorithm.finder.AbstractFinder
+import org.pdfextractor.algorithm.finder.{AbstractFinder, _}
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
+import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
 import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
-import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
-import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
-
-import scala.collection.mutable.ListBuffer
-import scala.util.matching.Regex
-import org.pdfextractor.algorithm.finder._
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
+import scala.util.matching.Regex
 
 @Service
 abstract class AbstractItalianTotalFinder
-    extends AbstractFinder(None, None, true, true) {
+  extends AbstractFinder(None, None, true, true) {
   // TODO What about thread safety?
 
   val otherSymbolsForCommaAsThousandsSeparator: DecimalFormatSymbols =
@@ -48,19 +46,19 @@ abstract class AbstractItalianTotalFinder
   def refreshed(): Unit = {
     searchPattern = Some(
       ("^(?ims)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY,
-                                                        getType) + "(.*)$").r)
+        getType) + "(.*)$").r)
     valuePattern = Some(DigitsAndCommasR)
   }
 
-  override protected def searchValuesFromPhrase(
-      phrase: Phrase,
-      parseResult: ParseResult,
-      valuePattern2: Regex): mutable.Buffer[Candidate] = {
+  override def searchValuesFromPhrase(
+                                       phrase: Phrase,
+                                       parseResult: ParseResult,
+                                       valuePattern2: Regex): mutable.Buffer[Candidate] = {
     val ret: ListBuffer[Candidate] = ListBuffer.empty
     val doubleValues = searchForDoubleValues(phrase.text)
     if (doubleValues.size == 1) {
       val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
-      while ({
+      while ( {
         totalAsNumberMatcher.hasNext
       }) {
         val totalAsString = totalAsNumberMatcher.next()
@@ -71,7 +69,7 @@ abstract class AbstractItalianTotalFinder
     } else {
       val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
       var biggest: Option[Candidate] = None
-      while ({
+      while ( {
         totalAsNumberMatcher.hasNext
       }) {
         val totalAsString = totalAsNumberMatcher.next()
@@ -79,18 +77,18 @@ abstract class AbstractItalianTotalFinder
           findCandidateValue(totalAsString, phrase, parseResult)
         if (biggest.isEmpty) biggest = candidate
         else if (Option(candidate).isDefined && candidate.get.value
-                   .asInstanceOf[Double] > biggest.get.value
-                   .asInstanceOf[Double]) biggest = candidate
+          .asInstanceOf[Double] > biggest.get.value
+          .asInstanceOf[Double]) biggest = candidate
       }
       if (biggest.isDefined) ret += biggest.get
     }
     ret
   }
 
-  private def findCandidateValue(
-      totalAsString: String,
-      phrase: Phrase,
-      parseResult: ParseResult): Option[Candidate] = {
+  def findCandidateValue(
+                          totalAsString: String,
+                          phrase: Phrase,
+                          parseResult: ParseResult): Option[Candidate] = {
     val dotCount = countDotsAndCommas(totalAsString)
     val `type` =
       phraseTypesStore.findType(SupportedLocales.ITALY, getType, phrase.text)
@@ -99,7 +97,7 @@ abstract class AbstractItalianTotalFinder
       val totalAsDouble: Double = replaced.toDouble
       val doubleNumber = dotCount > 0
       val candidate =
-        buildCandidate(parseResult, phrase, totalAsDouble, doubleNumber, `type`)
+        buildCandidate(phrase, totalAsDouble, doubleNumber, `type`)
       Some(candidate)
     } else
       try {
@@ -113,11 +111,10 @@ abstract class AbstractItalianTotalFinder
             .parse(totalAsString)
             .doubleValue
         val doubleNumber = isDouble(totalAsDouble)
-        val candidate = buildCandidate(parseResult,
-                                       phrase,
-                                       totalAsDouble,
-                                       doubleNumber,
-                                       `type`)
+        val candidate = buildCandidate(phrase,
+          totalAsDouble,
+          doubleNumber,
+          `type`)
         Some(candidate)
       } catch {
         case ignored: ParseException =>
@@ -127,22 +124,13 @@ abstract class AbstractItalianTotalFinder
 
   def isDotThousandsSeparator(totalAsString: String): Boolean = {
     totalAsString.contains(",") &&
-    totalAsString.contains(".") &&
-    (totalAsString.indexOf('.') < totalAsString.indexOf(','))
+      totalAsString.contains(".") &&
+      (totalAsString.indexOf('.') < totalAsString.indexOf(','))
   }
 
   def isDouble(number: Double): Boolean = (number % 1) != 0
 
-  def isEuroPresent(text: String): Boolean = {
-    EurR.findFirstIn(text).nonEmpty
-  }
-
-  private def isNormalTotalLine(text: String): Boolean = {
-    PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX.findFirstIn(text).nonEmpty
-  }
-
-  override def buildCandidate(parseResult: ParseResult,
-                              phrase: Phrase,
+  override def buildCandidate(phrase: Phrase,
                               value: Any,
                               params: Any*): Candidate = {
     val doubleNumber = params(0).asInstanceOf[Boolean]
@@ -155,15 +143,23 @@ abstract class AbstractItalianTotalFinder
       HasEuroSign -> euroSignFound,
       IsNormalLine -> normalTotalLine)
     val ret = new Candidate(value,
-                            phrase.x,
-                            phrase.y,
-                            phrase.bold,
-                            phrase.height,
-                            phrase.pageNumber,
-                            SupportedLocales.ITALY,
-                            getType,
-                            properties)
+      phrase.x,
+      phrase.y,
+      phrase.bold,
+      phrase.height,
+      phrase.pageNumber,
+      SupportedLocales.ITALY,
+      getType,
+      properties)
     ret
+  }
+
+  def isEuroPresent(text: String): Boolean = {
+    EurR.findFirstIn(text).nonEmpty
+  }
+
+  def isNormalTotalLine(text: String): Boolean = {
+    PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX.findFirstIn(text).nonEmpty
   }
 
   override def isValueAllowed(value: Any) = true

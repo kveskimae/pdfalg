@@ -18,7 +18,7 @@ class ItalianInvoiceIDFinderTest extends AbstractFinderTest {
   }
 
   "Italian invoice ID finder" should "find from start" in {
-    assert(italianInvoiceIDFinder.getSearchPattern.findFirstIn("Fattura n.6 del 23.02.2016").nonEmpty)
+    assert(italianInvoiceIDFinder.searchPattern.get.findFirstIn("Fattura n.6 del 23.02.2016").nonEmpty)
   }
 
   "Italian invoice ID finder" should "find from line" in {

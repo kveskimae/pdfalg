@@ -5,18 +5,18 @@ import java.math.BigInteger
 import org.pdfextractor.algorithm.candidate.Candidate
 import org.pdfextractor.algorithm.finder.AbstractFinder
 import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns._
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.IBAN
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
-import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 @Service
 class EstonianAccountNumberFinder
-    extends AbstractFinder(EstIBANStartWithRestOfLineR, EstIBANCorrectR, false) {
+  extends AbstractFinder(EstIBANStartWithRestOfLineR, EstIBANCorrectR, false) {
 
   val MagicNo = new BigInteger("97")
 
@@ -24,7 +24,7 @@ class EstonianAccountNumberFinder
     val ret: ListBuffer[Candidate] =
       collection.mutable.ListBuffer.empty[Candidate]
     val linesContainingIBANStart: mutable.Buffer[String] =
-      getSearchPattern.findAllIn(parseResult.text).toBuffer
+      searchPattern.get.findAllIn(parseResult.text).toBuffer
     val linesContainingIBANWithoutSpaces: ListBuffer[String] =
       ListBuffer.empty[String]
     for (oneLineContainingIBANStart <- linesContainingIBANStart) {
@@ -51,7 +51,7 @@ class EstonianAccountNumberFinder
         val remainingPartAfterIBANStart =
           oneLineContainingIBANStart.substring(remainingPartStartIdx)
         val numbersMatcher = DigitsR.findAllIn(remainingPartAfterIBANStart)
-        while ({
+        while ( {
           numbersMatcher.hasNext
         }) {
           val nextNumberPart = numbersMatcher.next()
@@ -71,9 +71,9 @@ class EstonianAccountNumberFinder
     ret
   }
 
-  protected def addOneElementToListIfNotAlreadyContained(
-                                                          oldList: mutable.Buffer[Candidate],
-                                                          newValue: Candidate): Unit = {
+  def addOneElementToListIfNotAlreadyContained(
+                                                oldList: mutable.Buffer[Candidate],
+                                                newValue: Candidate): Unit = {
     if (!oldList.contains(newValue)) oldList += newValue
     else {
       var toBeReplaced: Option[Candidate] = None
@@ -87,30 +87,36 @@ class EstonianAccountNumberFinder
     }
   }
 
-  override protected def buildCandidate(parseResult: ParseResult,
-                                        phrase: Phrase,
-                                        value: Any,
-                                        params: Any*): Candidate =
-    new Candidate(value,
-                  1,
-                  1,
-                  false,
-                  1,
-                  1,
-                  SupportedLocales.ESTONIA,
-                  IBAN,
-                  Map.empty)
+  def buildCandidate(parseResult: ParseResult,
+                     phrase: Option[Phrase],
+                     value: Any,
+                     params: Any*): Candidate =
+    buildCandidate(phrase.orNull, value, params)
 
-  protected def buildCandidate(parseResult: ParseResult,
-                               phrase: Option[Phrase],
-                               value: Any,
-                               params: Any*): Candidate =
-    buildCandidate(parseResult, phrase.orNull, value, params)
+  override def buildCandidate(phrase: Phrase,
+                              value: Any,
+                              params: Any*): Candidate =
+    new Candidate(value,
+      1,
+      1,
+      false,
+      1,
+      1,
+      SupportedLocales.ESTONIA,
+      IBAN,
+      Map.empty)
+
+  override def isValueAllowed(raw: Any): Boolean = {
+    Option(raw).isDefined &&
+      raw.isInstanceOf[String] &&
+      raw.asInstanceOf[String].length == 20 &&
+      isMagicModulusOne(raw.asInstanceOf[String])
+  }
 
   private def isMagicModulusOne(value: String): Boolean = {
     val swapped: String =
       (value.substring(4) + value.substring(0, 4)). // Move the four initial characters to the end of the string.
-      map(Character.getNumericValue(_))
+        map(Character.getNumericValue(_))
         .map(_.toString)
         . // Replace each letter in the string with two digits, thereby expanding the string, where A = 10, B = 11, ..., Z = 35.
         mkString
@@ -118,13 +124,6 @@ class EstonianAccountNumberFinder
     new BigInteger(swapped)
       .mod(MagicNo)
       .intValue == 1 // Interpret the string as integer and compute the remainder of that number on division by 97.
-  }
-
-  override def isValueAllowed(raw: Any): Boolean = {
-    Option(raw).isDefined &&
-    raw.isInstanceOf[String] &&
-    raw.asInstanceOf[String].length == 20 &&
-    isMagicModulusOne(raw.asInstanceOf[String])
   }
 
   def parseValue(raw: String): Any = raw

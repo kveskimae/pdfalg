@@ -3,38 +3,36 @@ package org.pdfextractor.algorithm.finder.it
 import java.text.{ParseException, SimpleDateFormat}
 import java.util.Date
 
-import org.pdfextractor.algorithm.candidate.{
-  Candidate,
-  MetaPhraseType,
-  CandidateMetadata
-}
+import org.pdfextractor.algorithm.candidate.{Candidate, CandidateMetadata, MetaPhraseType}
 import org.pdfextractor.algorithm.finder._
 import org.pdfextractor.algorithm.finder.it.ItalianRegexPatterns._
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.ISSUE_DATE
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
-import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 
 @Service
 class ItalianIssueDateFinder extends AbstractFinder(ItDateR, ItDateR, false) {
 
-  protected def buildCandidate(parseResult: ParseResult,
-                               phrase: Phrase,
-                               value: Any,
-                               params: Any*): Candidate = {
-    val `type`: PhraseType = findType(parseResult, phrase)
-    val properties: Map[CandidateMetadata, Any] = Map(MetaPhraseType -> `type`)
-    val ret = new Candidate(value,
-                            phrase.x,
-                            phrase.y,
-                            phrase.bold,
-                            phrase.height,
-                            phrase.pageNumber,
-                            SupportedLocales.ITALY,
-                            ISSUE_DATE,
-                            properties)
-    ret
+  def buildCandidate(phrase: Phrase,
+                     value: Any,
+                     params: Any*): Candidate = {
+    val phraseType: PhraseType = params(0).asInstanceOf[PhraseType]
+    val properties: Map[CandidateMetadata, Any] = Map(MetaPhraseType -> phraseType)
+    new Candidate(value,
+      phrase.x,
+      phrase.y,
+      phrase.bold,
+      phrase.height,
+      phrase.pageNumber,
+      SupportedLocales.ITALY,
+      ISSUE_DATE,
+      properties)
+  }
+
+  override def findParams(phrase: Phrase, parseResult: ParseResult): Array[Any] = {
+    Array(findType(parseResult, phrase))
   }
 
   private def findType(parseResult: ParseResult, phrase: Phrase): PhraseType = {
@@ -42,29 +40,29 @@ class ItalianIssueDateFinder extends AbstractFinder(ItDateR, ItDateR, false) {
       case Some(ret) => ret
       case _ =>
         var closestPhraseOnLeft = parseResult.findClosestPhraseOnLeft(phrase)
-        var `type`: Option[PhraseType] = None
+        var maybePhraseType: Option[PhraseType] = None
         while (closestPhraseOnLeft.isDefined) {
           if (isVoidPhrase(closestPhraseOnLeft.get)) {
             closestPhraseOnLeft =
               parseResult.findClosestPhraseOnRight(closestPhraseOnLeft.get)
           } else {
-            `type` = tryParseType(closestPhraseOnLeft.get)
+            maybePhraseType = tryParseType(closestPhraseOnLeft.get)
             closestPhraseOnLeft = None
           }
         }
 
-        if (`type`.isDefined) return `type`.get
+        if (maybePhraseType.isDefined) return maybePhraseType.get
         var closestPhraseAbove = parseResult.findClosestPhraseAbove(phrase)
-        while ({
+        while ( {
           closestPhraseAbove.isDefined
         }) if (isVoidPhrase(closestPhraseAbove.get))
           closestPhraseAbove =
             parseResult.findClosestPhraseAbove(closestPhraseAbove.get)
         else {
-          `type` = tryParseType(closestPhraseAbove.get)
+          maybePhraseType = tryParseType(closestPhraseAbove.get)
           closestPhraseAbove = None
         }
-        `type`.get
+        maybePhraseType.get
     }
   }
 
@@ -83,7 +81,7 @@ class ItalianIssueDateFinder extends AbstractFinder(ItDateR, ItDateR, false) {
 
   def parseValue(raw: String): Any = {
     val df: SimpleDateFormat = raw.length match {
-      case 8  => new SimpleDateFormat("dd/MM/yy")
+      case 8 => new SimpleDateFormat("dd/MM/yy")
       case 10 => new SimpleDateFormat("dd/MM/yyyy")
       case _ =>
         throw new IllegalArgumentException(

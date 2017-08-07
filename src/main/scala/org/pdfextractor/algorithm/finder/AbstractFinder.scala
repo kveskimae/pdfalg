@@ -3,12 +3,12 @@ package org.pdfextractor.algorithm.finder
 import java.util.Objects
 
 import org.pdfextractor.algorithm.candidate.Candidate
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
+import org.pdfextractor.algorithm.phrase.PhraseTypesStore
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
-import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
-import org.pdfextractor.algorithm.phrase.PhraseTypesStore
 
 import scala.collection.mutable
 import scala.util.matching.Regex
@@ -19,6 +19,7 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
                               val combineFuzzy: Boolean = false) {
 
   val log: Logger = LoggerFactory.getLogger(classOf[AbstractFinder])
+  @Autowired var phraseTypesStore: PhraseTypesStore = _
 
   def this() = this(None, None, true, false)
 
@@ -39,10 +40,8 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
       combinePhrases2,
       combineFuzzy2)
 
-  @Autowired var phraseTypesStore: PhraseTypesStore = _
-
   def findCandidates(parseResult: ParseResult): Seq[Candidate] = {
-    searchWithPattern(parseResult, getSearchPattern, getValuePattern)
+    searchWithPattern(parseResult, searchPattern.get, getValuePattern)
   }
 
   def combineAndSearch(first: Phrase,
@@ -72,8 +71,7 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
           case combinedResults if combinedResults.isEmpty && TOTAL == getType => {
             parseResult.findPhraseBelow(phraseBelow) match {
               case Some(beneathBelow) => {
-                val combinedWBeneath = combinePhrases1(combined, beneathBelow)
-                searchValuesFromPhrase(combinedWBeneath, parseResult, value)
+                combineAndSearch(combined, beneathBelow, parseResult, value)
               }
               case None => Nil
             }
@@ -115,9 +113,9 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
     }
   }
 
-  protected def searchWithPattern(parseResult: ParseResult,
-                                  search: Regex,
-                                  value: Regex): Seq[Candidate] = {
+  def searchWithPattern(parseResult: ParseResult,
+                        search: Regex,
+                        value: Regex): Seq[Candidate] = {
     Objects.requireNonNull(parseResult)
 
     parseResult.phrases
@@ -127,31 +125,27 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
       .sorted
   }
 
-  protected def searchValuesFromPhrase(phrase: Phrase,
-                                       parseResult: ParseResult,
-                                       valuePattern2: Regex): mutable.Buffer[Candidate] = {
+  def searchValuesFromPhrase(phrase: Phrase,
+                             parseResult: ParseResult,
+                             valuePattern2: Regex): mutable.Buffer[Candidate] = {
     valuePattern2
       .findAllIn(phrase.text)
-      .map(parseValue(_, valuePattern2))
+      .map(parseValue(_))
       .filter(isValueAllowed(_))
-      .map(buildCandidate(parseResult, phrase, _))
+      .map(buildCandidate(phrase, _, findParams(phrase, parseResult)))
       .toBuffer
   }
 
-  protected def buildCandidate(parseResult: ParseResult,
-                               phrase: Phrase,
-                               value: Any,
-                               params: Any*): Candidate
+  def findParams(phrase: Phrase, parseResult: ParseResult): Array[Any] = Array.empty
 
   def isValueAllowed(value: Any): Boolean
-
-  def parseValue(raw: String, pattern: Regex): Any = parseValue(raw)
 
   def parseValue(raw: String): Any
 
   def getType: PaymentFieldType
 
-  def getSearchPattern: Regex = searchPattern.get
-
   def getValuePattern: Regex = valuePattern.get
+
+  def buildCandidate(phrase: Phrase, value: Any, params: Any*): Candidate
+
 }

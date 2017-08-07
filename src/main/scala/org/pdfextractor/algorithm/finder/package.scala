@@ -18,12 +18,12 @@ package object finder {
 
   def combinePhrases1(phrase: Phrase, otherPhrase: Phrase): Phrase = {
     new Phrase(otherPhrase.x,
-               otherPhrase.y,
-               otherPhrase.pageNumber,
-               otherPhrase.height,
-               phrase.width,
-               phrase.text + " " + otherPhrase.text,
-               otherPhrase.bold)
+      otherPhrase.y,
+      otherPhrase.pageNumber,
+      otherPhrase.height,
+      phrase.width,
+      phrase.text + " " + otherPhrase.text,
+      otherPhrase.bold)
   }
 
   def isPankPresent(text: String): Boolean = {

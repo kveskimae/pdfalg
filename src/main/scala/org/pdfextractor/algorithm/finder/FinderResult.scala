@@ -1,10 +1,7 @@
 package org.pdfextractor.algorithm.finder
 
+import org.apache.commons.lang3.builder.{ReflectionToStringBuilder, ToStringStyle}
 import org.pdfextractor.algorithm.candidate.Candidate
-import org.apache.commons.lang3.builder.{
-  ReflectionToStringBuilder,
-  ToStringStyle
-}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
 import scala.collection.mutable
@@ -18,10 +15,6 @@ class FinderResult {
       )
       .toMap
 
-  def getCandidates(fieldType: PaymentFieldType): mutable.Set[Candidate] = {
-    candidatesMap(fieldType)
-  }
-
   override def toString: String =
     ReflectionToStringBuilder.toString(this, ToStringStyle.MULTI_LINE_STYLE)
 
@@ -31,6 +24,10 @@ class FinderResult {
     } else {
       None
     }
+  }
+
+  def getCandidates(fieldType: PaymentFieldType): mutable.Set[Candidate] = {
+    candidatesMap(fieldType)
   }
 
   def hasValuesForType(fieldType: PaymentFieldType): Boolean =
