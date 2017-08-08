@@ -37,7 +37,7 @@ object PositionalComparator extends Ordering[Candidate] {
     nodes.get(o1.paymentFieldType) match {
       case Some(node) =>
         val minDepth = Math.min(node.getMaxDepthForLocation(o1),
-                                node.getMaxDepthForLocation(o2))
+          node.getMaxDepthForLocation(o2))
         node.getDataPointsAtLevelForLocation(o2, minDepth) - node
           .getDataPointsAtLevelForLocation(o1, minDepth)
       case None => 0

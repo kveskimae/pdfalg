@@ -1,10 +1,12 @@
 package org.pdfextractor.algorithm.finder.it
 
+import java.util.Locale
+
 import org.apache.commons.lang3.StringUtils
-import org.pdfextractor.algorithm.candidate.{Candidate, CandidateMetadata, MetaPhraseType}
+import org.pdfextractor.algorithm.candidate.{CandidateMetadata, MetaPhraseType}
 import org.pdfextractor.algorithm.finder._
 import org.pdfextractor.algorithm.finder.it.ItalianRegexPatterns._
-import org.pdfextractor.algorithm.parser.Phrase
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
 import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.NAME
@@ -14,6 +16,10 @@ import org.springframework.stereotype.Service
 @Service
 class ItalianNameFinder extends AbstractFinder(None, None, false) {
 
+  override def getLocale: Locale = SupportedLocales.ITALY
+
+  def getType = NAME
+
   @org.springframework.context.event.EventListener(
     Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
@@ -21,24 +27,6 @@ class ItalianNameFinder extends AbstractFinder(None, None, false) {
       ("^(?ims)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY,
         NAME) + "$").r)
     valuePattern = Some(("^(?ims)(.*)$").r)
-  }
-
-  override def buildCandidate(phrase: Phrase,
-                              value: Any,
-                              params: Any*): Candidate = {
-    val `type` =
-      phraseTypesStore.findType(SupportedLocales.ITALY, NAME, phrase.text)
-    val properties: Map[CandidateMetadata, Any] = Map(MetaPhraseType -> `type`)
-    val ret = new Candidate(value,
-      phrase.x,
-      phrase.y,
-      phrase.bold,
-      phrase.height,
-      phrase.pageNumber,
-      SupportedLocales.ITALY,
-      NAME,
-      properties)
-    ret
   }
 
   def isValueAllowed(value: Any): Boolean = {
@@ -52,6 +40,9 @@ class ItalianNameFinder extends AbstractFinder(None, None, false) {
     else StringUtils.normalizeSpace(raw).split(",")(0)
   }
 
-  def getType = NAME
+  override def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateMetadata, Any] = {
+    val phraseType = phraseTypesStore.findType(SupportedLocales.ITALY, NAME, phrase.text)
+    Map(MetaPhraseType -> phraseType)
+  }
 
 }

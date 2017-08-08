@@ -1,11 +1,12 @@
 package org.pdfextractor.algorithm.finder.et
 
 import java.math.BigInteger
+import java.util.Locale
 
 import org.pdfextractor.algorithm.candidate.Candidate
 import org.pdfextractor.algorithm.finder.AbstractFinder
 import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns._
-import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
+import org.pdfextractor.algorithm.parser.ParseResult
 import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.IBAN
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
@@ -15,10 +16,13 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 @Service
-class EstonianAccountNumberFinder
-  extends AbstractFinder(EstIBANStartWithRestOfLineR, EstIBANCorrectR, false) {
+class EstonianAccountNumberFinder extends AbstractFinder(EstIBANStartWithRestOfLineR, EstIBANCorrectR, false) {
 
   val MagicNo = new BigInteger("97")
+
+  override def getLocale: Locale = SupportedLocales.ESTONIA
+
+  def getType = IBAN
 
   override def findCandidates(parseResult: ParseResult): Seq[Candidate] = {
     val ret: ListBuffer[Candidate] =
@@ -34,7 +38,7 @@ class EstonianAccountNumberFinder
         linesContainingIBANWithoutSpaces += oneLineContainingIBANStart
       for (accountNrValue <- foundAccountNrValues) {
         if (isValueAllowed(accountNrValue)) {
-          val candidate = buildCandidate(parseResult, None, accountNrValue)
+          val candidate = buildCandidate1(accountNrValue)
           addOneElementToListIfNotAlreadyContained(ret, candidate)
         }
       }
@@ -62,7 +66,7 @@ class EstonianAccountNumberFinder
         if (builtIBANMatcher.nonEmpty) {
           val accountNr = builtIBANMatcher.get
           if (isValueAllowed(accountNr)) {
-            val candidate = buildCandidate(parseResult, None, accountNr)
+            val candidate = buildCandidate1(accountNr)
             addOneElementToListIfNotAlreadyContained(ret, candidate)
           }
         }
@@ -87,25 +91,6 @@ class EstonianAccountNumberFinder
     }
   }
 
-  def buildCandidate(parseResult: ParseResult,
-                     phrase: Option[Phrase],
-                     value: Any,
-                     params: Any*): Candidate =
-    buildCandidate(phrase.orNull, value, params)
-
-  override def buildCandidate(phrase: Phrase,
-                              value: Any,
-                              params: Any*): Candidate =
-    new Candidate(value,
-      1,
-      1,
-      false,
-      1,
-      1,
-      SupportedLocales.ESTONIA,
-      IBAN,
-      Map.empty)
-
   override def isValueAllowed(raw: Any): Boolean = {
     Option(raw).isDefined &&
       raw.isInstanceOf[String] &&
@@ -127,7 +112,5 @@ class EstonianAccountNumberFinder
   }
 
   def parseValue(raw: String): Any = raw
-
-  def getType = IBAN
 
 }

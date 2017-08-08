@@ -21,7 +21,7 @@ case class Candidate(@BeanProperty // for dependent RESTful API in Java
                      locale: Locale,
                      paymentFieldType: PaymentFieldType,
                      properties: Map[CandidateMetadata, Any])
-    extends Comparable[Candidate] {
+  extends Comparable[Candidate] {
 
   Objects.requireNonNull(value)
 
@@ -30,7 +30,7 @@ case class Candidate(@BeanProperty // for dependent RESTful API in Java
   override def equals(other: Any): Boolean = {
     other match {
       case that: Candidate => this.value == that.value
-      case _               => false
+      case _ => false
     }
   }
 

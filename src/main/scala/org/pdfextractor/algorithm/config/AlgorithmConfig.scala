@@ -1,8 +1,8 @@
 package org.pdfextractor.algorithm.config
 
 import org.pdfextractor.algorithm.finder.FinderPackageMarker
-import org.springframework.context.annotation.{ComponentScan, Configuration}
 import org.pdfextractor.algorithm.phrase.PhrasePackageMarker
+import org.springframework.context.annotation.{ComponentScan, Configuration}
 
 @Configuration
 @ComponentScan(

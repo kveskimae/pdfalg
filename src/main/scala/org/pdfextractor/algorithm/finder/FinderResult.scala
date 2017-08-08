@@ -26,11 +26,11 @@ class FinderResult {
     }
   }
 
+  def hasValuesForType(fieldType: PaymentFieldType): Boolean =
+    getCandidates(fieldType).nonEmpty
+
   def getCandidates(fieldType: PaymentFieldType): mutable.Set[Candidate] = {
     candidatesMap(fieldType)
   }
-
-  def hasValuesForType(fieldType: PaymentFieldType): Boolean =
-    getCandidates(fieldType).nonEmpty
 
 }

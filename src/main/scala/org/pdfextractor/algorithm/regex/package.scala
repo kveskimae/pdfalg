@@ -42,7 +42,7 @@ package object regex {
   val EurR = (raw"^(?ism)(.*)$Eur(.*)$$").r
 
   def searchForEstonianDoubleValuesAfterText(
-      searchString: String): Seq[Double] = {
+                                              searchString: String): Seq[Double] = {
     searchForDoubleValues(searchString)
       .map(_.replaceAll(",", "."))
       .filter(StringUtils.countMatches(_, ".") < 2)
@@ -56,7 +56,7 @@ package object regex {
 
       (endIdx >= searchString.length || (searchString.charAt(endIdx) != '/' && searchString
         .charAt(endIdx) != '-')) &&
-      (startIdx < 0 || searchString.charAt(startIdx) != '/')
+        (startIdx < 0 || searchString.charAt(startIdx) != '/')
     }
 
     DigitsAndCommasR

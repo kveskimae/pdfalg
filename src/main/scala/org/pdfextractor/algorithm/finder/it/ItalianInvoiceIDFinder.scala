@@ -1,9 +1,11 @@
 package org.pdfextractor.algorithm.finder.it
 
+import java.util.Locale
+
 import org.apache.commons.lang3.StringUtils
 import org.pdfextractor.algorithm.candidate.Candidate
 import org.pdfextractor.algorithm.finder.AbstractFinder
-import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
+import org.pdfextractor.algorithm.parser.ParseResult
 import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
 import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
@@ -19,6 +21,10 @@ class ItalianInvoiceIDFinder extends AbstractFinder {
   var PATTERN_ITALIAN_INVOICE_ID_START_BARE_AS_REGEX: Regex = _
   var PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX: Regex = _
   var PATTERN_ITALIAN_INVOICE_ID_LINE_BARE_AS_REGEX: Regex = _
+
+  override def getLocale: Locale = SupportedLocales.ITALY
+
+  override def getType = INVOICE_ID
 
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
@@ -68,23 +74,6 @@ class ItalianInvoiceIDFinder extends AbstractFinder {
         throw new IllegalArgumentException("No invoice id start was found: '" + raw + "'")
       }
     })
-  }
-
-  override def getType = INVOICE_ID
-
-  override def buildCandidate(phrase: Phrase,
-                              value: Any,
-                              params: Any*): Candidate = {
-    val ret: Candidate = new Candidate(value,
-      phrase.x,
-      phrase.y,
-      phrase.bold,
-      phrase.height,
-      phrase.pageNumber,
-      SupportedLocales.ITALY,
-      INVOICE_ID,
-      Map.empty)
-    ret
   }
 
 }

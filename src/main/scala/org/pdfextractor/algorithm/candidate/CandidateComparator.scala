@@ -21,6 +21,16 @@ package object candidate {
   implicit def candidate2PhraseType(candidate: Candidate): PhraseType =
     candidate.properties.get(MetaPhraseType).get.asInstanceOf[PhraseType]
 
+  // Assumes that payment field types match for the parameter candidates
+  def compare(first: Candidate, other: Candidate): Int = {
+    val fastResult: Option[Int] = tryFastResulting(first, other)
+
+    fastResult match {
+      case Some(ret) => ret
+      case _ => calcCompareResult(first, other)
+    }
+  }
+
   def tryFastResulting(first: Candidate, other: Candidate): Option[Int] = {
     first.locale.getLanguage match {
       case SupportedLocales.ESTONIAN_LANG_CODE =>
@@ -83,7 +93,7 @@ package object candidate {
         if (first.value.asInstanceOf[Double] > other.value.asInstanceOf[Double])
           thisLikelyhood += BiggerSumFraction
         else if (other.value.asInstanceOf[Double] > first.value
-                   .asInstanceOf[Double]) otherLikelyhood += BiggerSumFraction
+          .asInstanceOf[Double]) otherLikelyhood += BiggerSumFraction
 
       // TODO needs to fall through
       case NAME | INVOICE_ID =>
@@ -114,17 +124,7 @@ package object candidate {
     (thisLikelyhood - otherLikelyhood) match {
       case diff if diff > 0 => -1
       case diff if diff < 0 => 1
-      case _                => 0
-    }
-  }
-
-  // Assumes that payment field types match for the parameter candidates
-  def compare(first: Candidate, other: Candidate): Int = {
-    val fastResult: Option[Int] = tryFastResulting(first, other)
-
-    fastResult match {
-      case Some(ret) => ret
-      case _         => calcCompareResult(first, other)
+      case _ => 0
     }
   }
 

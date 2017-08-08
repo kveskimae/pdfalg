@@ -8,9 +8,8 @@ import net.liftweb.json._
 import org.apache.commons.io.IOUtils
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
+import scala.collection.Map
 import scala.collection.immutable.Map.Map2
-import scala.collection.mutable.ArrayBuffer
-import scala.collection.{Map, mutable}
 
 package object io {
 
@@ -26,14 +25,6 @@ package object io {
     })
   }
 
-  private def extractPoints(field2PointsTuple: rawField2Pts): Seq[Point] = {
-    field2PointsTuple._2.map(pt => {
-      val x = pt.get("x").get.intValue()
-      val y = pt.get("y").get.intValue()
-      new Point(x, y)
-    })
-  }
-
   private def extractEntry(jsonAsMapEntry: (Any, Any)): field2Pts = {
     val field2PointsTuple: rawField2Pts =
       jsonAsMapEntry.asInstanceOf[rawField2Pts]
@@ -43,6 +34,14 @@ package object io {
     val points: Seq[Point] = extractPoints(field2PointsTuple)
 
     (fieldType, points)
+  }
+
+  private def extractPoints(field2PointsTuple: rawField2Pts): Seq[Point] = {
+    field2PointsTuple._2.map(pt => {
+      val x = pt.get("x").get.intValue()
+      val y = pt.get("y").get.intValue()
+      new Point(x, y)
+    })
   }
 
   private def getAsMap(fileName: String): Map[Any, Any] = {
@@ -73,9 +72,9 @@ package object io {
   def checkFile(file: File, checkIsDirectory: Boolean): Unit = {
     require(file.exists, "Location '" + file + "' does not exist")
     require(file.canRead,
-            "Location '" + file + "' is not readable for application")
+      "Location '" + file + "' is not readable for application")
     require(!checkIsDirectory || file.isDirectory,
-            "Location '" + file + "' is not a folder")
+      "Location '" + file + "' is not a folder")
   }
 
 }

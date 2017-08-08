@@ -53,18 +53,6 @@ class FinderFactory {
       TOTAL)
   }
 
-  def extractItalian(pdfContentStream: InputStream): FinderResult = {
-    val parseResult = PDFFileParser.parse(pdfContentStream)
-    findCandidates(parseResult,
-      SupportedLocales.ITALY,
-      NAME,
-      TOTAL,
-      INVOICE_ID,
-      ISSUE_DATE,
-      VATIN,
-      TOTAL_BEFORE_TAXES)
-  }
-
   private def findCandidates(parseResult: ParseResult,
                              lang: Locale,
                              fieldTypes: PaymentFieldType*) = {
@@ -114,4 +102,16 @@ class FinderFactory {
       case VATIN => Some(italianVATIdNumberFinder)
       case _ => None
     }
+
+  def extractItalian(pdfContentStream: InputStream): FinderResult = {
+    val parseResult = PDFFileParser.parse(pdfContentStream)
+    findCandidates(parseResult,
+      SupportedLocales.ITALY,
+      NAME,
+      TOTAL,
+      INVOICE_ID,
+      ISSUE_DATE,
+      VATIN,
+      TOTAL_BEFORE_TAXES)
+  }
 }

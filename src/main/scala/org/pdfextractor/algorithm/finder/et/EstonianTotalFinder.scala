@@ -1,5 +1,7 @@
 package org.pdfextractor.algorithm.finder.et
 
+import java.util.Locale
+
 import org.pdfextractor.algorithm.candidate._
 import org.pdfextractor.algorithm.finder.{AbstractFinder, _}
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
@@ -16,6 +18,10 @@ import scala.util.matching.Regex
 
 @Service
 class EstonianTotalFinder extends AbstractFinder {
+
+  override def getLocale: Locale = SupportedLocales.ESTONIA
+
+  override def getType = TOTAL
 
   @org.springframework.context.event.EventListener(
     Array(classOf[PhraseTypesRefreshedEvent]))
@@ -40,9 +46,9 @@ class EstonianTotalFinder extends AbstractFinder {
             phrase.text)
 
           buildCandidate(phrase,
+            parseResult,
             totalAsDouble,
-            doubleNumber,
-            phraseType)
+            Seq(doubleNumber, phraseType))
         }
 
       DigitsAndCommasR
@@ -56,22 +62,13 @@ class EstonianTotalFinder extends AbstractFinder {
     }
   }
 
-  override def buildCandidate(phrase: Phrase,
-                              value: Any,
-                              params: Any*): Candidate = {
-    new Candidate(value,
-      phrase.x,
-      phrase.y,
-      phrase.bold,
-      phrase.height,
-      phrase.pageNumber,
-      SupportedLocales.ESTONIA,
-      TOTAL,
-      buildProperties(phrase, params))
-  }
+  override def parseValue(raw: String): Any = raw.replace(',', '.').toDouble
 
-  def buildProperties(phrase: Phrase,
-                      params: Seq[Any]): Map[CandidateMetadata, Any] = {
+  override def isValueAllowed(value: Any) = true
+
+  override def buildProperties(phrase: Phrase,
+                               parseResult: ParseResult,
+                               params: Seq[Any]): Map[CandidateMetadata, Any] = {
     val doubleNumber = params(0).asInstanceOf[Boolean]
     val phraseType = params(1).asInstanceOf[PhraseType]
     val euroSignFound = isEuroPresent(phrase.text)
@@ -84,11 +81,5 @@ class EstonianTotalFinder extends AbstractFinder {
       IsNormalLine -> normalTotalLine
     )
   }
-
-  override def parseValue(raw: String): Any = raw.replace(',', '.').toDouble
-
-  override def isValueAllowed(value: Any) = true
-
-  override def getType = TOTAL
 
 }

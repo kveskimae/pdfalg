@@ -6,5 +6,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class ItalianTotalBeforeTaxesFinder extends AbstractItalianTotalFinder {
+
   override def getType: PaymentFieldType = TOTAL_BEFORE_TAXES
+
 }

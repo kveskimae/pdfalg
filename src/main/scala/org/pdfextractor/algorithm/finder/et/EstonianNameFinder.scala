@@ -1,9 +1,11 @@
 package org.pdfextractor.algorithm.finder.et
 
+import java.util.Locale
+
 import org.apache.commons.lang3.StringUtils
-import org.pdfextractor.algorithm.candidate.{Candidate, CandidateMetadata, HasPank, MetaPhraseType}
+import org.pdfextractor.algorithm.candidate.{CandidateMetadata, HasPank, MetaPhraseType}
 import org.pdfextractor.algorithm.finder.{AbstractFinder, isPankPresent}
-import org.pdfextractor.algorithm.parser.Phrase
+import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.NAME
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
@@ -11,6 +13,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class EstonianNameFinder extends AbstractFinder {
+
+  override def getLocale: Locale = SupportedLocales.ESTONIA
+
+  override def getType = NAME
 
   @org.springframework.context.event.EventListener(
     Array(classOf[PhraseTypesRefreshedEvent]))
@@ -23,27 +29,6 @@ class EstonianNameFinder extends AbstractFinder {
         NAME)).r)
   }
 
-  override def buildCandidate(phrase: Phrase,
-                              value: Any,
-                              params: Any*): Candidate = {
-    new Candidate(value,
-      phrase.x,
-      phrase.y,
-      phrase.bold,
-      phrase.height,
-      phrase.pageNumber,
-      SupportedLocales.ESTONIA,
-      NAME,
-      buildProperties(phrase))
-  }
-
-  def buildProperties(phrase: Phrase): Map[CandidateMetadata, Any] = {
-    val phraseType =
-      phraseTypesStore.findType(SupportedLocales.ESTONIA, NAME, phrase.text)
-    val pankPresent = isPankPresent(phrase.text)
-    Map(MetaPhraseType -> phraseType, HasPank -> pankPresent)
-  }
-
   override def isValueAllowed(value: Any) = true
 
   override def parseValue(raw: String): Any = {
@@ -52,6 +37,10 @@ class EstonianNameFinder extends AbstractFinder {
       .split("""[\s]{3,}""")(0))
   }
 
-  override def getType = NAME
+  override def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateMetadata, Any] = {
+    val phraseType = phraseTypesStore.findType(SupportedLocales.ESTONIA, NAME, phrase.text)
+    val pankPresent = isPankPresent(phrase.text)
+    Map(MetaPhraseType -> phraseType, HasPank -> pankPresent)
+  }
 
 }

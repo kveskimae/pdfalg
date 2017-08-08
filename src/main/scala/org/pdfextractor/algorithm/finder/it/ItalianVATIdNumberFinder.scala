@@ -1,5 +1,7 @@
 package org.pdfextractor.algorithm.finder.it
 
+import java.util.Locale
+
 import org.pdfextractor.algorithm.candidate.Candidate
 import org.pdfextractor.algorithm.finder.AbstractFinder
 import org.pdfextractor.algorithm.finder.it.ItalianRegexPatterns._
@@ -15,6 +17,10 @@ import scala.util.matching.Regex
 class ItalianVATIdNumberFinder
   extends AbstractFinder(ItVatinR, ItVatinValueR, true, true) {
 
+  override def getLocale: Locale = SupportedLocales.ITALY
+
+  override def getType: PaymentFieldType = VATIN
+
   override def searchValuesFromPhrase(
                                        phrase: Phrase,
                                        parseResult: ParseResult,
@@ -23,29 +29,8 @@ class ItalianVATIdNumberFinder
       .findAllIn(parseResult.text)
       .map(getValuePattern.findAllIn(_))
       .filter(isValueAllowed(_))
-      .map(buildCandidate(parseResult, None, _))
+      .map(buildCandidate1(_))
       .toBuffer
-  }
-
-  def buildCandidate(parseResult: ParseResult,
-                     phrase: Option[Phrase],
-                     value: Any,
-                     params: Any*): Candidate = {
-    buildCandidate(phrase.orNull, value, params)
-  }
-
-  override def buildCandidate(phrase: Phrase,
-                              value: Any,
-                              params: Any*): Candidate = {
-    new Candidate(value,
-      1,
-      1,
-      false,
-      1,
-      1,
-      SupportedLocales.ITALY,
-      VATIN,
-      Map.empty)
   }
 
   override def isValueAllowed(value: Any): Boolean = {
@@ -56,7 +41,5 @@ class ItalianVATIdNumberFinder
   }
 
   override def parseValue(raw: String): Any = raw
-
-  override def getType: PaymentFieldType = VATIN
 
 }

@@ -19,27 +19,26 @@ import scala.util.matching.Regex
 @Service
 abstract class AbstractItalianTotalFinder
   extends AbstractFinder(None, None, true, true) {
-  // TODO What about thread safety?
 
   val otherSymbolsForCommaAsThousandsSeparator: DecimalFormatSymbols =
     new DecimalFormatSymbols(Locale.ITALY)
-  otherSymbolsForCommaAsThousandsSeparator.setDecimalSeparator('.')
-  otherSymbolsForCommaAsThousandsSeparator.setGroupingSeparator(',')
 
+  // TODO What about thread safety?
   val decimalFormatWithCommaAsThousandsSeparator: DecimalFormat =
     new DecimalFormat("###,###.##", otherSymbolsForCommaAsThousandsSeparator)
-
+  otherSymbolsForCommaAsThousandsSeparator.setDecimalSeparator('.')
+  otherSymbolsForCommaAsThousandsSeparator.setGroupingSeparator(',')
   val otherSymbolsForDotAsThousandsSeparator: DecimalFormatSymbols =
     new DecimalFormatSymbols(Locale.ITALY)
-  otherSymbolsForDotAsThousandsSeparator.setDecimalSeparator(',')
-  otherSymbolsForDotAsThousandsSeparator.setGroupingSeparator('.')
-
   // Even if dot is used as radix character (decimal separator), pattern is always defined with comma as separator
   val decimalFormatWithDotAsThousandsSeparator: DecimalFormat =
     new DecimalFormat("###,###.##", otherSymbolsForDotAsThousandsSeparator)
-
+  otherSymbolsForDotAsThousandsSeparator.setDecimalSeparator(',')
+  otherSymbolsForDotAsThousandsSeparator.setGroupingSeparator('.')
   private[it] val PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX =
     ("""^(?ims).{0,30}:([\s]{0,})""" + Eur + """?([\s]{0,})""" + DigitsAndCommas + """([\s]{0,})""" + Eur + """?([\s]{0,})$""").r
+
+  override def getLocale: Locale = SupportedLocales.ITALY
 
   @org.springframework.context.event.EventListener(
     Array(classOf[PhraseTypesRefreshedEvent]))
@@ -90,14 +89,14 @@ abstract class AbstractItalianTotalFinder
                           phrase: Phrase,
                           parseResult: ParseResult): Option[Candidate] = {
     val dotCount = countDotsAndCommas(totalAsString)
-    val `type` =
+    val phraseType =
       phraseTypesStore.findType(SupportedLocales.ITALY, getType, phrase.text)
     if (dotCount < 2) {
       val replaced = totalAsString.replaceAll(",", ".")
       val totalAsDouble: Double = replaced.toDouble
       val doubleNumber = dotCount > 0
       val candidate =
-        buildCandidate(phrase, totalAsDouble, doubleNumber, `type`)
+        buildCandidate(phrase, parseResult, totalAsDouble, Seq(doubleNumber, phraseType))
       Some(candidate)
     } else
       try {
@@ -112,9 +111,9 @@ abstract class AbstractItalianTotalFinder
             .doubleValue
         val doubleNumber = isDouble(totalAsDouble)
         val candidate = buildCandidate(phrase,
+          parseResult,
           totalAsDouble,
-          doubleNumber,
-          `type`)
+          Seq(doubleNumber, phraseType))
         Some(candidate)
       } catch {
         case ignored: ParseException =>
@@ -130,28 +129,16 @@ abstract class AbstractItalianTotalFinder
 
   def isDouble(number: Double): Boolean = (number % 1) != 0
 
-  override def buildCandidate(phrase: Phrase,
-                              value: Any,
-                              params: Any*): Candidate = {
+  override def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateMetadata, Any] = {
     val doubleNumber = params(0).asInstanceOf[Boolean]
-    val `type` = params(1).asInstanceOf[PhraseType]
+    val phraseType = params(1).asInstanceOf[PhraseType]
     val euroSignFound = isEuroPresent(phrase.text)
     val normalTotalLine = isNormalTotalLine(phrase.text)
-    val properties: Map[CandidateMetadata, Any] = Map(
-      IsDouble -> doubleNumber,
-      MetaPhraseType -> `type`,
+
+    Map(IsDouble -> doubleNumber,
+      MetaPhraseType -> phraseType,
       HasEuroSign -> euroSignFound,
       IsNormalLine -> normalTotalLine)
-    val ret = new Candidate(value,
-      phrase.x,
-      phrase.y,
-      phrase.bold,
-      phrase.height,
-      phrase.pageNumber,
-      SupportedLocales.ITALY,
-      getType,
-      properties)
-    ret
   }
 
   def isEuroPresent(text: String): Boolean = {

@@ -7,37 +7,30 @@ import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.dao.PhraseTypeDao
 import org.pdfextractor.db.domain.PhraseType
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType._
-import org.pdfextractor.db.domain.dictionary.{
-  PaymentFieldType,
-  SupportedLocales
-}
+import org.pdfextractor.db.domain.dictionary.{PaymentFieldType, SupportedLocales}
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.stereotype.Service
 
-import scala.collection.{JavaConverters, mutable}
+import scala.collection.JavaConverters
 
 @Service
 class PhraseTypesStore() {
 
   val log: Logger = LoggerFactory.getLogger(classOf[PhraseTypesStore])
-
-  @Autowired private var applicationContext: ApplicationContext = _
-
-  @Autowired private var phraseTypeDao: PhraseTypeDao = _
-
   val lock: Lock = new ReentrantLock
-
   val typesMap: collection.mutable.Map[
     Locale,
     collection.mutable.Map[PaymentFieldType,
-                           collection.mutable.ListBuffer[PhraseType]]] =
+      collection.mutable.ListBuffer[PhraseType]]] =
     collection.mutable.Map
       .empty[Locale,
-             collection.mutable.Map[PaymentFieldType,
-                                    collection.mutable.ListBuffer[PhraseType]]]
+      collection.mutable.Map[PaymentFieldType,
+        collection.mutable.ListBuffer[PhraseType]]]
+  @Autowired private var applicationContext: ApplicationContext = _
+  @Autowired private var phraseTypeDao: PhraseTypeDao = _
 
   @org.springframework.context.event.EventListener(
     Array(classOf[ContextRefreshedEvent]))
@@ -52,11 +45,11 @@ class PhraseTypesStore() {
           SupportedLocales.findLocaleByLanguage(phraseType.getLocale)
         val localeMapOp: Option[
           collection.mutable.Map[PaymentFieldType,
-                                 collection.mutable.ListBuffer[PhraseType]]] =
+            collection.mutable.ListBuffer[PhraseType]]] =
           typesMap.get(locale)
         val localeMap
-          : collection.mutable.Map[PaymentFieldType,
-                                   collection.mutable.ListBuffer[PhraseType]] =
+        : collection.mutable.Map[PaymentFieldType,
+          collection.mutable.ListBuffer[PhraseType]] =
           localeMapOp.getOrElse(collection.mutable.Map.empty)
         if (!typesMap.contains(locale)) {
           typesMap.put(locale, localeMap)
@@ -85,13 +78,13 @@ class PhraseTypesStore() {
   }
 
   private def getPhraseTypes(locale: Locale, paymentFieldType: PaymentFieldType)
-    : collection.mutable.Seq[PhraseType] = {
+  : collection.mutable.Seq[PhraseType] = {
     Option(locale).orElse(throw new NullPointerException)
     lock.lock()
     try {
       val fieldType2Phrase: Option[
         collection.mutable.Map[PaymentFieldType,
-                               collection.mutable.ListBuffer[PhraseType]]] =
+          collection.mutable.ListBuffer[PhraseType]]] =
         typesMap.get(locale)
       if (fieldType2Phrase.isEmpty) {
         throw new IllegalArgumentException("Unsupported locale: " + locale)
@@ -123,7 +116,7 @@ class PhraseTypesStore() {
         paymentFieldType match {
           case INVOICE_ID =>
             ret.append('(')
-            while ({
+            while ( {
               it.hasNext
             }) {
               ret
@@ -138,7 +131,7 @@ class PhraseTypesStore() {
             ret.append(')')
           case NAME =>
             ret.append('(')
-            while ({
+            while ( {
               it.hasNext
             }) {
               val abbrevation: String = it.next.getKeyPhrase
@@ -159,7 +152,7 @@ class PhraseTypesStore() {
 
           case TOTAL =>
             ret.append('(')
-            while ({
+            while ( {
               it.hasNext
             }) {
               ret.append(it.next.getKeyPhrase)
@@ -178,7 +171,7 @@ class PhraseTypesStore() {
         paymentFieldType match {
           case INVOICE_ID =>
             ret.append('(')
-            while ({
+            while ( {
               it.hasNext
             }) {
               val kp: String = it.next.getKeyPhrase
@@ -204,7 +197,7 @@ class PhraseTypesStore() {
 
           case NAME =>
             ret.append('(')
-            while ({
+            while ( {
               it.hasNext
             }) {
               val abbrevation: String = it.next.getKeyPhrase
@@ -228,7 +221,7 @@ class PhraseTypesStore() {
           case TOTAL =>
           case TOTAL_BEFORE_TAXES =>
             ret.append('(')
-            while ({
+            while ( {
               it.hasNext
             }) {
               ret.append(it.next.getKeyPhrase)
@@ -259,7 +252,7 @@ class PhraseTypesStore() {
         paymentFieldType match {
           case NAME =>
             ret.append('(')
-            while ({
+            while ( {
               it.hasNext
             }) {
               val abbrevation: String = it.next.getKeyPhrase
@@ -290,7 +283,7 @@ class PhraseTypesStore() {
         paymentFieldType match {
           case NAME =>
             ret.append('(')
-            while ({
+            while ( {
               it.hasNext
             }) {
               val abbreviation: String = it.next.getKeyPhrase

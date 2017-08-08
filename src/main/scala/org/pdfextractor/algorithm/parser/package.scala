@@ -4,40 +4,88 @@ import java.io.{IOException, InputStream}
 import java.text.DecimalFormat
 import java.util.Objects
 
-import exception.{AppBadInputException, AppServerFaultException}
 import org.apache.commons.lang3.StringUtils
 import org.apache.pdfbox.pdmodel.graphics.state.PDTextState
 import org.apache.pdfbox.pdmodel.{PDDocument, PDPage}
 import org.apache.pdfbox.text.{PDFTextStripper, TextPosition}
-
-import scala.collection.{LinearSeq, Traversable, mutable}
-import scala.collection.mutable.ListBuffer
 import org.pdfextractor.algorithm.candidate.posorder._
+import org.pdfextractor.algorithm.exception.{AppBadInputException, AppServerFaultException}
+
+import scala.collection.mutable.ListBuffer
+import scala.collection.{LinearSeq, Traversable, mutable}
 
 package object parser {
+
+  val Bold = "(?i)BOLD".r
+
+  def roundToTens(original: Float): Float = {
+    val formatter = new DecimalFormat("0.0'0'")
+    formatter.format(original).toFloat
+  }
+
+  def isBoldFont(fontName: String): Boolean = {
+    !StringUtils.isBlank(fontName) && Bold.findFirstIn(fontName).nonEmpty
+  }
+
+  def leftmost(phrases: Traversable[Phrase]): Phrase = {
+    findWithReduce(phrases, (p1, p2) => if (p1.x < p2.x) p1 else p2)
+  }
+
+  def rightmost(phrases: Traversable[Phrase]): Phrase = {
+    findWithReduce(phrases, (p1, p2) => if (p1.x > p2.x) p1 else p2)
+  }
+
+  private def findWithReduce(phrases: Traversable[Phrase],
+                             fn: (Phrase, Phrase) => Phrase): Phrase = {
+    require(phrases.nonEmpty)
+
+    phrases.reduce(fn)
+  }
+
+  def uppermost(phrases: Traversable[Phrase]): Phrase = {
+    findWithReduce(phrases, (p1, p2) => if (p1.y < p2.y) p1 else p2)
+  }
 
   // Default space tolerance: 0.5, average character tolerance: 0.3
   class PageParser(private var nextCharacterStartsNewWord: Boolean = true,
                    private val alignmentMatcher: AlignmentMatcher =
-                     new AlignmentMatcher(0f, 0f, 0f),
+                   new AlignmentMatcher(0f, 0f, 0f),
                    private val phrases: mutable.ListBuffer[Phrase] =
-                     mutable.ListBuffer.empty,
+                   mutable.ListBuffer.empty,
                    private var matchesFound: ListBuffer[Phrase] =
-                     mutable.ListBuffer.empty,
+                   mutable.ListBuffer.empty,
                    private val builder: StringBuilder = new StringBuilder,
                    private var x: Float = 0f,
                    private var y: Float = 0f,
                    private var height: Float = 0f,
                    private var width: Float = 0f,
                    private var bold: Boolean = false)
-      extends PDFTextStripper {
+    extends PDFTextStripper {
 
     setSortByPosition(true)
+
+    def getPhrases: LinearSeq[Phrase] = phrases.toList
 
     @throws[IOException]
     override protected def endPage(page: PDPage): Unit = { // And add the last phrase too
       addToPhrases()
       super.endPage(page)
+    }
+
+    private def addToPhrases() = {
+      val builderResult: String = builder.toString
+      if (!builderResult.isEmpty) {
+        val phrase: Phrase =
+          new Phrase(Math.round(x),
+            Math.round(y),
+            getCurrentPageNo,
+            Math.round(height),
+            Math.round(width),
+            builderResult,
+            bold)
+
+        phrases += phrase
+      }
     }
 
     override protected def processTextPosition(text: TextPosition): Unit = {
@@ -95,22 +143,6 @@ package object parser {
       addToPhrases()
     }
 
-    private def addToPhrases() = {
-      val builderResult: String = builder.toString
-      if (!builderResult.isEmpty) {
-        val phrase: Phrase =
-          new Phrase(Math.round(x),
-                     Math.round(y),
-                     getCurrentPageNo,
-                     Math.round(height),
-                     Math.round(width),
-                     builderResult,
-                     bold)
-
-        phrases += phrase
-      }
-    }
-
     private def startNewWord(text: TextPosition, tChar: String) = {
       bold = isBoldFont(text.getFont.getName)
       builder.setLength(0)
@@ -120,77 +152,9 @@ package object parser {
       width = text.getWidth
       builder.append(tChar)
     }
-
-    def getPhrases: LinearSeq[Phrase] = phrases.toList
-  }
-
-  object PDFFileParser {
-
-    def parse(pdfContentStream: InputStream): ParseResult = {
-
-      val document: PDDocument = try {
-        PDDocument.load(pdfContentStream)
-      } catch {
-        case e: IOException =>
-          throw new AppBadInputException("PDF file is corrupt or not supported")
-      }
-
-      val ret: ParseResult = try {
-        val processor: PageParser = new PageParser()
-        val text: String = processor.getText(document)
-        val phrases: LinearSeq[Phrase] = processor.getPhrases
-        new ParseResult(text, phrases)
-      } catch {
-        case e: IOException =>
-          throw new AppServerFaultException("Parsing PDF file failed")
-      }
-
-      try {
-        document.close
-      } catch {
-        case ignored: IOException =>
-      }
-
-      ret
-    }
-
   }
 
   class ParseResult(val text: String, val phrases: LinearSeq[Phrase]) {
-
-    def findPhrasesBelow(phrase: Phrase): LinearSeq[Phrase] = {
-      phrases.filter(
-        token =>
-          phrase.pageNumber.equals(token.pageNumber) &&
-            Math.abs(token.x - phrase.x) < 10 &&
-            token.y >= phrase.y + phrase.height)
-    }
-
-    def findPhrasesAbove(phrase: Phrase): LinearSeq[Phrase] = {
-      phrases.filter(
-        token =>
-          phrase.pageNumber == token.pageNumber &&
-            Math.abs(token.x - phrase.x) < 10 &&
-            token.y < phrase.y)
-    }
-
-    // TODO
-
-    def findPhrasesOnLine(phrase: Phrase): LinearSeq[Phrase] = {
-      phrases.filter(
-        token =>
-          token.pageNumber == phrase.pageNumber &&
-            token != phrase &&
-            Math.abs(token.y - phrase.y) < 10)
-    }
-
-    def findTokensOnRight(phrase: Phrase): LinearSeq[Phrase] = {
-      findPhrasesOnLine(phrase).filter(_.x > phrase.x)
-    }
-
-    def findTokensOnLeft(phrase: Phrase): LinearSeq[Phrase] = {
-      findPhrasesOnLine(phrase).filter(_.x < phrase.x)
-    }
 
     def findPhraseBelow(phrase: Phrase): Option[Phrase] = {
       Objects.requireNonNull(phrase)
@@ -204,6 +168,16 @@ package object parser {
         case _ => None
       }
     }
+
+    def findPhrasesBelow(phrase: Phrase): LinearSeq[Phrase] = {
+      phrases.filter(
+        token =>
+          phrase.pageNumber.equals(token.pageNumber) &&
+            Math.abs(token.x - phrase.x) < 10 &&
+            token.y >= phrase.y + phrase.height)
+    }
+
+    // TODO
 
     def findClosestPhraseAbove(phrase: Phrase): Option[Phrase] = {
       require(Option(phrase).isDefined)
@@ -222,6 +196,14 @@ package object parser {
       }
     }
 
+    def findPhrasesAbove(phrase: Phrase): LinearSeq[Phrase] = {
+      phrases.filter(
+        token =>
+          phrase.pageNumber == token.pageNumber &&
+            Math.abs(token.x - phrase.x) < 10 &&
+            token.y < phrase.y)
+    }
+
     def findClosestPhraseOnRight(phrase: Phrase): Option[Phrase] = {
       val tokensOnRight = findTokensOnRight(phrase)
       if (!tokensOnRight.isEmpty) {
@@ -232,6 +214,18 @@ package object parser {
       }
     }
 
+    def findTokensOnRight(phrase: Phrase): LinearSeq[Phrase] = {
+      findPhrasesOnLine(phrase).filter(_.x > phrase.x)
+    }
+
+    def findPhrasesOnLine(phrase: Phrase): LinearSeq[Phrase] = {
+      phrases.filter(
+        token =>
+          token.pageNumber == phrase.pageNumber &&
+            token != phrase &&
+            Math.abs(token.y - phrase.y) < 10)
+    }
+
     def findClosestPhraseOnLeft(phrase: Phrase): Option[Phrase] = {
       val tokensOnLeft = findTokensOnLeft(phrase)
       if (!tokensOnLeft.isEmpty) {
@@ -240,6 +234,10 @@ package object parser {
       } else {
         Option.empty
       }
+    }
+
+    def findTokensOnLeft(phrase: Phrase): LinearSeq[Phrase] = {
+      findPhrasesOnLine(phrase).filter(_.x < phrase.x)
     }
 
     def searchRightOrBelow(phrase: Phrase): LinearSeq[Phrase] = {
@@ -284,7 +282,7 @@ package object parser {
 
     def isSpace(text: TextPosition): Boolean = {
       text.getXDirAdj.compareTo(maximumXForNextCharacter) >= 0 &&
-      text.getXDirAdj.compareTo(maximumXForNextCharacterWithSpaceBetween) <= 0
+        text.getXDirAdj.compareTo(maximumXForNextCharacterWithSpaceBetween) <= 0
     }
 
     def setLastVerticalPosition(text: TextPosition): Unit = {
@@ -294,34 +292,36 @@ package object parser {
 
   }
 
-  def roundToTens(original: Float): Float = {
-    val formatter = new DecimalFormat("0.0'0'")
-    formatter.format(original).toFloat
-  }
+  object PDFFileParser {
 
-  val Bold = "(?i)BOLD".r
+    def parse(pdfContentStream: InputStream): ParseResult = {
 
-  def isBoldFont(fontName: String): Boolean = {
-    !StringUtils.isBlank(fontName) && Bold.findFirstIn(fontName).nonEmpty
-  }
+      val document: PDDocument = try {
+        PDDocument.load(pdfContentStream)
+      } catch {
+        case e: IOException =>
+          throw new AppBadInputException("PDF file is corrupt or not supported")
+      }
 
-  def leftmost(phrases: Traversable[Phrase]): Phrase = {
-    findWithReduce(phrases, (p1, p2) => if (p1.x < p2.x) p1 else p2)
-  }
+      val ret: ParseResult = try {
+        val processor: PageParser = new PageParser()
+        val text: String = processor.getText(document)
+        val phrases: LinearSeq[Phrase] = processor.getPhrases
+        new ParseResult(text, phrases)
+      } catch {
+        case e: IOException =>
+          throw new AppServerFaultException("Parsing PDF file failed")
+      }
 
-  def rightmost(phrases: Traversable[Phrase]): Phrase = {
-    findWithReduce(phrases, (p1, p2) => if (p1.x > p2.x) p1 else p2)
-  }
+      try {
+        document.close
+      } catch {
+        case ignored: IOException =>
+      }
 
-  def uppermost(phrases: Traversable[Phrase]): Phrase = {
-    findWithReduce(phrases, (p1, p2) => if (p1.y < p2.y) p1 else p2)
-  }
+      ret
+    }
 
-  private def findWithReduce(phrases: Traversable[Phrase],
-                             fn: (Phrase, Phrase) => Phrase): Phrase = {
-    require(phrases.nonEmpty)
-
-    phrases.reduce(fn)
   }
 
 }

@@ -1,9 +1,9 @@
 package org.pdfextractor.algorithm.finder.it
 
 import java.text.{ParseException, SimpleDateFormat}
-import java.util.Date
+import java.util.{Date, Locale}
 
-import org.pdfextractor.algorithm.candidate.{Candidate, CandidateMetadata, MetaPhraseType}
+import org.pdfextractor.algorithm.candidate.{CandidateMetadata, MetaPhraseType}
 import org.pdfextractor.algorithm.finder._
 import org.pdfextractor.algorithm.finder.it.ItalianRegexPatterns._
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
@@ -15,24 +15,37 @@ import org.springframework.stereotype.Service
 @Service
 class ItalianIssueDateFinder extends AbstractFinder(ItDateR, ItDateR, false) {
 
-  def buildCandidate(phrase: Phrase,
-                     value: Any,
-                     params: Any*): Candidate = {
-    val phraseType: PhraseType = params(0).asInstanceOf[PhraseType]
-    val properties: Map[CandidateMetadata, Any] = Map(MetaPhraseType -> phraseType)
-    new Candidate(value,
-      phrase.x,
-      phrase.y,
-      phrase.bold,
-      phrase.height,
-      phrase.pageNumber,
-      SupportedLocales.ITALY,
-      ISSUE_DATE,
-      properties)
+  override def getLocale: Locale = SupportedLocales.ITALY
+
+  def getType = ISSUE_DATE
+
+  def isValueAllowed(value: Any): Boolean =
+    value.asInstanceOf[Date].before(new Date)
+
+  def parseValue(raw: String): Any = {
+    val df: SimpleDateFormat = raw.length match {
+      case 8 => new SimpleDateFormat("dd/MM/yy")
+      case 10 => new SimpleDateFormat("dd/MM/yyyy")
+      case _ =>
+        throw new IllegalArgumentException(
+          "Unsupported date format: '" + raw + "'")
+    }
+
+    try {
+      df.parse(
+        raw
+          .replaceAll("-", "/")
+          .replaceAll("""\s""", "/")
+          .replaceAll("""\.""", "/")
+      )
+    } catch {
+      case pe: ParseException =>
+        throw new IllegalArgumentException(pe)
+    }
   }
 
-  override def findParams(phrase: Phrase, parseResult: ParseResult): Array[Any] = {
-    Array(findType(parseResult, phrase))
+  override def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateMetadata, Any] = {
+    Map(MetaPhraseType -> findType(parseResult, phrase))
   }
 
   private def findType(parseResult: ParseResult, phrase: Phrase): PhraseType = {
@@ -75,32 +88,5 @@ class ItalianIssueDateFinder extends AbstractFinder(ItDateR, ItDateR, false) {
         None
     }
   }
-
-  def isValueAllowed(value: Any): Boolean =
-    value.asInstanceOf[Date].before(new Date)
-
-  def parseValue(raw: String): Any = {
-    val df: SimpleDateFormat = raw.length match {
-      case 8 => new SimpleDateFormat("dd/MM/yy")
-      case 10 => new SimpleDateFormat("dd/MM/yyyy")
-      case _ =>
-        throw new IllegalArgumentException(
-          "Unsupported date format: '" + raw + "'")
-    }
-
-    try {
-      df.parse(
-        raw
-          .replaceAll("-", "/")
-          .replaceAll("""\s""", "/")
-          .replaceAll("""\.""", "/")
-      )
-    } catch {
-      case pe: ParseException =>
-        throw new IllegalArgumentException(pe)
-    }
-  }
-
-  def getType = ISSUE_DATE
 
 }

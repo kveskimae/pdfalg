@@ -38,8 +38,8 @@ class Node(val cutDirection: CutDirection,
 
   def isSplit(): Boolean = {
     locations.size > CellMinPoints &&
-    (maxX - minX) >= 2 * CellMinLengthPx &&
-    (maxY - minY) >= 2 * CellMinLengthPx
+      (maxX - minX) >= 2 * CellMinLengthPx &&
+      (maxY - minY) >= 2 * CellMinLengthPx
   }
 
   def doSplit() = {
@@ -98,11 +98,11 @@ class Node(val cutDirection: CutDirection,
 
   def isInSmallValues(candidate: Candidate): Boolean = {
     require(candidate.x <= maxX && candidate.y <= maxY,
-            "Location must be contained inside grid: " + candidate)
+      "Location must be contained inside grid: " + candidate)
 
     cutDirection match {
       case Horizontal => candidate.y < (minY + maxY) / 2
-      case Vertical   => candidate.x < (minX + maxX) / 2
+      case Vertical => candidate.x < (minX + maxX) / 2
       case _ =>
         throw new IllegalStateException(
           "Unknown cut direction: " + cutDirection)
@@ -113,12 +113,12 @@ class Node(val cutDirection: CutDirection,
     if (isInSmallValues(location)) {
       smallerValues match {
         case Some(_) => smallerValues.get.getMaxDepthForLocation(location) + 1
-        case None    => 0
+        case None => 0
       }
     } else {
       biggerValues match {
         case Some(_) => biggerValues.get.getMaxDepthForLocation(location) + 1
-        case None    => 0
+        case None => 0
       }
     }
   }

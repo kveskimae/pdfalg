@@ -1,8 +1,8 @@
 package org.pdfextractor.algorithm.finder
 
-import java.util.Objects
+import java.util.{Locale, Objects}
 
-import org.pdfextractor.algorithm.candidate.Candidate
+import org.pdfextractor.algorithm.candidate.{Candidate, CandidateMetadata}
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesStore
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
@@ -132,11 +132,9 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
       .findAllIn(phrase.text)
       .map(parseValue(_))
       .filter(isValueAllowed(_))
-      .map(buildCandidate(phrase, _, findParams(phrase, parseResult)))
+      .map(buildCandidate(phrase, parseResult, _, Seq.empty))
       .toBuffer
   }
-
-  def findParams(phrase: Phrase, parseResult: ParseResult): Array[Any] = Array.empty
 
   def isValueAllowed(value: Any): Boolean
 
@@ -144,8 +142,37 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
 
   def getType: PaymentFieldType
 
+  def getLocale: Locale
+
   def getValuePattern: Regex = valuePattern.get
 
-  def buildCandidate(phrase: Phrase, value: Any, params: Any*): Candidate
+  // Building candidate
+
+  def buildCandidate1(value: Any): Candidate =
+    new Candidate(value,
+      1,
+      1,
+      false,
+      1,
+      1,
+      getLocale,
+      getType,
+      Map.empty)
+
+  def buildCandidate(phrase: Phrase,
+                     parseResult: ParseResult,
+                     value: Any,
+                     params: Seq[Any]): Candidate =
+    new Candidate(value,
+      phrase.x,
+      phrase.y,
+      phrase.bold,
+      phrase.height,
+      phrase.pageNumber,
+      getLocale,
+      getType,
+      buildProperties(phrase, parseResult, params))
+
+  def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateMetadata, Any] = Map.empty
 
 }

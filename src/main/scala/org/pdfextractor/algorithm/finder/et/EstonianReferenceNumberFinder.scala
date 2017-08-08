@@ -1,35 +1,22 @@
 package org.pdfextractor.algorithm.finder.et
 
 import java.math.BigInteger
+import java.util.Locale
 
-import org.pdfextractor.algorithm.candidate.Candidate
-import org.pdfextractor.algorithm.finder.{AbstractFinder, _}
 import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns._
-import org.pdfextractor.algorithm.parser.Phrase
+import org.pdfextractor.algorithm.finder.{AbstractFinder, _}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.REFERENCE_NUMBER
 import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 
 @Service
-class EstonianReferenceNumberFinder
-  extends AbstractFinder(EstRefNoLineR, EstRefNoR) {
+class EstonianReferenceNumberFinder extends AbstractFinder(EstRefNoLineR, EstRefNoR) {
 
-  override def parseValue(raw: String): Any = raw
-
-  override def buildCandidate(phrase: Phrase,
-                              value: Any,
-                              params: Any*) =
-    new Candidate(value,
-      phrase.x,
-      phrase.y,
-      phrase.bold,
-      phrase.height,
-      phrase.pageNumber,
-      SupportedLocales.ESTONIA,
-      REFERENCE_NUMBER,
-      Map.empty)
+  override def getLocale: Locale = SupportedLocales.ESTONIA
 
   override def getType = REFERENCE_NUMBER
+
+  override def parseValue(raw: String): Any = raw
 
   override def isValueAllowed(raw: Any): Boolean = {
     try {
@@ -37,7 +24,7 @@ class EstonianReferenceNumberFinder
       isCorrectFormat(value) && checkDigitMatches(value,
         calculateCheckDigit(value))
     } catch {
-      case e: Exception => false
+      case _: Throwable => false
     }
   }
 

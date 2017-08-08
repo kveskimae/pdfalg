@@ -1,10 +1,10 @@
 package org.pdfextractor.algorithm.finder.et
 
+import java.util.Locale
+
 import org.apache.commons.lang3.StringUtils
-import org.pdfextractor.algorithm.candidate.Candidate
 import org.pdfextractor.algorithm.finder.AbstractFinder
 import org.pdfextractor.algorithm.finder.et.EstonianRegexPatterns._
-import org.pdfextractor.algorithm.parser.Phrase
 import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
 import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
@@ -13,6 +13,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class EstonianInvoiceIDFinder extends AbstractFinder {
+
+  override def getLocale: Locale = SupportedLocales.ESTONIA
+
+  override def getType = INVOICE_ID
 
   @org.springframework.context.event.EventListener(
     Array(classOf[PhraseTypesRefreshedEvent]))
@@ -26,20 +30,6 @@ class EstonianInvoiceIDFinder extends AbstractFinder {
       """([.]{0,1})([\s]{0,})([:]{0,1})([\s]{0,})([^\s]{1,})""").r)
   }
 
-  override def buildCandidate(phrase: Phrase,
-                              value: Any,
-                              params: Any*): Candidate = {
-    new Candidate(value,
-      phrase.x,
-      phrase.y,
-      phrase.bold,
-      phrase.height,
-      phrase.pageNumber,
-      SupportedLocales.ESTONIA,
-      INVOICE_ID,
-      Map.empty)
-  }
-
   override def isValueAllowed(value: Any): Boolean = {
     EstIBANCorrectR
       .findFirstIn(value.asInstanceOf[String])
@@ -50,7 +40,5 @@ class EstonianInvoiceIDFinder extends AbstractFinder {
   }
 
   override def parseValue(raw: String): Any = StringUtils.normalizeSpace(raw)
-
-  override def getType = INVOICE_ID
 
 }
