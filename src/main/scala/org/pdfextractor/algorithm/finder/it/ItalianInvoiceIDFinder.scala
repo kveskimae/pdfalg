@@ -15,16 +15,12 @@ import org.springframework.stereotype.Service
 import scala.util.matching.Regex
 
 @Service
-class ItalianInvoiceIDFinder extends AbstractFinder {
+class ItalianInvoiceIDFinder extends AbstractFinder(SupportedLocales.ITALY, INVOICE_ID) {
 
-  var PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX: Regex = _
-  var PATTERN_ITALIAN_INVOICE_ID_START_BARE_AS_REGEX: Regex = _
-  var PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX: Regex = _
-  var PATTERN_ITALIAN_INVOICE_ID_LINE_BARE_AS_REGEX: Regex = _
-
-  override def getLocale: Locale = SupportedLocales.ITALY
-
-  override def getType = INVOICE_ID
+  var StartR: Regex = _
+  var BareStartR: Regex = _
+  var BareStartStartPartR: Regex = _
+  var BareLineR: Regex = _
 
   @org.springframework.context.event.EventListener(Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
@@ -36,16 +32,16 @@ class ItalianInvoiceIDFinder extends AbstractFinder {
         SupportedLocales.ITALY,
         INVOICE_ID) +
         """([\s]{0,})([:]{0,1})([\s]{0,})(\w{1,}[^\s]{0,})""").r)
-    PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX =
+    StartR =
       ("(?i)" + phraseTypesStore.buildAllPhrases(
         SupportedLocales.ITALY,
         INVOICE_ID) +
         """([\s]{0,})([:]{0,1})([\s]{0,})""").r
-    PATTERN_ITALIAN_INVOICE_ID_START_BARE_AS_REGEX =
+    BareStartR =
       ("^(?is)(?i)" + ItInvoiceIDWord + "(.*)$").r
-    PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX =
+    BareStartStartPartR =
       ("(?i)" + ItInvoiceIDWord + """([\s]{0,})([:]{0,1})([\s]{0,})""").r
-    PATTERN_ITALIAN_INVOICE_ID_LINE_BARE_AS_REGEX =
+    BareLineR =
       ("(?i)" + ItInvoiceIDWord + """([\s]{0,})([:]{0,1})([\s]{0,})(\w{1,}[^\s]{0,})""").r
   }
 
@@ -54,8 +50,8 @@ class ItalianInvoiceIDFinder extends AbstractFinder {
       searchWithPattern(parseResult, searchPattern.get, getValuePattern)
     if (ret.isEmpty) {
       ret = searchWithPattern(parseResult,
-        PATTERN_ITALIAN_INVOICE_ID_START_BARE_AS_REGEX,
-        PATTERN_ITALIAN_INVOICE_ID_LINE_BARE_AS_REGEX)
+        BareStartR,
+        BareLineR)
     }
     ret
   }
@@ -66,10 +62,10 @@ class ItalianInvoiceIDFinder extends AbstractFinder {
 
   override def parseValue(raw: String): Any = {
     StringUtils.normalizeSpace({
-      if (PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX.findFirstIn(raw).nonEmpty) {
-        PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX.replaceFirstIn(raw, "")
-      } else if (PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX.findFirstIn(raw).nonEmpty) {
-        PATTERN_ITALIAN_INVOICE_ID_START_BARE_START_PART_AS_REGEX.replaceFirstIn(raw, "")
+      if (StartR.findFirstIn(raw).nonEmpty) {
+        StartR.replaceFirstIn(raw, "")
+      } else if (BareStartStartPartR.findFirstIn(raw).nonEmpty) {
+        BareStartStartPartR.replaceFirstIn(raw, "")
       } else {
         throw new IllegalArgumentException("No invoice id start was found: '" + raw + "'")
       }

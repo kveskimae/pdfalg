@@ -25,7 +25,7 @@ class ItalianInvoiceIDFinderTest extends AbstractFinderTest {
     assert(italianInvoiceIDFinder.getValuePattern.findFirstIn("Fattura n.6 del 23.02.2016").nonEmpty)
     assert("Fattura n.6" == italianInvoiceIDFinder.getValuePattern.findFirstIn("Fattura n.6 del 23.02.2016").get)
     assert("Fattura n.654343-3s" == italianInvoiceIDFinder.getValuePattern.findFirstIn("Fattura n.654343-3s del 23.02.2016").get)
-    assert("654343-3s" == italianInvoiceIDFinder.PATTERN_ITALIAN_INVOICE_ID_START_PART_AS_REGEX.replaceFirstIn("Fattura n.654343-3s", ""))
+    assert("654343-3s" == italianInvoiceIDFinder.StartR.replaceFirstIn("Fattura n.654343-3s", ""))
   }
 
 }

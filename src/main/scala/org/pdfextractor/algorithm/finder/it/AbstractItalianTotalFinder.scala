@@ -9,7 +9,7 @@ import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
 import org.pdfextractor.algorithm.regex._
 import org.pdfextractor.db.domain.PhraseType
-import org.pdfextractor.db.domain.dictionary.SupportedLocales
+import org.pdfextractor.db.domain.dictionary.{PaymentFieldType, SupportedLocales}
 import org.springframework.stereotype.Service
 
 import scala.collection.mutable
@@ -17,8 +17,8 @@ import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
 
 @Service
-abstract class AbstractItalianTotalFinder
-  extends AbstractFinder(None, None, true, true) {
+abstract class AbstractItalianTotalFinder(finderFieldType: PaymentFieldType)
+  extends AbstractFinder(SupportedLocales.ITALY, finderFieldType, None, None, true, true) {
 
   val otherSymbolsForCommaAsThousandsSeparator: DecimalFormatSymbols =
     new DecimalFormatSymbols(Locale.ITALY)
@@ -35,17 +35,13 @@ abstract class AbstractItalianTotalFinder
     new DecimalFormat("###,###.##", otherSymbolsForDotAsThousandsSeparator)
   otherSymbolsForDotAsThousandsSeparator.setDecimalSeparator(',')
   otherSymbolsForDotAsThousandsSeparator.setGroupingSeparator('.')
-  private[it] val PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX =
-    ("""^(?ims).{0,30}:([\s]{0,})""" + Eur + """?([\s]{0,})""" + DigitsAndCommas + """([\s]{0,})""" + Eur + """?([\s]{0,})$""").r
-
-  override def getLocale: Locale = SupportedLocales.ITALY
+  val ordinaryTotalLineR = ("""^(?ims).{0,30}:([\s]{0,})""" + Eur + """?([\s]{0,})""" + DigitsAndCommas + """([\s]{0,})""" + Eur + """?([\s]{0,})$""").r
 
   @org.springframework.context.event.EventListener(
     Array(classOf[PhraseTypesRefreshedEvent]))
   def refreshed(): Unit = {
     searchPattern = Some(
-      ("^(?ims)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY,
-        getType) + "(.*)$").r)
+      ("^(?ims)(.*)" + phraseTypesStore.buildAllPhrases(SupportedLocales.ITALY, finderFieldType) + "(.*)$").r)
     valuePattern = Some(DigitsAndCommasR)
   }
 
@@ -53,19 +49,16 @@ abstract class AbstractItalianTotalFinder
                                        phrase: Phrase,
                                        parseResult: ParseResult,
                                        valuePattern2: Regex): mutable.Buffer[Candidate] = {
-    val ret: ListBuffer[Candidate] = ListBuffer.empty
     val doubleValues = searchForDoubleValues(phrase.text)
     if (doubleValues.size == 1) {
-      val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
-      while ( {
-        totalAsNumberMatcher.hasNext
-      }) {
-        val totalAsString = totalAsNumberMatcher.next()
-        val candidate: Option[Candidate] =
-          findCandidateValue(totalAsString, phrase, parseResult)
-        if (candidate.isDefined) ret += candidate.get
-      }
+      DigitsAndCommasR
+        .findAllIn(phrase.text)
+        .map(findCandidateValue(_, phrase, parseResult))
+        .filter(_.isDefined)
+        .map(_.get)
+        .toBuffer
     } else {
+      val ret: ListBuffer[Candidate] = ListBuffer.empty
       val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
       var biggest: Option[Candidate] = None
       while ( {
@@ -80,8 +73,8 @@ abstract class AbstractItalianTotalFinder
           .asInstanceOf[Double]) biggest = candidate
       }
       if (biggest.isDefined) ret += biggest.get
+      ret
     }
-    ret
   }
 
   def findCandidateValue(
@@ -90,7 +83,7 @@ abstract class AbstractItalianTotalFinder
                           parseResult: ParseResult): Option[Candidate] = {
     val dotCount = countDotsAndCommas(totalAsString)
     val phraseType =
-      phraseTypesStore.findType(SupportedLocales.ITALY, getType, phrase.text)
+      phraseTypesStore.findType(SupportedLocales.ITALY, finderFieldType, phrase.text)
     if (dotCount < 2) {
       val replaced = totalAsString.replaceAll(",", ".")
       val totalAsDouble: Double = replaced.toDouble
@@ -146,7 +139,7 @@ abstract class AbstractItalianTotalFinder
   }
 
   def isNormalTotalLine(text: String): Boolean = {
-    PATTERN_ITALIAN_ORDINARY_TOTAL_LINE_AS_REGEX.findFirstIn(text).nonEmpty
+    ordinaryTotalLineR.findFirstIn(text).nonEmpty
   }
 
   override def isValueAllowed(value: Any) = true

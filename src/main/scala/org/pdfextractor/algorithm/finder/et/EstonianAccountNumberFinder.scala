@@ -16,13 +16,9 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 @Service
-class EstonianAccountNumberFinder extends AbstractFinder(EstIBANStartWithRestOfLineR, EstIBANCorrectR, false) {
+class EstonianAccountNumberFinder extends AbstractFinder(SupportedLocales.ESTONIA, IBAN, EstIBANStartWithRestOfLineR, EstIBANCorrectR, false) {
 
   val MagicNo = new BigInteger("97")
-
-  override def getLocale: Locale = SupportedLocales.ESTONIA
-
-  def getType = IBAN
 
   override def findCandidates(parseResult: ParseResult): Seq[Candidate] = {
     val ret: ListBuffer[Candidate] =

@@ -12,11 +12,7 @@ import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 
 @Service
-class EstonianInvoiceIDFinder extends AbstractFinder {
-
-  override def getLocale: Locale = SupportedLocales.ESTONIA
-
-  override def getType = INVOICE_ID
+class EstonianInvoiceIDFinder extends AbstractFinder(SupportedLocales.ESTONIA, INVOICE_ID) {
 
   @org.springframework.context.event.EventListener(
     Array(classOf[PhraseTypesRefreshedEvent]))

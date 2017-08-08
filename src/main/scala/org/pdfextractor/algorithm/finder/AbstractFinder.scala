@@ -13,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import scala.collection.mutable
 import scala.util.matching.Regex
 
-abstract class AbstractFinder(var searchPattern: Option[Regex],
+abstract class AbstractFinder(val finderLocale: Locale,
+                              val finderFieldType: PaymentFieldType,
+                              var searchPattern: Option[Regex],
                               var valuePattern: Option[Regex],
                               val combinePhrases: Boolean = true,
                               val combineFuzzy: Boolean = false) {
@@ -21,21 +23,27 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
   val log: Logger = LoggerFactory.getLogger(classOf[AbstractFinder])
   @Autowired var phraseTypesStore: PhraseTypesStore = _
 
-  def this() = this(None, None, true, false)
+  def this(finderLocale: Locale, finderFieldType: PaymentFieldType) =
+    this(finderLocale, finderFieldType, None, None, true, false)
 
-  def this(searchPattern2: Regex, valuePattern2: Regex) =
-    this(Some(searchPattern2), Some(valuePattern2))
+  def this(finderLocale: Locale, finderFieldType: PaymentFieldType, searchPattern2: Regex, valuePattern2: Regex) =
+    this(finderLocale, finderFieldType, Some(searchPattern2), Some(valuePattern2))
 
-  def this(searchPattern2: Regex,
+  def this(finderLocale: Locale,
+           finderFieldType: PaymentFieldType,
+           searchPattern2: Regex,
            valuePattern2: Regex,
            combinePhrases2: Boolean) =
-    this(Some(searchPattern2), Some(valuePattern2), combinePhrases2)
+    this(finderLocale, finderFieldType, Some(searchPattern2), Some(valuePattern2), combinePhrases2)
 
-  def this(searchPattern2: Regex,
+  def this(finderLocale: Locale, finderFieldType: PaymentFieldType,
+           searchPattern2: Regex,
            valuePattern2: Regex,
            combinePhrases2: Boolean,
            combineFuzzy2: Boolean) =
-    this(Some(searchPattern2),
+    this(finderLocale,
+      finderFieldType,
+      Some(searchPattern2),
       Some(valuePattern2),
       combinePhrases2,
       combineFuzzy2)
@@ -68,7 +76,7 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
       case Some(phraseBelow) => {
         val combined = combinePhrases1(phrase, phraseBelow)
         searchValuesFromPhrase(combined, parseResult, value) match {
-          case combinedResults if combinedResults.isEmpty && TOTAL == getType => {
+          case combinedResults if combinedResults.isEmpty && TOTAL == finderFieldType => {
             parseResult.findPhraseBelow(phraseBelow) match {
               case Some(beneathBelow) => {
                 combineAndSearch(combined, beneathBelow, parseResult, value)
@@ -140,10 +148,6 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
 
   def parseValue(raw: String): Any
 
-  def getType: PaymentFieldType
-
-  def getLocale: Locale
-
   def getValuePattern: Regex = valuePattern.get
 
   // Building candidate
@@ -155,8 +159,8 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
       false,
       1,
       1,
-      getLocale,
-      getType,
+      finderLocale,
+      finderFieldType,
       Map.empty)
 
   def buildCandidate(phrase: Phrase,
@@ -169,8 +173,8 @@ abstract class AbstractFinder(var searchPattern: Option[Regex],
       phrase.bold,
       phrase.height,
       phrase.pageNumber,
-      getLocale,
-      getType,
+      finderLocale,
+      finderFieldType,
       buildProperties(phrase, parseResult, params))
 
   def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateMetadata, Any] = Map.empty

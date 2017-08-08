@@ -8,7 +8,7 @@ import org.pdfextractor.db.domain.dictionary.PaymentFieldType.INVOICE_ID
 
 package object finder {
 
-  private[finder] val FOCUS_TYPE = INVOICE_ID // if you have a trouble with particular field type, set it here & let it log
+  val FOCUS_TYPE = INVOICE_ID // if you have a trouble with particular field type, set it here & let it log
 
   def isVoidPhrase(phrase: Phrase): Boolean = {
     Option(phrase.text).isEmpty || isVoidText(phrase.text)

@@ -13,11 +13,7 @@ import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 
 @Service
-class ItalianIssueDateFinder extends AbstractFinder(ItDateR, ItDateR, false) {
-
-  override def getLocale: Locale = SupportedLocales.ITALY
-
-  def getType = ISSUE_DATE
+class ItalianIssueDateFinder extends AbstractFinder(SupportedLocales.ITALY, ISSUE_DATE, ItDateR, ItDateR, false) {
 
   def isValueAllowed(value: Any): Boolean =
     value.asInstanceOf[Date].before(new Date)

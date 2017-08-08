@@ -15,13 +15,9 @@ import scala.util.matching.Regex
 
 @Service
 class ItalianVATIdNumberFinder
-  extends AbstractFinder(ItVatinR, ItVatinValueR, true, true) {
+  extends AbstractFinder(SupportedLocales.ITALY, VATIN, ItVatinR, ItVatinValueR, true, true) {
 
-  override def getLocale: Locale = SupportedLocales.ITALY
-
-  override def getType: PaymentFieldType = VATIN
-
-  override def searchValuesFromPhrase(
+ override def searchValuesFromPhrase(
                                        phrase: Phrase,
                                        parseResult: ParseResult,
                                        valuePattern2: Regex): mutable.Buffer[Candidate] = {

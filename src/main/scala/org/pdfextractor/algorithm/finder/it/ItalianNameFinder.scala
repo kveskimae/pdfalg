@@ -14,11 +14,7 @@ import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 
 @Service
-class ItalianNameFinder extends AbstractFinder(None, None, false) {
-
-  override def getLocale: Locale = SupportedLocales.ITALY
-
-  def getType = NAME
+class ItalianNameFinder extends AbstractFinder(SupportedLocales.ITALY, NAME, None, None, false) {
 
   @org.springframework.context.event.EventListener(
     Array(classOf[PhraseTypesRefreshedEvent]))

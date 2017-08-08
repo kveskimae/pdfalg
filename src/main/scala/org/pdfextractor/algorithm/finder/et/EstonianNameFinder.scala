@@ -3,7 +3,7 @@ package org.pdfextractor.algorithm.finder.et
 import java.util.Locale
 
 import org.apache.commons.lang3.StringUtils
-import org.pdfextractor.algorithm.candidate.{CandidateMetadata, HasPank, MetaPhraseType}
+import org.pdfextractor.algorithm.candidate.{Candidate, CandidateMetadata, HasPank, MetaPhraseType}
 import org.pdfextractor.algorithm.finder.{AbstractFinder, isPankPresent}
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
@@ -12,11 +12,7 @@ import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 
 @Service
-class EstonianNameFinder extends AbstractFinder {
-
-  override def getLocale: Locale = SupportedLocales.ESTONIA
-
-  override def getType = NAME
+class EstonianNameFinder extends AbstractFinder(SupportedLocales.ESTONIA, NAME) {
 
   @org.springframework.context.event.EventListener(
     Array(classOf[PhraseTypesRefreshedEvent]))

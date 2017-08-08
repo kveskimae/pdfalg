@@ -17,11 +17,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
 
 @Service
-class EstonianTotalFinder extends AbstractFinder {
-
-  override def getLocale: Locale = SupportedLocales.ESTONIA
-
-  override def getType = TOTAL
+class EstonianTotalFinder extends AbstractFinder(SupportedLocales.ESTONIA, TOTAL) {
 
   @org.springframework.context.event.EventListener(
     Array(classOf[PhraseTypesRefreshedEvent]))
@@ -39,16 +35,12 @@ class EstonianTotalFinder extends AbstractFinder {
     if (searchForEstonianDoubleValuesAfterText(phrase.text).size == 1) {
       def totalString2Candidate: String => Candidate =
         (totalAsString: String) => {
-          val doubleNumber = countDotsAndCommas(totalAsString) > 0
           val totalAsDouble = parseValue(totalAsString).asInstanceOf[Double]
-          val phraseType = phraseTypesStore.findType(SupportedLocales.ESTONIA,
-            TOTAL,
-            phrase.text)
 
           buildCandidate(phrase,
             parseResult,
             totalAsDouble,
-            Seq(doubleNumber, phraseType))
+            Seq(totalAsString))
         }
 
       DigitsAndCommasR
@@ -69,16 +61,14 @@ class EstonianTotalFinder extends AbstractFinder {
   override def buildProperties(phrase: Phrase,
                                parseResult: ParseResult,
                                params: Seq[Any]): Map[CandidateMetadata, Any] = {
-    val doubleNumber = params(0).asInstanceOf[Boolean]
-    val phraseType = params(1).asInstanceOf[PhraseType]
-    val euroSignFound = isEuroPresent(phrase.text)
-    val normalTotalLine = isNormalTotalLine(phrase.text)
+
+    val totalAsString = params(0).asInstanceOf[String]
 
     Map(
-      IsDouble -> doubleNumber,
-      MetaPhraseType -> phraseType,
-      HasEuroSign -> euroSignFound,
-      IsNormalLine -> normalTotalLine
+      IsDouble -> (countDotsAndCommas(totalAsString) > 0),
+      MetaPhraseType -> phraseTypesStore.findType(SupportedLocales.ESTONIA, TOTAL, phrase.text),
+      HasEuroSign -> isEuroPresent(phrase.text),
+      IsNormalLine -> isNormalTotalLine(phrase.text)
     )
   }
 

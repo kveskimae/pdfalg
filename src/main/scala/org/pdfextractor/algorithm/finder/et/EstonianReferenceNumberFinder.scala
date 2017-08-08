@@ -10,11 +10,7 @@ import org.pdfextractor.db.domain.dictionary.SupportedLocales
 import org.springframework.stereotype.Service
 
 @Service
-class EstonianReferenceNumberFinder extends AbstractFinder(EstRefNoLineR, EstRefNoR) {
-
-  override def getLocale: Locale = SupportedLocales.ESTONIA
-
-  override def getType = REFERENCE_NUMBER
+class EstonianReferenceNumberFinder extends AbstractFinder(SupportedLocales.ESTONIA, REFERENCE_NUMBER, EstRefNoLineR, EstRefNoR) {
 
   override def parseValue(raw: String): Any = raw
 
