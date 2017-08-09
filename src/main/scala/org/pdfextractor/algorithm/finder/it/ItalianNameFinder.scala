@@ -25,13 +25,13 @@ class ItalianNameFinder extends AbstractFinder(SupportedLocales.ITALY, NAME, Non
     valuePattern = Some(("^(?ims)(.*)$").r)
   }
 
-  def isValueAllowed(value: Any): Boolean = {
+  override def isValueAllowed(value: Any): Boolean = {
     !isVoidText(value.asInstanceOf[String]) &&
       ItNameForbiddenWordsR.findFirstIn(value.asInstanceOf[String]).isEmpty &&
       ItNameMinR.findFirstIn(value.asInstanceOf[String]).nonEmpty
   }
 
-  def parseValue(raw: String): Any = {
+  override def parseValue(raw: String): Any = {
     if (Option(raw).isEmpty) None
     else StringUtils.normalizeSpace(raw).split(",")(0)
   }

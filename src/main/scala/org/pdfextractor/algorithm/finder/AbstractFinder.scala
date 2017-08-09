@@ -144,9 +144,9 @@ abstract class AbstractFinder(val finderLocale: Locale,
       .toBuffer
   }
 
-  def isValueAllowed(value: Any): Boolean
+  def isValueAllowed(value: Any): Boolean = true
 
-  def parseValue(raw: String): Any
+  def parseValue(raw: String): Any = raw
 
   def getValuePattern: Regex = valuePattern.get
 

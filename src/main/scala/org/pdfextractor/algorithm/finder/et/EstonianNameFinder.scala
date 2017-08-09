@@ -25,8 +25,6 @@ class EstonianNameFinder extends AbstractFinder(SupportedLocales.ESTONIA, NAME) 
         NAME)).r)
   }
 
-  override def isValueAllowed(value: Any) = true
-
   override def parseValue(raw: String): Any = {
     StringUtils normalizeSpace (raw
       .replaceAll("(Registrikood)(.{0,})", "")

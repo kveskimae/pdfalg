@@ -58,22 +58,19 @@ abstract class AbstractItalianTotalFinder(finderFieldType: PaymentFieldType)
         .map(_.get)
         .toBuffer
     } else {
-      val ret: ListBuffer[Candidate] = ListBuffer.empty
-      val totalAsNumberMatcher = DigitsAndCommasR.findAllIn(phrase.text)
-      var biggest: Option[Candidate] = None
-      while ( {
-        totalAsNumberMatcher.hasNext
-      }) {
-        val totalAsString = totalAsNumberMatcher.next()
-        val candidate: Option[Candidate] =
-          findCandidateValue(totalAsString, phrase, parseResult)
-        if (biggest.isEmpty) biggest = candidate
-        else if (Option(candidate).isDefined && candidate.get.value
-          .asInstanceOf[Double] > biggest.get.value
-          .asInstanceOf[Double]) biggest = candidate
+      val all = DigitsAndCommasR
+        .findAllIn(phrase.text)
+        .map(findCandidateValue(_, phrase, parseResult))
+        .filter(_.isDefined)
+        .map(_.get)
+
+      if (all.nonEmpty) {
+        val getBigger = (candidate1: Candidate, candidate2: Candidate) => if (candidate1.getValue.asInstanceOf[Double] > candidate2.getValue.asInstanceOf[Double]) candidate1 else candidate2
+
+        mutable.Buffer(all.reduce(getBigger))
+      } else {
+        mutable.Buffer.empty
       }
-      if (biggest.isDefined) ret += biggest.get
-      ret
     }
   }
 
@@ -142,8 +139,6 @@ abstract class AbstractItalianTotalFinder(finderFieldType: PaymentFieldType)
     ordinaryTotalLineR.findFirstIn(text).nonEmpty
   }
 
-  override def isValueAllowed(value: Any) = true
-
-  def parseValue(raw: String) = throw new UnsupportedOperationException
+  override def parseValue(raw: String) = throw new UnsupportedOperationException
 
 }

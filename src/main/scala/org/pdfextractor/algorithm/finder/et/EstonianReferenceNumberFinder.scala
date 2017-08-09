@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service
 @Service
 class EstonianReferenceNumberFinder extends AbstractFinder(SupportedLocales.ESTONIA, REFERENCE_NUMBER, EstRefNoLineR, EstRefNoR) {
 
-  override def parseValue(raw: String): Any = raw
-
   override def isValueAllowed(raw: Any): Boolean = {
     try {
       val value = new BigInteger(raw.asInstanceOf[String])

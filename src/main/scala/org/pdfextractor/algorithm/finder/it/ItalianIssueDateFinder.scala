@@ -15,10 +15,9 @@ import org.springframework.stereotype.Service
 @Service
 class ItalianIssueDateFinder extends AbstractFinder(SupportedLocales.ITALY, ISSUE_DATE, ItDateR, ItDateR, false) {
 
-  def isValueAllowed(value: Any): Boolean =
-    value.asInstanceOf[Date].before(new Date)
+  override def isValueAllowed(value: Any): Boolean = value.asInstanceOf[Date].before(new Date)
 
-  def parseValue(raw: String): Any = {
+  override def parseValue(raw: String): Any = {
     val df: SimpleDateFormat = raw.length match {
       case 8 => new SimpleDateFormat("dd/MM/yy")
       case 10 => new SimpleDateFormat("dd/MM/yyyy")

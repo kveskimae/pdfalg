@@ -36,6 +36,4 @@ class ItalianVATIdNumberFinder
       value.asInstanceOf[String].matches("""\d*""")
   }
 
-  override def parseValue(raw: String): Any = raw
-
 }

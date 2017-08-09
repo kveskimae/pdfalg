@@ -107,6 +107,4 @@ class EstonianAccountNumberFinder extends AbstractFinder(SupportedLocales.ESTONI
       .intValue == 1 // Interpret the string as integer and compute the remainder of that number on division by 97.
   }
 
-  def parseValue(raw: String): Any = raw
-
 }

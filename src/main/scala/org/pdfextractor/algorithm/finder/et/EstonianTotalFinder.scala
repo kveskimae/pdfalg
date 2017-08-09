@@ -33,15 +33,11 @@ class EstonianTotalFinder extends AbstractFinder(SupportedLocales.ESTONIA, TOTAL
                                        parseResult: ParseResult,
                                        valuePattern2: Regex): mutable.Buffer[Candidate] = {
     if (searchForEstonianDoubleValuesAfterText(phrase.text).size == 1) {
-      def totalString2Candidate: String => Candidate =
-        (totalAsString: String) => {
-          val totalAsDouble = parseValue(totalAsString).asInstanceOf[Double]
 
-          buildCandidate(phrase,
-            parseResult,
-            totalAsDouble,
-            Seq(totalAsString))
-        }
+      val totalString2Candidate = (totalAsString: String) => {
+        val totalAsDouble = parseValue(totalAsString).asInstanceOf[Double]
+        buildCandidate(phrase, parseResult, totalAsDouble, Seq(totalAsString))
+      }
 
       DigitsAndCommasR
         .findAllIn(phrase.text)
@@ -55,8 +51,6 @@ class EstonianTotalFinder extends AbstractFinder(SupportedLocales.ESTONIA, TOTAL
   }
 
   override def parseValue(raw: String): Any = raw.replace(',', '.').toDouble
-
-  override def isValueAllowed(value: Any) = true
 
   override def buildProperties(phrase: Phrase,
                                parseResult: ParseResult,
