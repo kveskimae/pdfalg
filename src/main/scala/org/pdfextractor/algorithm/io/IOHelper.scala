@@ -2,14 +2,17 @@ package org.pdfextractor.algorithm
 
 import java.awt._
 import java.io.{File, InputStream}
+import java.nio.charset.StandardCharsets
+import java.time.LocalDate
+import java.util.Locale
 
 import net.liftweb.json.JsonAST.JValue
 import net.liftweb.json._
-import org.apache.commons.io.IOUtils
+import org.apache.commons.io.{FileUtils, IOUtils}
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
-import scala.collection.Map
 import scala.collection.immutable.Map.Map2
+import scala.collection.{Map, mutable}
 
 package object io {
 
@@ -75,6 +78,38 @@ package object io {
       "Location '" + file + "' is not readable for application")
     require(!checkIsDirectory || file.isDirectory,
       "Location '" + file + "' is not a folder")
+  }
+
+  def writeToFiles(map: Map[PaymentFieldType, Seq[Point]]) = {
+    map.foreach {
+      case (paymentFieldType, locations) => {
+        val fileName = paymentFieldType.toString + ".txt"
+
+        val locationsString =
+          locations
+            .map(point => point.x + "," + point.y + System.lineSeparator)
+            .reduce(_ + _)
+
+        FileUtils.writeStringToFile(new File(fileName), locationsString)
+      }
+    }
+  }
+
+  def writeStatisticsToFiles(locale: Locale,
+                             trainingData: mutable.Map[PaymentFieldType, mutable.Buffer[Map[String, Any]]]
+                            ): Unit = {
+    trainingData.foreach {
+      case (paymentFieldType: PaymentFieldType, candidates: mutable.Buffer[Map[String, Any]]) => {
+        val sb = new StringBuilder
+
+        sb.append(candidates(0).keys.reduce(_ + "," + _))
+        sb.append(System.lineSeparator)
+        sb.append(candidates.map(_.values.reduce(_ + "," + _) + System.lineSeparator))
+
+        val fileName = "statistics-" + locale.getLanguage + "-" + paymentFieldType.toString.toLowerCase + "-" + LocalDate.now().getMonthValue + "-" + LocalDate.now().getDayOfMonth + ".csv"
+        FileUtils.writeStringToFile(new File(fileName), sb.toString, StandardCharsets.UTF_8)
+      }
+    }
   }
 
 }
