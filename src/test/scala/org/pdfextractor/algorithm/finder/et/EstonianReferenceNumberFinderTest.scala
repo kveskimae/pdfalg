@@ -1,13 +1,12 @@
 package org.pdfextractor.algorithm.finder.et
 
 import org.pdfextractor.algorithm.candidate.Candidate
-import org.pdfextractor.algorithm.finder.{AbstractFinderTest, AbstractInvoiceFileReader}
+import org.pdfextractor.algorithm.finder.{AbstractFinderTest, _}
 import org.pdfextractor.algorithm.io._
-import org.slf4j.{Logger, LoggerFactory}
-import org.springframework.beans.factory.annotation.Autowired
 import org.pdfextractor.algorithm.parser.{PDFFileParser, ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesStore
-import org.pdfextractor.algorithm.finder._
+import org.slf4j.{Logger, LoggerFactory}
+import org.springframework.beans.factory.annotation.Autowired
 
 import scala.collection.LinearSeq
 
@@ -64,7 +63,7 @@ class EstonianReferenceNumberFinderTest extends AbstractFinderTest {
   }
 
   "Estonian invoice ID finder" should "leave positional info" in {
-    val inputStream = getInputStreamFromFile(AbstractInvoiceFileReader.Starman)
+    val inputStream = getInputStreamFromFile(Starman)
     val parseResult = PDFFileParser.parse(inputStream)
     val candidates = estonianReferenceNumberFinder.findCandidates(parseResult)
 

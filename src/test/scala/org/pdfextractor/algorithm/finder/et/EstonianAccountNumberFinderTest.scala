@@ -1,12 +1,12 @@
 package org.pdfextractor.algorithm.finder.et
 
 import org.pdfextractor.algorithm.candidate.Candidate
-import org.pdfextractor.algorithm.finder.{AbstractFinderTest, AbstractInvoiceFileReader}
+import org.pdfextractor.algorithm.finder.AbstractFinderTest
 import org.pdfextractor.algorithm.io._
-import org.slf4j.{Logger, LoggerFactory}
-import org.springframework.beans.factory.annotation.Autowired
 import org.pdfextractor.algorithm.parser.{PDFFileParser, ParseResult}
 import org.pdfextractor.algorithm.phrase.PhraseTypesStore
+import org.slf4j.{Logger, LoggerFactory}
+import org.springframework.beans.factory.annotation.Autowired
 
 import scala.collection.LinearSeq
 
@@ -17,7 +17,7 @@ class EstonianAccountNumberFinderTest extends AbstractFinderTest {
   @Autowired var estonianAccountNumberFinder: EstonianAccountNumberFinder = _
 
   "Estonian account finder" should "find from real PDF" in {
-    val inputStream = getInputStreamFromFile(AbstractInvoiceFileReader.Starman)
+    val inputStream = getInputStreamFromFile(Starman)
     val parseResult = PDFFileParser.parse(inputStream)
     val candidates = estonianAccountNumberFinder.findCandidates(parseResult)
     assert(candidates.nonEmpty)

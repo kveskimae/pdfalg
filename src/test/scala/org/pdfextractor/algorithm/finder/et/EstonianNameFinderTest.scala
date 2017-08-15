@@ -1,11 +1,10 @@
 package org.pdfextractor.algorithm.finder.et
 
-import org.pdfextractor.algorithm.finder.AbstractFinderTest
-import org.slf4j.{Logger, LoggerFactory}
-import org.springframework.beans.factory.annotation.Autowired
+import org.pdfextractor.algorithm.finder.{AbstractFinderTest, _}
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesStore
-import org.pdfextractor.algorithm.finder._
+import org.slf4j.{Logger, LoggerFactory}
+import org.springframework.beans.factory.annotation.Autowired
 
 import scala.collection.LinearSeq
 
