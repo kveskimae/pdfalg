@@ -3,7 +3,7 @@ package org.pdfextractor.algorithm.finder.it
 import java.util.Locale
 
 import org.apache.commons.lang3.StringUtils
-import org.pdfextractor.algorithm.candidate.{CandidateMetadata, MetaPhraseType}
+import org.pdfextractor.algorithm.candidate.{CandidateFeatureType, MetaPhraseType}
 import org.pdfextractor.algorithm.finder._
 import org.pdfextractor.algorithm.finder.it.ItalianRegexPatterns._
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
@@ -36,7 +36,7 @@ class ItalianNameFinder extends AbstractFinder(SupportedLocales.ITALY, NAME, Non
     else StringUtils.normalizeSpace(raw).split(",")(0)
   }
 
-  override def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateMetadata, Any] = {
+  override def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateFeatureType, Any] = {
     val phraseType = phraseTypesStore.findType(SupportedLocales.ITALY, NAME, phrase.text)
     Map(MetaPhraseType -> phraseType)
   }

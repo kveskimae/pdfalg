@@ -3,7 +3,7 @@ package org.pdfextractor.algorithm.finder.et
 import java.util.Locale
 
 import org.apache.commons.lang3.StringUtils
-import org.pdfextractor.algorithm.candidate.{Candidate, CandidateMetadata, HasPank, MetaPhraseType}
+import org.pdfextractor.algorithm.candidate.{Candidate, CandidateFeatureType, HasPank, MetaPhraseType}
 import org.pdfextractor.algorithm.finder.{AbstractFinder, isPankPresent}
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesRefreshedEvent
@@ -31,7 +31,7 @@ class EstonianNameFinder extends AbstractFinder(SupportedLocales.ESTONIA, NAME) 
       .split("""[\s]{3,}""")(0))
   }
 
-  override def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateMetadata, Any] = {
+  override def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateFeatureType, Any] = {
     val phraseType = phraseTypesStore.findType(SupportedLocales.ESTONIA, NAME, phrase.text)
     val pankPresent = isPankPresent(phrase.text)
     Map(MetaPhraseType -> phraseType, HasPank -> pankPresent)

@@ -1,6 +1,7 @@
 package org.pdfextractor.algorithm.candidate
 
-import java.util.{Locale, Objects}
+import java.util.Locale
+import java.util.Objects._
 
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
 
@@ -13,17 +14,12 @@ import scala.beans.BeanProperty
   */
 case class Candidate(@BeanProperty // for dependent RESTful API in Java
                      value: Any,
-                     x: Integer,
-                     y: Integer,
-                     bold: Boolean,
-                     height: Integer,
-                     pageNo: Integer,
                      locale: Locale,
                      paymentFieldType: PaymentFieldType,
-                     properties: Map[CandidateMetadata, Any])
+                     features: Map[CandidateFeatureType, Any])
   extends Comparable[Candidate] {
 
-  Objects.requireNonNull(value)
+  requireNonNull(value)
 
   override def compareTo(other: Candidate): Int = compare(this, other)
 
@@ -35,5 +31,11 @@ case class Candidate(@BeanProperty // for dependent RESTful API in Java
   }
 
   override def hashCode(): Int = value.hashCode()
+
+  def x: Integer = features.getOrElse(X, 1).asInstanceOf[Integer]
+  def y: Integer = features.getOrElse(Y, 1).asInstanceOf[Integer]
+  def bold: Boolean = features.getOrElse(Bold, false).asInstanceOf[Boolean]
+  def height: Integer = features.getOrElse(Height, 1).asInstanceOf[Integer]
+  def pageNo: Integer = features.getOrElse(PageNo, 1).asInstanceOf[Integer]
 
 }

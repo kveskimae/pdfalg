@@ -3,7 +3,7 @@ package org.pdfextractor.algorithm.finder.it
 import java.text.{ParseException, SimpleDateFormat}
 import java.util.{Date, Locale}
 
-import org.pdfextractor.algorithm.candidate.{CandidateMetadata, MetaPhraseType}
+import org.pdfextractor.algorithm.candidate.{CandidateFeatureType, MetaPhraseType}
 import org.pdfextractor.algorithm.finder._
 import org.pdfextractor.algorithm.finder.it.ItalianRegexPatterns._
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
@@ -39,7 +39,7 @@ class ItalianIssueDateFinder extends AbstractFinder(SupportedLocales.ITALY, ISSU
     }
   }
 
-  override def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateMetadata, Any] = {
+  override def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateFeatureType, Any] = {
     Map(MetaPhraseType -> findType(parseResult, phrase))
   }
 

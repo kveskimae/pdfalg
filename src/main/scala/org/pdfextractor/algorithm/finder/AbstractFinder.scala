@@ -2,7 +2,7 @@ package org.pdfextractor.algorithm.finder
 
 import java.util.{Locale, Objects}
 
-import org.pdfextractor.algorithm.candidate.{Candidate, CandidateMetadata}
+import org.pdfextractor.algorithm.candidate._
 import org.pdfextractor.algorithm.parser.{ParseResult, Phrase}
 import org.pdfextractor.algorithm.phrase.PhraseTypesStore
 import org.pdfextractor.db.domain.dictionary.PaymentFieldType
@@ -154,11 +154,6 @@ abstract class AbstractFinder(val finderLocale: Locale,
 
   def buildCandidate1(value: Any): Candidate =
     new Candidate(value,
-      1,
-      1,
-      false,
-      1,
-      1,
       finderLocale,
       finderFieldType,
       Map.empty)
@@ -168,15 +163,16 @@ abstract class AbstractFinder(val finderLocale: Locale,
                      value: Any,
                      params: Seq[Any]): Candidate =
     new Candidate(value,
-      phrase.x,
-      phrase.y,
-      phrase.bold,
-      phrase.height,
-      phrase.pageNumber,
       finderLocale,
       finderFieldType,
-      buildProperties(phrase, parseResult, params))
+      Map(X -> phrase.x,
+        Y -> phrase.y,
+        Bold -> phrase.bold,
+        Height -> phrase.height,
+        PageNo -> phrase.pageNumber
+      ) ++ buildProperties(phrase, parseResult, params)
+    )
 
-  def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateMetadata, Any] = Map.empty
+  def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateFeatureType, Any] = Map.empty
 
 }

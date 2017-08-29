@@ -54,7 +54,7 @@ class EstonianTotalFinder extends AbstractFinder(SupportedLocales.ESTONIA, TOTAL
 
   override def buildProperties(phrase: Phrase,
                                parseResult: ParseResult,
-                               params: Seq[Any]): Map[CandidateMetadata, Any] = {
+                               params: Seq[Any]): Map[CandidateFeatureType, Any] = {
 
     val totalAsString = params(0).asInstanceOf[String]
 

@@ -119,7 +119,7 @@ abstract class AbstractItalianTotalFinder(finderFieldType: PaymentFieldType)
 
   def isDouble(number: Double): Boolean = (number % 1) != 0
 
-  override def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateMetadata, Any] = {
+  override def buildProperties(phrase: Phrase, parseResult: ParseResult, params: Seq[Any]): Map[CandidateFeatureType, Any] = {
     val doubleNumber = params(0).asInstanceOf[Boolean]
     val phraseType = params(1).asInstanceOf[PhraseType]
     val euroSignFound = isEuroPresent(phrase.text)

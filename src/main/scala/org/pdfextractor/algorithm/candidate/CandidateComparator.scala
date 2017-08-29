@@ -19,7 +19,7 @@ package object candidate {
   val NormalLineFraction = 1.5
 
   implicit def candidate2PhraseType(candidate: Candidate): PhraseType =
-    candidate.properties.get(MetaPhraseType).get.asInstanceOf[PhraseType]
+    candidate.features.get(MetaPhraseType).get.asInstanceOf[PhraseType]
 
   // Assumes that payment field types match for the parameter candidates
   def compare(first: Candidate, other: Candidate): Int = {
@@ -135,21 +135,21 @@ package object candidate {
   private def calculateEstonianNameComparisonSum(candidate: Candidate) = {
     var ret = 0.0
     val phraseType: PhraseType =
-      candidate.properties.get(MetaPhraseType).get.asInstanceOf[PhraseType]
+      candidate.features.get(MetaPhraseType).get.asInstanceOf[PhraseType]
     ret += phraseType.getComparisonPart * PhraseTypeFraction
     if (candidate.bold) ret += -0.3
-    val isPank1 = candidate.properties.get(HasPank).asInstanceOf[Boolean]
+    val isPank1 = candidate.features.get(HasPank).asInstanceOf[Boolean]
     if (!isPank1) ret += PankFraction
     ret
   }
 
   private def calculateTotalComparisonSum(candidate: Candidate) = {
     var ret = 0.0
-    if (candidate.properties.get(IsNormalLine).get.asInstanceOf[Boolean])
+    if (candidate.features.get(IsNormalLine).get.asInstanceOf[Boolean])
       ret += NormalLineFraction
-    if (candidate.properties.get(HasEuroSign).get.asInstanceOf[Boolean])
+    if (candidate.features.get(HasEuroSign).get.asInstanceOf[Boolean])
       ret += EuroSignFraction
-    if (candidate.properties.get(IsDouble).get.asInstanceOf[Boolean])
+    if (candidate.features.get(IsDouble).get.asInstanceOf[Boolean])
       ret += DoubleFraction
     ret
   }

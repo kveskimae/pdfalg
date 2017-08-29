@@ -28,8 +28,8 @@ class EstonianTotalFinderTest extends AbstractFinderTest {
     assert(firstCandidate.value == 16.87d)
     assert(35 == firstCandidate.x)
     assert(414 == firstCandidate.y)
-    assert(firstCandidate.properties.get(IsDouble).get.asInstanceOf[Boolean])
-    assert(!firstCandidate.properties.get(HasEuroSign).get.asInstanceOf[Boolean])
+    assert(firstCandidate.features.get(IsDouble).get.asInstanceOf[Boolean])
+    assert(!firstCandidate.features.get(HasEuroSign).get.asInstanceOf[Boolean])
   }
 
 }
